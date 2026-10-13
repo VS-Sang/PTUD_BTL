@@ -15,56 +15,7 @@ public class CustomerPanel extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // ==========================================
-        // 1. THANH MENU BAR TRÊN CÙNG
-        // ==========================================
-        JPanel pTopContainer = new JPanel(new BorderLayout());
-
-        JPanel pHeaderRed = new JPanel(new BorderLayout());
-        pHeaderRed.setBackground(new Color(180, 40, 40));
-        pHeaderRed.setPreferredSize(new Dimension(getWidth(), 35));
-
-        JLabel lblSysTitle = new JLabel("  ⚡ Điện Máy Đỏ — Hệ Thống Quản Lý");
-        lblSysTitle.setForeground(Color.WHITE);
-        lblSysTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        pHeaderRed.add(lblSysTitle, BorderLayout.WEST);
-
-        JPanel pUserRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        pUserRight.setOpaque(false);
-        JLabel lblUser = new JLabel("👤 Nguyễn Văn An");
-        lblUser.setForeground(Color.WHITE);
-        JButton btnRole = new JButton("Quản lý");
-        btnRole.setMargin(new Insets(2, 5, 2, 5));
-        pUserRight.add(lblUser);
-        pUserRight.add(btnRole);
-        pHeaderRed.add(pUserRight, BorderLayout.EAST);
-
-        JPanel pMenuBar = new JPanel(new BorderLayout());
-        pMenuBar.setBackground(new Color(240, 240, 240));
-        pMenuBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-
-        JPanel pMenuLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));
-        pMenuLeft.setOpaque(false);
-        pMenuLeft.add(new JButton("⚙ Hệ thống ▾"));
-        pMenuLeft.add(new JButton("📁 Danh mục ▾"));
-        pMenuLeft.add(new JButton("📋 Xử lý ▾"));
-        pMenuLeft.add(new JButton("🔍 Tìm kiếm ▾"));
-        pMenuLeft.add(new JButton("📊 Thống kê ▾"));
-        pMenuLeft.add(new JButton("👤 Tài khoản ▾"));
-
-        JPanel pMenuRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 3));
-        pMenuRight.setOpaque(false);
-        pMenuRight.add(new JButton("🏠"));
-        pMenuRight.add(new JButton("🖩"));
-        pMenuRight.add(new JButton("📊"));
-        pMenuRight.add(new JButton("🚪"));
-
-        pMenuBar.add(pMenuLeft, BorderLayout.WEST);
-        pMenuBar.add(pMenuRight, BorderLayout.EAST);
-
-        pTopContainer.add(pHeaderRed, BorderLayout.NORTH);
-        pTopContainer.add(pMenuBar, BorderLayout.CENTER);
-        add(pTopContainer, BorderLayout.NORTH);
+        add(new MenuPanel(), BorderLayout.NORTH);
 
         // ==========================================
         // 2. KHUNG NỘI DUNG VÀ BẢNG DỮ LIỆU
