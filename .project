@@ -14,4 +14,19 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+<<<<<<< HEAD
+=======
+	<linkedResources>
+		<link>
+			<name>src/pic/lo.png</name>
+			<type>1</type>
+			<location>C:/Users/Ta Thuy/Downloads/logout (1).png</location>
+		</link>
+		<link>
+			<name>src/pic/logout.png</name>
+			<type>1</type>
+			<location>C:/Users/Ta Thuy/Downloads/logout.png</location>
+		</link>
+	</linkedResources>
+>>>>>>> 5322e64 (add ProductPanel)
 </projectDescription>
