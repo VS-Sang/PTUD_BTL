@@ -9,13 +9,17 @@ public class InvoicePanel extends JFrame {
     private final JTable table;
 
     public InvoicePanel() {
+        this("Nguyễn Văn An", "Quản lý");
+    }
+
+    public InvoicePanel(String userName, String userRole) {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        add(new MenuPanel(), BorderLayout.NORTH);
+        add(new MenuPanel(userName, userRole), BorderLayout.NORTH);
 
         JPanel pCenterContainer = new JPanel(new BorderLayout());
 

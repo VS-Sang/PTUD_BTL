@@ -17,9 +17,7 @@ public class CustomerPanel extends JFrame {
 
         add(new MenuPanel(), BorderLayout.NORTH);
 
-        // ==========================================
-        // 2. KHUNG NỘI DUNG VÀ BẢNG DỮ LIỆU
-        // ==========================================
+        // 1. KHUNG NỘI DUNG VÀ BẢNG DỮ LIỆU
         JPanel pCenterContainer = new JPanel(new BorderLayout());
 
         JPanel pSubHeader = new JPanel(new BorderLayout());
@@ -51,7 +49,6 @@ public class CustomerPanel extends JFrame {
 
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
 
-        // Cấu hình bảng với cột đầu tiên là kiểu Boolean để hiện Checkbox
         String[] columns = {"", "Mã KH", "Họ tên", "SĐT", "Email", "Địa chỉ", "Tổng mua", "Hạng", "Thao tác"};
 
         model = new DefaultTableModel(columns, 0) {
@@ -66,7 +63,7 @@ public class CustomerPanel extends JFrame {
 
         table = new JTable(model);
         table.setRowHeight(30);
-        table.getColumnModel().getColumn(0).setMaxWidth(40); // Thu nhỏ cột checkbox lại cho gọn
+        table.getColumnModel().getColumn(0).setMaxWidth(40);
 
         JScrollPane scrollPane = new JScrollPane(table);
         pCenterContainer.add(scrollPane, BorderLayout.CENTER);
