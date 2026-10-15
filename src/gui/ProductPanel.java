@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -67,19 +69,42 @@ public class ProductPanel extends JFrame{
         pMenuLeft.add(new JButton("👤 Tài khoản ▾"));
         JPanel pMenuRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 3));
         pMenuRight.setOpaque(false);
-        pMenuRight.add(new JButton("🏠"));
+
+            JButton btnMain = new JButton();
+            btnMain.setToolTipText("Trang chủ");
+            ImageIcon iconHome = new  ImageIcon(getClass().getResource("/img/home.png"));
+            Image imageHome = iconHome.getImage().getScaledInstance(
+                    15, 15, Image.SCALE_SMOOTH
+            );
+            btnMain.setIcon(new ImageIcon(imageHome));
+            btnMain.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                            MainFrame mainFrame = new MainFrame();
+                            mainFrame.setVisible(true);
+                            dispose();
+                    }
+            });
+
+        pMenuRight.add(btnMain);
         pMenuRight.add(new JButton("🖩"));
         pMenuRight.add(new JButton("📊"));
 
-        
+
         JButton btnLogout = new JButton();
         btnLogout.setToolTipText("Đăng xuất");
-        ImageIcon icon  = new ImageIcon(getClass().getResource("/pic/lo.png"));
+        ImageIcon icon  = new ImageIcon(getClass().getResource("/img/lo.png"));
         Image image = icon.getImage().getScaledInstance(
         	    15, 15, Image.SCALE_SMOOTH
         	);
         btnLogout.setIcon(new ImageIcon(image));
-        
+        btnLogout.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                        LoginFrame loginFrame = new LoginFrame();
+                        loginFrame.setVisible(true);
+                        dispose();
+                }
+        });
         
         
         pMenuRight.add(btnLogout);
