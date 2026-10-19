@@ -746,40 +746,44 @@ GO
 
 
 -- ============================================================
--- DỮ LIỆU MẪU (Sample Data)
+-- DỮ LIỆU MẪU (Sample Data cho đầy đủ 21 bảng)
 -- ============================================================
 
--- 1. Nhân viên
-INSERT INTO NhanVien (maNhanVien, hoTen, gioiTinh, ngaySinh, soCMND, soDienThoai, email, diaChi, chucVu, phongBan, luongCoBan, heSoLuong, phuCap, ngayVaoLam, trangThai)
+-- 1. Nhân viên (BẢNG 1)
+INSERT INTO NhanVien (maNhanVien, hoTen, gioiTinh, ngaySinh, soCMND, soDienThoai, email, diaChi, chucVu, phongBan, luongCoBan, heSoLuong, phuCap, ngayVaoLam, ngayNghiViec, trangThai, ghiChu)
 VALUES
-    (N'NV001', N'Nguyễn Văn An',     N'Nam', '1990-05-15', '079190001234', '0901234567', 'an.nv@company.com',    N'123 Lê Lợi, Q.1, TP.HCM',       N'Quản lý',      N'Quản lý',  15000000, 2.0, 3000000, '2020-01-15', N'Đang làm việc'),
-    (N'NV002', N'Trần Thị Bình',     N'Nữ',  '1995-08-20', '079195002345', '0912345678', 'binh.tt@company.com',  N'456 Nguyễn Huệ, Q.1, TP.HCM',   N'Thu ngân',      N'Bán hàng', 8000000,  1.2, 1000000, '2021-03-10', N'Đang làm việc'),
-    (N'NV003', N'Lê Minh Cường',     N'Nam', '1993-12-01', '079193003456', '0923456789', 'cuong.lm@company.com', N'789 CMT8, Q.10, TP.HCM',         N'Nhân viên kho', N'Kho',      7500000,  1.0, 500000,  '2021-06-01', N'Đang làm việc'),
-    (N'NV004', N'Phạm Thị Dung',     N'Nữ',  '1998-03-25', '079198004567', '0934567890', 'dung.pt@company.com',  N'101 Hai Bà Trưng, Q.3, TP.HCM',  N'Nhân viên',     N'Bán hàng', 7000000,  1.0, 500000,  '2022-01-05', N'Đang làm việc'),
-    (N'NV005', N'Hoàng Văn Em',      N'Nam', '1997-07-10', '079197005678', '0945678901', 'em.hv@company.com',    N'202 Điện Biên Phủ, Bình Thạnh',  N'Nhân viên',     N'Bán hàng', 7000000,  1.0, 500000,  '2022-06-15', N'Đang làm việc'),
-    (N'NV006', N'Ngô Thị Phượng',    N'Nữ',  '1996-11-30', '079196006789', '0956789012', 'phuong.nt@company.com',N'303 Võ Văn Tần, Q.3, TP.HCM',    N'Thu ngân',      N'Bán hàng', 8000000,  1.2, 1000000, '2021-09-20', N'Đang làm việc'),
-    (N'NV007', N'Đặng Quốc Giang',   N'Nam', '1991-02-14', '079191007890', '0967890123', 'giang.dq@company.com', N'404 Cách Mạng T8, Q.Tân Bình',   N'Nhân viên kho', N'Kho',      7500000,  1.0, 500000,  '2020-11-01', N'Đang làm việc'),
-    (N'NV008', N'Bùi Thị Hạnh',      N'Nữ',  '1999-06-18', '079199008901', '0978901234', 'hanh.bt@company.com',  N'505 Nguyễn Trãi, Q.5, TP.HCM',   N'Nhân viên',     N'Bán hàng', 7000000,  1.0, 500000,  '2023-02-01', N'Đang làm việc');
+    (N'NV001', N'Nguyễn Văn An',     N'Nam', '1990-05-15', '079190001234', '0901234567', 'an.nv@company.com',     N'123 Lê Lợi, Q.1, TP.HCM',        N'Quản lý',       N'Quản lý',  15000000, 2.0, 3000000, '2020-01-15', NULL,         N'Đang làm việc', N'Quản lý cửa hàng trưởng'),
+    (N'NV002', N'Trần Thị Bình',     N'Nữ',  '1995-08-20', '079195002345', '0912345678', 'binh.tt@company.com',   N'456 Nguyễn Huệ, Q.1, TP.HCM',    N'Thu ngân',      N'Bán hàng', 8000000,  1.2, 1000000, '2021-03-10', NULL,         N'Đang làm việc', N'Thu ngân ca sáng'),
+    (N'NV003', N'Phạm Văn Cường',    N'Nam', '1993-12-01', '079193003456', '0923456789', 'cuong.pv@company.com',  N'789 CMT8, Q.10, TP.HCM',          N'Nhân viên kho', N'Kho',      7500000,  1.0, 500000,  '2021-06-01', NULL,         N'Đang làm việc', N'Phụ trách nhập xuất kho'),
+    (N'NV004', N'Lê Thị Dung',       N'Nữ',  '1998-03-25', '079198004567', '0934567890', 'dung.lt@company.com',   N'101 Hai Bà Trưng, Q.3, TP.HCM',   N'Nhân viên',     N'Bán hàng', 7000000,  1.0, 500000,  '2022-01-05', NULL,         N'Tạm nghỉ',      N'Nghỉ phép cá nhân'),
+    (N'NV005', N'Hoàng Minh Đức',    N'Nam', '1994-07-10', '079194005678', '0945678901', 'duc.hm@company.com',    N'202 Điện Biên Phủ, Bình Thạnh',   N'Quản lý',       N'Kế toán',  12000000, 1.5, 2000000, '2021-02-15', NULL,         N'Đang làm việc', N'Phụ trách kế toán - tài chính'),
+    (N'NV006', N'Ngô Thị Phượng',    N'Nữ',  '1996-11-30', '079196006789', '0956789012', 'phuong.nt@company.com', N'303 Võ Văn Tần, Q.3, TP.HCM',     N'Thu ngân',      N'Bán hàng', 8000000,  1.2, 1000000, '2021-09-20', NULL,         N'Đang làm việc', N'Thu ngân ca chiều'),
+    (N'NV007', N'Đặng Quốc Giang',   N'Nam', '1991-02-14', '079191007890', '0967890123', 'giang.dq@company.com',  N'404 Cách Mạng T8, Q.Tân Bình',    N'Nhân viên kho', N'Kho',      7500000,  1.0, 500000,  '2020-11-01', NULL,         N'Đang làm việc', N'Kiểm kê hàng hóa'),
+    (N'NV008', N'Bùi Thị Hạnh',      N'Nữ',  '1999-06-18', '079199008901', '0978901234', 'hanh.bt@company.com',   N'505 Nguyễn Trãi, Q.5, TP.HCM',    N'Nhân viên',     N'Bán hàng', 7000000,  1.0, 500000,  '2023-02-01', NULL,         N'Đang làm việc', N'Tư vấn viên điện thoại'),
+    (N'NV009', N'Vũ Hoàng Khôi',     N'Nam', '1997-04-22', '079197009012', '0989012345', 'khoi.vh@company.com',   N'606 Phan Văn Trị, Q.Gò Vấp',      N'Nhân viên',     N'Bán hàng', 7000000,  1.1, 600000,  '2022-08-10', NULL,         N'Đang làm việc', N'Tư vấn viên laptop'),
+    (N'NV010', N'Đinh Thị Lan',      N'Nữ',  '1995-09-09', '079195010123', '0990123456', 'lan.dt@company.com',    N'707 Hoàng Văn Thụ, Q.Phú Nhuận',  N'Nhân viên',     N'Kế toán',  8500000,  1.2, 800000,  '2021-05-12', '2024-12-31', N'Đã nghỉ việc',  N'Đã bàn giao công việc');
 GO
 
--- Gán người quản lý
-UPDATE NhanVien SET maNguoiQuanLy = 'NV001' WHERE maNhanVien IN ('NV002','NV003','NV004','NV005','NV006','NV007','NV008');
+-- Gán người quản lý trực tiếp
+UPDATE NhanVien SET maNguoiQuanLy = N'NV001' WHERE maNhanVien IN (N'NV002', N'NV003', N'NV004', N'NV005', N'NV006', N'NV007', N'NV008', N'NV009', N'NV010');
 GO
 
--- 2. Tài khoản
-INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai)
+-- 2. Tài khoản (BẢNG 2)
+INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai, lanDangNhapCuoi, soLanDangNhapLoi)
 VALUES
-    (N'TK001', N'admin',       N'e10adc3949ba59abbe56e057f20f883e', N'Admin',        N'NV001', N'Hoạt động'),   -- 123456 (MD5)
-    (N'TK002', N'thungan01',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',      N'NV002', N'Hoạt động'),
-    (N'TK003', N'khonv01',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho', N'NV003', N'Hoạt động'),
-    (N'TK004', N'nhanvien01',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',     N'NV004', N'Hoạt động'),
-    (N'TK005', N'nhanvien02',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',     N'NV005', N'Hoạt động'),
-    (N'TK006', N'thungan02',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',      N'NV006', N'Hoạt động'),
-    (N'TK007', N'khonv02',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho', N'NV007', N'Hoạt động'),
-    (N'TK008', N'nhanvien03',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',     N'NV008', N'Hoạt động');
+    (N'TK001', N'admin',       N'e10adc3949ba59abbe56e057f20f883e', N'Admin',         N'NV001', N'Hoạt động',      '2026-10-19 08:00:00', 0), -- 123456 (MD5)
+    (N'TK002', N'thungan01',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',       N'NV002', N'Hoạt động',      '2026-10-19 07:55:00', 0),
+    (N'TK003', N'khonv01',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho',  N'NV003', N'Hoạt động',      '2026-10-18 17:30:00', 0),
+    (N'TK004', N'nhanvien01',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV004', N'Hoạt động',      '2026-10-15 14:20:00', 0),
+    (N'TK005', N'quanly02',    N'e10adc3949ba59abbe56e057f20f883e', N'Quản lý',        N'NV005', N'Hoạt động',      '2026-10-19 08:10:00', 0),
+    (N'TK006', N'thungan02',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',       N'NV006', N'Hoạt động',      '2026-10-18 21:45:00', 0),
+    (N'TK007', N'khonv02',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho',  N'NV007', N'Hoạt động',      '2026-10-18 16:00:00', 0),
+    (N'TK008', N'nhanvien02',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV008', N'Hoạt động',      '2026-10-19 08:05:00', 0),
+    (N'TK009', N'nhanvien03',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV009', N'Chưa kích hoạt', NULL,                  0),
+    (N'TK010', N'ketoan_cu',   N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV010', N'Bị khóa',        '2024-12-30 17:00:00', 5);
 GO
 
--- 3. Quyền truy cập
+-- 3. Quyền truy cập (BẢNG 3)
 INSERT INTO QuyenTruyCap (maQuyen, tenQuyen, moTa, nhomQuyen)
 VALUES
     (N'Q001', N'Quản lý sản phẩm',    N'Thêm, sửa, xóa, xem sản phẩm',          N'Sản phẩm'),
@@ -796,247 +800,309 @@ VALUES
     (N'Q012', N'Quản lý NCC',          N'Thêm, sửa, xóa nhà cung cấp',          N'Kho');
 GO
 
--- 4. Phân quyền cho Admin (toàn quyền)
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa)
-SELECT 'TK001', maQuyen, 1, 1, 1, 1 FROM QuyenTruyCap;
+-- 4. Phân quyền (BẢNG 4)
+-- Phân quyền cho Admin (toàn quyền)
+INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
+SELECT N'TK001', maQuyen, 1, 1, 1, 1, N'TK001' FROM QuyenTruyCap;
 GO
 
--- Phân quyền cho Thu ngân
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa)
+-- Phân quyền cho Quản lý kế toán (TK005)
+INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
 VALUES
-    (N'TK002', N'Q005', 1, 1, 1, 0),  -- Khách hàng: xem, thêm, sửa
-    (N'TK002', N'Q006', 1, 1, 1, 0),  -- Đơn hàng: xem, thêm, sửa
-    (N'TK002', N'Q007', 1, 1, 0, 0),  -- Hóa đơn: xem, thêm
-    (N'TK002', N'Q001', 1, 0, 0, 0);  -- Sản phẩm: chỉ xem
+    (N'TK005', N'Q006', 1, 0, 0, 0, N'TK001'),
+    (N'TK005', N'Q007', 1, 1, 1, 0, N'TK001'),
+    (N'TK005', N'Q008', 1, 0, 0, 0, N'TK001'),
+    (N'TK005', N'Q009', 1, 1, 1, 0, N'TK001'),
+    (N'TK005', N'Q011', 1, 1, 0, 0, N'TK001');
 GO
 
--- Phân quyền cho Nhân viên kho
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa)
+-- Phân quyền cho Thu ngân (TK002, TK006)
+INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
 VALUES
-    (N'TK003', N'Q001', 1, 0, 1, 0),  -- Sản phẩm: xem, sửa
-    (N'TK003', N'Q004', 1, 1, 1, 0),  -- Kho: xem, thêm, sửa
-    (N'TK003', N'Q012', 1, 0, 0, 0);  -- NCC: chỉ xem
+    (N'TK002', N'Q005', 1, 1, 1, 0, N'TK001'),  -- Khách hàng: xem, thêm, sửa
+    (N'TK002', N'Q006', 1, 1, 1, 0, N'TK001'),  -- Đơn hàng: xem, thêm, sửa
+    (N'TK002', N'Q007', 1, 1, 0, 0, N'TK001'),  -- Hóa đơn: xem, thêm
+    (N'TK002', N'Q001', 1, 0, 0, 0, N'TK001'),  -- Sản phẩm: chỉ xem
+    (N'TK006', N'Q005', 1, 1, 1, 0, N'TK001'),
+    (N'TK006', N'Q006', 1, 1, 1, 0, N'TK001'),
+    (N'TK006', N'Q007', 1, 1, 0, 0, N'TK001'),
+    (N'TK006', N'Q001', 1, 0, 0, 0, N'TK001');
 GO
 
--- 5. Ca làm việc
-INSERT INTO CaLamViec (maCa, tenCa, gioVao, gioRa, moTa)
+-- Phân quyền cho Nhân viên kho (TK003, TK007)
+INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
 VALUES
-    (N'CA001', N'Ca sáng',    '06:00', '14:00', N'Ca làm việc buổi sáng'),
-    (N'CA002', N'Ca chiều',   '14:00', '22:00', N'Ca làm việc buổi chiều'),
-    (N'CA003', N'Ca tối',     '22:00', '06:00', N'Ca làm việc ban đêm'),
-    (N'CA004', N'Ca hành chính', '08:00', '17:00', N'Ca hành chính giờ văn phòng');
+    (N'TK003', N'Q001', 1, 0, 1, 0, N'TK001'),  -- Sản phẩm: xem, sửa
+    (N'TK003', N'Q004', 1, 1, 1, 0, N'TK001'),  -- Kho: xem, thêm, sửa
+    (N'TK003', N'Q012', 1, 1, 1, 0, N'TK001'),  -- NCC: xem, thêm, sửa
+    (N'TK007', N'Q001', 1, 0, 1, 0, N'TK001'),
+    (N'TK007', N'Q004', 1, 1, 1, 0, N'TK001'),
+    (N'TK007', N'Q012', 1, 0, 0, 0, N'TK001');
 GO
 
--- 6. Phân công ca làm
-INSERT INTO PhanCongCaLam (maPhanCong, maNhanVien, maCa, ngayLamViec, trangThai, nguoiPhanCong)
+-- 5. Ca làm việc (BẢNG 5)
+INSERT INTO CaLamViec (maCa, tenCa, gioVao, gioRa, moTa, trangThai)
 VALUES
-    (N'PC001', N'NV002', N'CA001', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC002', N'NV004', N'CA001', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC003', N'NV006', N'CA002', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC004', N'NV005', N'CA002', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC005', N'NV003', N'CA001', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC006', N'NV007', N'CA002', '2026-10-18', N'Đã lên lịch', N'NV001'),
-    (N'PC007', N'NV008', N'CA001', '2026-10-19', N'Đã lên lịch', N'NV001'),
-    (N'PC008', N'NV002', N'CA002', '2026-10-19', N'Đã lên lịch', N'NV001');
+    (N'CA001', N'Ca sáng',               '08:00', '12:00', N'Ca làm việc buổi sáng (8h - 12h)',       N'Hoạt động'),
+    (N'CA002', N'Ca chiều',              '13:00', '17:00', N'Ca làm việc buổi chiều (13h - 17h)',     N'Hoạt động'),
+    (N'CA003', N'Ca tối',                '18:00', '22:00', N'Ca làm việc buổi tối (18h - 22h)',       N'Hoạt động'),
+    (N'CA004', N'Ca hành chính',         '08:00', '17:00', N'Ca hành chính giờ văn phòng (8h - 17h)', N'Hoạt động'),
+    (N'CA005', N'Ca gãy (Sáng - Tối)',   '08:00', '21:00', N'Ca tăng cường dịp lễ / khuyến mãi',     N'Hoạt động'),
+    (N'CA006', N'Ca đêm kiểm kho',       '22:00', '06:00', N'Ca kiểm kê kho định kỳ ban đêm',         N'Ngừng sử dụng');
 GO
 
--- 7. Danh mục
-INSERT INTO DanhMuc (maDanhMuc, tenDanhMuc, moTa, thuTuHienThi)
+-- 6. Phân công ca làm (BẢNG 6)
+INSERT INTO PhanCongCaLam (maPhanCong, maNhanVien, maCa, ngayLamViec, trangThai, gioDiemDanhVao, gioDiemDanhRa, soGioLamThem, ghiChu, nguoiPhanCong)
 VALUES
-    (N'DM001', N'Điện thoại',         N'Điện thoại di động các loại',           1),
-    (N'DM002', N'Laptop',             N'Máy tính xách tay',                     2),
-    (N'DM003', N'Phụ kiện điện thoại',N'Ốp lưng, sạc, tai nghe...',            3),
-    (N'DM004', N'Phụ kiện laptop',    N'Chuột, bàn phím, túi chống sốc...',    4),
-    (N'DM005', N'Máy tính bảng',      N'Tablet các loại',                       5),
-    (N'DM006', N'Đồng hồ thông minh', N'Smartwatch các loại',                   6),
-    (N'DM007', N'Tai nghe',           N'Tai nghe có dây và không dây',          7),
-    (N'DM008', N'Loa',                N'Loa bluetooth, loa kéo',               8);
+    (N'PC001', N'NV001', N'CA004', '2026-10-16', N'Đã điểm danh', '07:55', '17:05', 0.0, N'Quản lý trực hành chính',     N'NV001'),
+    (N'PC002', N'NV002', N'CA001', '2026-10-16', N'Đã điểm danh', '07:58', '12:02', 0.0, N'Trực thu ngân quầy 1',        N'NV001'),
+    (N'PC003', N'NV006', N'CA002', '2026-10-16', N'Đã điểm danh', '12:55', '17:10', 0.5, N'Trực thu ngân quầy 1',        N'NV001'),
+    (N'PC004', N'NV003', N'CA001', '2026-10-16', N'Đã điểm danh', '08:00', '12:00', 0.0, N'Nhận hàng từ nhà cung cấp',   N'NV001'),
+    (N'PC005', N'NV004', N'CA002', '2026-10-17', N'Nghỉ phép',    NULL,    NULL,    0.0, N'Xin nghỉ phép có báo trước',   N'NV001'),
+    (N'PC006', N'NV008', N'CA003', '2026-10-17', N'Đã điểm danh', '17:50', '22:15', 1.0, N'Tăng ca hỗ trợ khách tối',    N'NV001'),
+    (N'PC007', N'NV007', N'CA002', '2026-10-18', N'Đã điểm danh', '13:00', '17:00', 0.0, N'Soạn hàng xuất kho',          N'NV001'),
+    (N'PC008', N'NV009', N'CA001', '2026-10-18', N'Vắng mặt',     NULL,    NULL,    0.0, N'Đi trễ quá giờ quy định',     N'NV001'),
+    (N'PC009', N'NV002', N'CA001', '2026-10-19', N'Đã lên lịch',  NULL,    NULL,    0.0, N'Trực quầy chính đầu tuần',    N'NV001'),
+    (N'PC010', N'NV005', N'CA004', '2026-10-19', N'Đã lên lịch',  NULL,    NULL,    0.0, N'Tổng kết doanh thu tuần',     N'NV001'),
+    (N'PC011', N'NV006', N'CA002', '2026-10-19', N'Đã lên lịch',  NULL,    NULL,    0.0, N'Trực thu ngân chiều',         N'NV001'),
+    (N'PC012', N'NV008', N'CA003', '2026-10-19', N'Đã hủy',       NULL,    NULL,    0.0, N'Đổi ca sang ngày hôm sau',    N'NV001');
+GO
+
+-- 7. Danh mục (BẢNG 7)
+INSERT INTO DanhMuc (maDanhMuc, tenDanhMuc, moTa, thuTuHienThi, trangThai)
+VALUES
+    (N'DM001', N'Điện thoại',          N'Điện thoại di động các loại',            1, N'Hoạt động'),
+    (N'DM002', N'Laptop',              N'Máy tính xách tay',                      2, N'Hoạt động'),
+    (N'DM003', N'Phụ kiện điện thoại', N'Ốp lưng, sạc, cáp, kính cường lực...',   3, N'Hoạt động'),
+    (N'DM004', N'Phụ kiện laptop',     N'Chuột, bàn phím, túi chống sốc, hub...', 4, N'Hoạt động'),
+    (N'DM005', N'Máy tính bảng',       N'Tablet các loại',                        5, N'Hoạt động'),
+    (N'DM006', N'Đồng hồ thông minh',  N'Smartwatch các loại',                    6, N'Hoạt động'),
+    (N'DM007', N'Tai nghe',            N'Tai nghe có dây và không dây',           7, N'Hoạt động'),
+    (N'DM008', N'Loa',                 N'Loa bluetooth, loa kéo, soundbar',       8, N'Hoạt động'),
+    (N'DM009', N'Tivi & Màn hình',     N'Smart TV và màn hình máy tính',          9, N'Hoạt động'),
+    (N'DM010', N'Máy nghe nhạc MP3',   N'Danh mục thiết bị cũ ngừng kinh doanh',  10, N'Ngừng hoạt động');
 GO
 
 -- Danh mục con
-INSERT INTO DanhMuc (maDanhMuc, tenDanhMuc, moTa, maDanhMucCha, thuTuHienThi)
+INSERT INTO DanhMuc (maDanhMuc, tenDanhMuc, moTa, maDanhMucCha, thuTuHienThi, trangThai)
 VALUES
-    (N'DM011', N'Điện thoại Android', N'Điện thoại hệ điều hành Android',  N'DM001', 1),
-    (N'DM012', N'iPhone',             N'Điện thoại Apple iPhone',           N'DM001', 2),
-    (N'DM021', N'Laptop Gaming',      N'Laptop dùng cho gaming',            N'DM002', 1),
-    (N'DM022', N'Laptop Văn phòng',   N'Laptop dùng cho văn phòng',         N'DM002', 2);
+    (N'DM011', N'Điện thoại Android', N'Điện thoại hệ điều hành Android',  N'DM001', 1, N'Hoạt động'),
+    (N'DM012', N'iPhone',             N'Điện thoại Apple iPhone',           N'DM001', 2, N'Hoạt động'),
+    (N'DM021', N'Laptop Gaming',      N'Laptop cấu hình cao cho gaming',    N'DM002', 1, N'Hoạt động'),
+    (N'DM022', N'Laptop Văn phòng',   N'Laptop mỏng nhẹ dùng cho văn phòng',N'DM002', 2, N'Hoạt động');
 GO
 
--- 8. Sản phẩm
-INSERT INTO SanPham (maSanPham, tenSanPham, maDanhMuc, moTa, thuongHieu, xuatXu, donViTinh, giaNhap, giaBan, soLuongTon, soLuongToiThieu, maSKU, maVach)
+-- 8. Sản phẩm (BẢNG 8)
+INSERT INTO SanPham (maSanPham, tenSanPham, maDanhMuc, moTa, thuongHieu, xuatXu, donViTinh, giaNhap, giaBan, soLuongTon, soLuongToiThieu, maSKU, maVach, trongLuong, kichThuoc, trangThai)
 VALUES
-    (N'SP001', N'iPhone 15 Pro Max 256GB',       N'DM012', N'iPhone 15 Pro Max, bộ nhớ 256GB, chip A17 Pro', N'Apple',   N'Mỹ',        N'Cái', 28000000, 34990000, 50,  5,  N'SKU-IP15PM-256', N'8901234567890'),
-    (N'SP002', N'iPhone 15 128GB',               N'DM012', N'iPhone 15, bộ nhớ 128GB, chip A16 Bionic',     N'Apple',   N'Mỹ',        N'Cái', 18000000, 22990000, 80,  10, N'SKU-IP15-128',   N'8901234567891'),
-    (N'SP003', N'Samsung Galaxy S24 Ultra 256GB', N'DM011', N'Galaxy S24 Ultra, bộ nhớ 256GB, S-Pen',        N'Samsung', N'Hàn Quốc',  N'Cái', 25000000, 31990000, 45,  5,  N'SKU-SS24U-256',  N'8901234567892'),
-    (N'SP004', N'Samsung Galaxy A55 128GB',       N'DM011', N'Galaxy A55, bộ nhớ 128GB, camera 50MP',        N'Samsung', N'Hàn Quốc',  N'Cái', 7500000,  9990000,  120, 15, N'SKU-SSA55-128',  N'8901234567893'),
-    (N'SP005', N'Xiaomi 14 Ultra 512GB',          N'DM011', N'Xiaomi 14 Ultra, camera Leica, 512GB',         N'Xiaomi',  N'Trung Quốc', N'Cái', 20000000, 24990000, 30,  5,  N'SKU-XM14U-512',  N'8901234567894'),
-    (N'SP006', N'OPPO Find X7 Ultra 256GB',       N'DM011', N'Find X7 Ultra, camera Hasselblad',             N'OPPO',    N'Trung Quốc', N'Cái', 18000000, 22990000, 25,  5,  N'SKU-OPX7U-256',  N'8901234567895'),
-    (N'SP007', N'Laptop ASUS ROG Strix G16',      N'DM021', N'ROG Strix G16, RTX 4060, i7-13650HX',         N'ASUS',    N'Đài Loan',  N'Cái', 28000000, 33990000, 20,  3,  N'SKU-ASROG-G16',  N'8901234567896'),
-    (N'SP008', N'Laptop Dell XPS 15',             N'DM022', N'Dell XPS 15, i7-13700H, 16GB RAM',             N'Dell',    N'Mỹ',        N'Cái', 32000000, 38990000, 15,  3,  N'SKU-DXPS15',     N'8901234567897'),
-    (N'SP009', N'Laptop HP Pavilion 15',          N'DM022', N'HP Pavilion 15, Ryzen 7, 16GB RAM',            N'HP',      N'Mỹ',        N'Cái', 14000000, 17990000, 35,  5,  N'SKU-HPP15',      N'8901234567898'),
-    (N'SP010', N'MacBook Air M3 256GB',           N'DM022', N'MacBook Air M3, 8GB RAM, 256GB SSD',           N'Apple',   N'Mỹ',        N'Cái', 24000000, 28990000, 25,  5,  N'SKU-MBA-M3-256', N'8901234567899'),
-    (N'SP011', N'iPad Pro M4 11 inch 256GB',      N'DM005', N'iPad Pro M4, màn OLED, Apple Pencil Pro',      N'Apple',   N'Mỹ',        N'Cái', 22000000, 27990000, 20,  3,  N'SKU-IPDP-M4',    N'8901234567900'),
-    (N'SP012', N'Apple Watch Series 10 GPS',      N'DM006', N'Apple Watch S10, GPS, viền nhôm',              N'Apple',   N'Mỹ',        N'Cái', 9000000,  11990000, 40,  5,  N'SKU-AWS10-GPS',  N'8901234567901'),
-    (N'SP013', N'AirPods Pro 2 USB-C',            N'DM007', N'AirPods Pro thế hệ 2, cổng USB-C, ANC',       N'Apple',   N'Mỹ',        N'Cái', 4500000,  6790000,  60,  10, N'SKU-APP2-USBC',  N'8901234567902'),
-    (N'SP014', N'Sony WH-1000XM5',                N'DM007', N'Tai nghe chụp tai, chống ồn cao cấp',          N'Sony',    N'Nhật Bản',  N'Cái', 6000000,  8490000,  30,  5,  N'SKU-SXWH5',      N'8901234567903'),
-    (N'SP015', N'JBL Charge 5',                   N'DM008', N'Loa Bluetooth chống nước IP67',                N'JBL',     N'Mỹ',        N'Cái', 2500000,  3690000,  50,  10, N'SKU-JBLC5',      N'8901234567904'),
-    (N'SP016', N'Ốp lưng iPhone 15 Pro Max MagSafe', N'DM003', N'Ốp lưng silicon chính hãng Apple MagSafe', N'Apple',   N'Mỹ',        N'Cái', 500000,   1290000,  200, 20, N'SKU-OL-IP15PM',  N'8901234567905'),
-    (N'SP017', N'Sạc nhanh Samsung 25W',          N'DM003', N'Củ sạc nhanh Samsung 25W USB-C',              N'Samsung', N'Hàn Quốc',  N'Cái', 150000,   350000,   300, 30, N'SKU-SC-SS25W',   N'8901234567906'),
-    (N'SP018', N'Chuột Logitech MX Master 3S',   N'DM004', N'Chuột không dây, cảm biến 8000 DPI',          N'Logitech',N'Thụy Sĩ',   N'Cái', 1800000,  2490000,  40,  5,  N'SKU-LG-MXM3S',   N'8901234567907'),
-    (N'SP019', N'Bàn phím cơ Keychron K8 Pro',   N'DM004', N'Bàn phím cơ TKL, kết nối BT 5.1 & USB-C',    N'Keychron',N'Trung Quốc', N'Cái', 1500000,  2190000,  35,  5,  N'SKU-KC-K8P',     N'8901234567908'),
-    (N'SP020', N'Samsung Galaxy Watch 7 44mm',    N'DM006', N'Đồng hồ thông minh, BIA sensor, GPS',         N'Samsung', N'Hàn Quốc',  N'Cái', 6000000,  7990000,  30,  5,  N'SKU-SSGW7-44',   N'8901234567909');
+    (N'SP001', N'iPhone 15 Pro Max 256GB',          N'DM012', N'iPhone 15 Pro Max, bộ nhớ 256GB, chip A17 Pro', N'Apple',    N'Mỹ',         N'Cái', 28000000, 34990000, 50,  5,  N'SKU-IP15PM-256', N'8901234567890', 0.22, N'15.9x7.6x0.8 cm', N'Đang kinh doanh'),
+    (N'SP002', N'iPhone 15 128GB',                  N'DM012', N'iPhone 15, bộ nhớ 128GB, chip A16 Bionic',     N'Apple',    N'Mỹ',         N'Cái', 18000000, 22990000, 80,  10, N'SKU-IP15-128',   N'8901234567891', 0.17, N'14.7x7.1x0.7 cm', N'Đang kinh doanh'),
+    (N'SP003', N'Samsung Galaxy S24 Ultra 256GB',    N'DM011', N'Galaxy S24 Ultra, bộ nhớ 256GB, S-Pen',        N'Samsung',  N'Hàn Quốc',   N'Cái', 25000000, 31990000, 45,  5,  N'SKU-SS24U-256',  N'8901234567892', 0.23, N'16.2x7.9x0.8 cm', N'Đang kinh doanh'),
+    (N'SP004', N'Samsung Galaxy A55 128GB',          N'DM011', N'Galaxy A55, bộ nhớ 128GB, camera 50MP',        N'Samsung',  N'Hàn Quốc',   N'Cái', 7500000,  9990000,  120, 15, N'SKU-SSA55-128',  N'8901234567893', 0.21, N'16.1x7.7x0.8 cm', N'Đang kinh doanh'),
+    (N'SP005', N'Xiaomi 14 Ultra 512GB',             N'DM011', N'Xiaomi 14 Ultra, camera Leica, 512GB',         N'Xiaomi',   N'Trung Quốc', N'Cái', 20000000, 24990000, 30,  5,  N'SKU-XM14U-512',  N'8901234567894', 0.22, N'16.1x7.5x0.9 cm', N'Đang kinh doanh'),
+    (N'SP006', N'OPPO Find X7 Ultra 256GB',          N'DM011', N'Find X7 Ultra, camera Hasselblad',             N'OPPO',     N'Trung Quốc', N'Cái', 18000000, 22990000, 25,  5,  N'SKU-OPX7U-256',  N'8901234567895', 0.22, N'16.4x7.6x0.9 cm', N'Đang kinh doanh'),
+    (N'SP007', N'Laptop ASUS ROG Strix G16',         N'DM021', N'ROG Strix G16, RTX 4060, i7-13650HX',         N'ASUS',     N'Đài Loan',   N'Cái', 28000000, 33990000, 20,  3,  N'SKU-ASROG-G16',  N'8901234567896', 2.50, N'35.4x26.4x2.2 cm',N'Đang kinh doanh'),
+    (N'SP008', N'Laptop Dell XPS 15',                N'DM022', N'Dell XPS 15, i7-13700H, 16GB RAM',             N'Dell',     N'Mỹ',         N'Cái', 32000000, 38990000, 15,  3,  N'SKU-DXPS15',     N'8901234567897', 1.86, N'34.4x23.0x1.8 cm',N'Đang kinh doanh'),
+    (N'SP009', N'Laptop HP Pavilion 15',             N'DM022', N'HP Pavilion 15, Ryzen 7, 16GB RAM',            N'HP',       N'Mỹ',         N'Cái', 14000000, 17990000, 35,  5,  N'SKU-HPP15',      N'8901234567898', 1.75, N'36.0x23.4x1.7 cm',N'Đang kinh doanh'),
+    (N'SP010', N'MacBook Air M3 256GB',              N'DM022', N'MacBook Air M3, 8GB RAM, 256GB SSD',           N'Apple',    N'Mỹ',         N'Cái', 24000000, 28990000, 25,  5,  N'SKU-MBA-M3-256', N'8901234567899', 1.24, N'30.4x21.5x1.1 cm',N'Đang kinh doanh'),
+    (N'SP011', N'iPad Pro M4 11 inch 256GB',         N'DM005', N'iPad Pro M4, màn OLED, Apple Pencil Pro',      N'Apple',    N'Mỹ',         N'Cái', 22000000, 27990000, 20,  3,  N'SKU-IPDP-M4',    N'8901234567900', 0.44, N'24.9x17.7x0.5 cm',N'Đang kinh doanh'),
+    (N'SP012', N'Apple Watch Series 10 GPS',         N'DM006', N'Apple Watch S10, GPS, viền nhôm',              N'Apple',    N'Mỹ',         N'Cái', 9000000,  11990000, 40,  5,  N'SKU-AWS10-GPS',  N'8901234567901', 0.04, N'4.6x3.9x0.9 cm',  N'Đang kinh doanh'),
+    (N'SP013', N'AirPods Pro 2 USB-C',               N'DM007', N'AirPods Pro thế hệ 2, cổng USB-C, ANC',       N'Apple',    N'Mỹ',         N'Cái', 4500000,  6790000,  60,  10, N'SKU-APP2-USBC',  N'8901234567902', 0.06, N'4.5x6.0x2.1 cm',  N'Đang kinh doanh'),
+    (N'SP014', N'Sony WH-1000XM5',                   N'DM007', N'Tai nghe chụp tai, chống ồn cao cấp',          N'Sony',     N'Nhật Bản',   N'Cái', 6000000,  8490000,  30,  5,  N'SKU-SXWH5',      N'8901234567903', 0.25, N'20.0x18.0x8.0 cm',N'Đang kinh doanh'),
+    (N'SP015', N'JBL Charge 5',                      N'DM008', N'Loa Bluetooth chống nước IP67',                N'JBL',      N'Mỹ',         N'Cái', 2500000,  3690000,  50,  10, N'SKU-JBLC5',      N'8901234567904', 0.96, N'22.3x9.6x9.4 cm', N'Đang kinh doanh'),
+    (N'SP016', N'Ốp lưng iPhone 15 Pro Max MagSafe', N'DM003', N'Ốp lưng silicon chính hãng Apple MagSafe',    N'Apple',    N'Mỹ',         N'Cái', 500000,   1290000,  200, 20, N'SKU-OL-IP15PM',  N'8901234567905', 0.03, N'16.2x8.0x1.0 cm', N'Đang kinh doanh'),
+    (N'SP017', N'Sạc nhanh Samsung 25W',             N'DM003', N'Củ sạc nhanh Samsung 25W USB-C',              N'Samsung',  N'Hàn Quốc',   N'Cái', 150000,   350000,   300, 30, N'SKU-SC-SS25W',   N'8901234567906', 0.05, N'4.7x7.8x2.6 cm',  N'Đang kinh doanh'),
+    (N'SP018', N'Chuột Logitech MX Master 3S',      N'DM004', N'Chuột không dây, cảm biến 8000 DPI',          N'Logitech', N'Thụy Sĩ',    N'Cái', 1800000,  2490000,  40,  5,  N'SKU-LG-MXM3S',   N'8901234567907', 0.14, N'12.4x8.4x5.1 cm', N'Đang kinh doanh'),
+    (N'SP019', N'Bàn phím cơ Keychron K8 Pro',      N'DM004', N'Bàn phím cơ TKL, kết nối BT 5.1 & USB-C',    N'Keychron', N'Trung Quốc', N'Cái', 1500000,  2190000,  35,  5,  N'SKU-KC-K8P',     N'8901234567908', 0.99, N'35.5x12.3x4.2 cm',N'Đang kinh doanh'),
+    (N'SP020', N'Samsung Galaxy Watch 7 44mm',       N'DM006', N'Đồng hồ thông minh, BIA sensor, GPS',         N'Samsung',  N'Hàn Quốc',   N'Cái', 6000000,  7990000,  30,  5,  N'SKU-SSGW7-44',   N'8901234567909', 0.03, N'4.4x4.4x0.9 cm',  N'Đang kinh doanh');
 GO
 
--- 9. Khuyến mãi
-INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, moTa, loaiKhuyenMai, giaTriGiam, giaTriGiamToiDa, donHangToiThieu, soLuongToiDa, ngayBatDau, ngayKetThuc, apDungChoTatCa, trangThai, nguoiTao)
+-- 9. Khuyến mãi (BẢNG 9)
+INSERT INTO KhuyenMai (maKhuyenMai, tenKhuyenMai, moTa, loaiKhuyenMai, giaTriGiam, giaTriGiamToiDa, donHangToiThieu, soLuongToiDa, soLuongDaSuDung, ngayBatDau, ngayKetThuc, apDungChoTatCa, trangThai, nguoiTao)
 VALUES
-    (N'KM001', N'Giảm 10% mừng khai trương',          N'Chương trình giảm giá 10% cho tất cả sản phẩm',    N'Phần trăm', 10, 5000000,  0,         NULL, '2026-10-15', '2026-11-15', 1, N'Đang diễn ra', N'NV001'),
-    (N'KM002', N'Giảm 500K cho đơn từ 5 triệu',       N'Giảm trực tiếp 500,000đ cho đơn từ 5,000,000đ',   N'Số tiền',   500000, NULL, 5000000,   100,  '2026-10-18', '2026-10-31', 1, N'Đang diễn ra', N'NV001'),
-    (N'KM003', N'Black Friday – Giảm 20% Phụ kiện',   N'Giảm 20% phụ kiện điện thoại & laptop',            N'Phần trăm', 20, 2000000,  0,         200,  '2026-11-25', '2026-11-30', 0, N'Chưa bắt đầu', N'NV001'),
-    (N'KM004', N'Mua điện thoại tặng ốp lưng',        N'Mua bất kỳ điện thoại nào tặng 1 ốp lưng',        N'Mua X tặng Y', 0, NULL,   0,         50,   '2026-10-20', '2026-12-31', 0, N'Chưa bắt đầu', N'NV001');
+    (N'KM001', N'Giảm 10% mừng khai trương',        N'Chương trình giảm giá 10% cho tất cả sản phẩm',   N'Phần trăm',            10,     5000000, 0,        NULL, 5, '2026-10-01', '2026-11-15', 1, N'Đang diễn ra', N'NV001'),
+    (N'KM002', N'Giảm 500K cho đơn từ 5 triệu',     N'Giảm trực tiếp 500,000đ cho đơn từ 5,000,000đ',  N'Số tiền',              500000, NULL,    5000000,  100,  1, '2026-10-10', '2026-10-31', 1, N'Đang diễn ra', N'NV001'),
+    (N'KM003', N'Black Friday – Giảm 20% Phụ kiện', N'Giảm 20% phụ kiện điện thoại & laptop',           N'Phần trăm',            20,     2000000, 0,        200,  0, '2026-11-20', '2026-11-30', 0, N'Chưa bắt đầu', N'NV001'),
+    (N'KM004', N'Mua điện thoại tặng ốp lưng',      N'Mua bất kỳ điện thoại nào tặng 1 ốp lưng',       N'Mua X tặng Y',         0,      NULL,    10000000, 50,   0, '2026-10-20', '2026-12-31', 0, N'Chưa bắt đầu', N'NV001'),
+    (N'KM005', N'Miễn phí giao hàng nội thành',     N'Miễn phí vận chuyển cho đơn hàng từ 2 triệu',     N'Miễn phí vận chuyển',  50000,  50000,   2000000,  500,  2, '2026-09-01', '2026-12-31', 1, N'Đang diễn ra', N'NV001');
 GO
 
--- Gán KM003 cho danh mục phụ kiện
-INSERT INTO KhuyenMai_SanPham (maKhuyenMai, maSanPham)
+-- 10. Khuyến mãi - Sản phẩm (BẢNG 10)
+INSERT INTO KhuyenMai_SanPham (maKhuyenMai, maSanPham, giaTriGiamRieng)
 VALUES
-    (N'KM003', N'SP016'), (N'KM003', N'SP017'), (N'KM003', N'SP018'), (N'KM003', N'SP019');
+    (N'KM003', N'SP016', 250000),
+    (N'KM003', N'SP017', 70000),
+    (N'KM003', N'SP018', 500000),
+    (N'KM003', N'SP019', 400000),
+    (N'KM004', N'SP001', NULL),
+    (N'KM004', N'SP002', NULL),
+    (N'KM004', N'SP003', NULL);
 GO
 
--- 10. Nhà cung cấp
-INSERT INTO NhaCungCap (maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, nguoiLienHe, maSoThue)
+-- 11. Khách hàng (BẢNG 11)
+INSERT INTO KhachHang (maKhachHang, hoTen, gioiTinh, ngaySinh, soDienThoai, email, diaChi, loaiKhachHang, diemThuong, tongDiemTichLuy, tongChiTieu, soLanMuaHang, lanMuaGanNhat, trangThai, ghiChu)
 VALUES
-    (N'NCC001', N'Công ty TNHH Apple Việt Nam',       '02838001111', 'apple.vn@supplier.com',   N'Tòa nhà Bitexco, Q.1, TP.HCM',       N'Nguyễn Minh Tâm',   N'0312345678'),
-    (N'NCC002', N'Samsung Electronics Việt Nam',        '02438002222', 'samsung.vn@supplier.com', N'KCN Yên Phong, Bắc Ninh',             N'Trần Quốc Bảo',     N'0312345679'),
-    (N'NCC003', N'Công ty CP Phân phối FPT (FPT Trading)', '02838003333', 'fpt@supplier.com',    N'Lô L29B-31B-33B, Q.Tân Thuận, Q.7',  N'Lê Hoàng Nam',       N'0312345680'),
-    (N'NCC004', N'Công ty TNHH Synnex FPT',            '02838004444', 'synnex@supplier.com',    N'Tầng 12, Tòa nhà TTC, Q.1, TP.HCM',  N'Phạm Anh Tuấn',     N'0312345681'),
-    (N'NCC005', N'Xiaomi Technology Việt Nam',          '02838005555', 'xiaomi.vn@supplier.com', N'Tầng 8, Lim Tower, Q.1, TP.HCM',     N'Vũ Thị Hương',      N'0312345682');
+    (N'KH001', N'Nguyễn Thị Mai',     N'Nữ',  '1992-04-12', '0801234567', 'mai.nt@gmail.com',    N'12 Trần Hưng Đạo, Q.5, TP.HCM',      N'VIP',        1576, 3576, 92641000,  13, '2026-10-17 15:50:00', N'Hoạt động',       N'Khách hàng thân thiết lâu năm'),
+    (N'KH002', N'Trần Văn Hùng',      N'Nam', '1988-09-05', '0812345678', 'hung.tv@gmail.com',   N'45 Lý Thường Kiệt, Q.Tân Bình',      N'Vàng',       800,  1800, 52000000,  8,  '2026-10-16 10:20:00', N'Hoạt động',       NULL),
+    (N'KH003', N'Lê Thị Ngọc Ánh',    N'Nữ',  '1995-01-20', '0823456789', 'anh.ltn@gmail.com',   N'78 Nguyễn Đình Chiểu, Q.3, TP.HCM',  N'Thành viên', 290,  590,  43990000,  4,  '2026-10-17 14:30:00', N'Hoạt động',       NULL),
+    (N'KH004', N'Phạm Quốc Đạt',      N'Nam', '1990-11-15', '0834567890', 'dat.pq@gmail.com',    N'101 Cộng Hòa, Q.Tân Bình',            N'Thường',     50,   50,   3500000,   1,  '2026-10-18 08:00:00', N'Hoạt động',       NULL),
+    (N'KH005', N'Hoàng Thị Linh',     N'Nữ',  '1997-06-30', '0845678901', 'linh.ht@gmail.com',   N'234 Điện Biên Phủ, Q.Bình Thạnh',     N'Thành viên', 350,  700,  22000000,  5,  '2026-10-18 10:30:00', N'Hoạt động',       NULL),
+    (N'KH006', N'Võ Minh Tuấn',       N'Nam', '1985-03-08', '0856789012', 'tuan.vm@gmail.com',   N'567 Nguyễn Kiệm, Q.Gò Vấp',          N'Bạch kim',   3200, 6500, 185000000, 24, '2026-10-18 10:00:00', N'Hoạt động',       N'Khách hàng doanh nghiệp VIP'),
+    (N'KH007', N'Đỗ Thị Hồng Nhung',  N'Nữ',  '2000-12-25', '0867890123', 'nhung.dth@gmail.com', N'890 Quang Trung, Q.Gò Vấp',           N'Thường',     0,    0,    0,         0,  NULL,                  N'Hoạt động',       N'Mới đăng ký thẻ thành viên'),
+    (N'KH008', N'Bùi Đức Anh',        N'Nam', '1993-08-18', '0878901234', 'anh.bd@gmail.com',    N'123 Phan Xích Long, Q.Phú Nhuận',     N'Vàng',       900,  2100, 65000000,  10, '2026-10-10 16:00:00', N'Hoạt động',       NULL),
+    (N'KH009', N'Đặng Thảo Vy',       N'Nữ',  '1999-07-19', '0889012345', 'vy.dt@gmail.com',     N'321 Sư Vạn Hạnh, Q.10, TP.HCM',       N'Thành viên', 150,  400,  18500000,  3,  '2026-10-18 15:20:00', N'Hoạt động',       NULL),
+    (N'KH010', N'Trịnh Công Sơn',     N'Nam', '1982-02-28', '0890123456', 'son.tc@gmail.com',    N'55 Nguyễn Thị Minh Khai, Q.1',        N'Thường',     0,    120,  12000000,  2,  '2025-05-10 11:00:00', N'Ngừng hoạt động', N'Đổi số điện thoại');
 GO
 
--- 11. Khách hàng
-INSERT INTO KhachHang (maKhachHang, hoTen, gioiTinh, ngaySinh, soDienThoai, email, diaChi, loaiKhachHang, diemThuong, tongDiemTichLuy, tongChiTieu, soLanMuaHang)
+-- 12. Đơn hàng (BẢNG 12)
+INSERT INTO DonHang (maDonHang, maKhachHang, maNhanVien, ngayDatHang, ngayGiaoHang, diaChiGiaoHang, tongTienHang, tienGiamGia, maKhuyenMai, diemSuDung, tienDiem, phiVanChuyen, thueVAT, tongThanhToan, trangThai, ghiChu)
 VALUES
-    (N'KH001', N'Nguyễn Thị Mai',    N'Nữ',  '1992-04-12', '0801234567', 'mai.nt@gmail.com',   N'12 Trần Hưng Đạo, Q.5, TP.HCM',      N'VIP',        1500, 3500, 85000000,  12),
-    (N'KH002', N'Trần Văn Hùng',     N'Nam', '1988-09-05', '0812345678', 'hung.tv@gmail.com',  N'45 Lý Thường Kiệt, Q.Tân Bình',      N'Vàng',       800,  1800, 52000000,  8),
-    (N'KH003', N'Lê Thị Ngọc Ánh',   N'Nữ',  '1995-01-20', '0823456789', 'anh.ltn@gmail.com',  N'78 Nguyễn Đình Chiểu, Q.3, TP.HCM',  N'Thành viên', 200,  500,  15000000,  3),
-    (N'KH004', N'Phạm Quốc Đạt',     N'Nam', '1990-11-15', '0834567890', 'dat.pq@gmail.com',   N'101 Cộng Hòa, Q.Tân Bình',            N'Thường',     50,   50,   3500000,   1),
-    (N'KH005', N'Hoàng Thị Linh',     N'Nữ',  '1997-06-30', '0845678901', 'linh.ht@gmail.com',  N'234 Điện Biên Phủ, Q.Bình Thạnh',     N'Thành viên', 350,  700,  22000000,  5),
-    (N'KH006', N'Võ Minh Tuấn',       N'Nam', '1985-03-08', '0856789012', 'tuan.vm@gmail.com',  N'567 Nguyễn Kiệm, Q.Gò Vấp',          N'VIP',        2200, 5000, 120000000, 20),
-    (N'KH007', N'Đỗ Thị Hồng Nhung', N'Nữ',  '2000-12-25', '0867890123', 'nhung.dth@gmail.com',N'890 Quang Trung, Q.Gò Vấp',           N'Thường',     0,    0,    0,         0),
-    (N'KH008', N'Bùi Đức Anh',        N'Nam', '1993-08-18', '0878901234', 'anh.bd@gmail.com',   N'123 Phan Xích Long, Q.Phú Nhuận',     N'Vàng',       900,  2100, 65000000,  10);
+    (N'DH001', N'KH001', N'NV002', '2026-10-16 09:30:00', '2026-10-16 09:35:00', N'Mua trực tiếp tại cửa hàng',          34990000, 3499000, N'KM001', 0,   0,      0,     0, 31491000, N'Đã hoàn thành', N'Thanh toán tại quầy'),
+    (N'DH002', N'KH002', N'NV002', '2026-10-16 10:15:00', '2026-10-16 10:20:00', N'Mua trực tiếp tại cửa hàng',          9990000,  999000,  N'KM001', 0,   0,      0,     0, 8991000,  N'Đã hoàn thành', N'Thanh toán tại quầy'),
+    (N'DH003', N'KH003', N'NV006', '2026-10-17 14:20:00', '2026-10-17 14:30:00', N'78 Nguyễn Đình Chiểu, Q.3, TP.HCM',   28990000, 0,       NULL,     0,   0,      0,     0, 28990000, N'Đã hoàn thành', N'Khách nhận tại quầy'),
+    (N'DH004', N'KH001', N'NV004', '2026-10-17 15:45:00', '2026-10-17 15:50:00', N'12 Trần Hưng Đạo, Q.5, TP.HCM',       8490000,  849000,  N'KM001', 0,   0,      0,     0, 7641000,  N'Đã hoàn thành', NULL),
+    (N'DH005', N'KH004', N'NV006', '2026-10-18 08:00:00', '2026-10-18 14:00:00', N'101 Cộng Hòa, Q.Tân Bình',            22990000, 500000,  N'KM002', 0,   0,      0,     0, 22490000, N'Đã hoàn thành', N'Giao nhanh nội thành'),
+    (N'DH006', NULL,     N'NV002', '2026-10-18 09:10:00', '2026-10-18 09:15:00', N'Khách vãng lai mua tại quầy',         3690000,  369000,  N'KM001', 0,   0,      0,     0, 3321000,  N'Đã hoàn thành', N'Khách lẻ không tích điểm'),
+    (N'DH007', N'KH006', N'NV008', '2026-10-18 10:00:00', NULL,                  N'567 Nguyễn Kiệm, Q.Gò Vấp',           38990000, 3899000, N'KM001', 100, 100000, 0,     0, 34991000, N'Đang giao hàng',N'Giao giờ hành chính'),
+    (N'DH008', N'KH005', N'NV002', '2026-10-18 10:30:00', NULL,                  N'234 Điện Biên Phủ, Q.Bình Thạnh',     6790000,  679000,  N'KM001', 0,   0,      30000, 0, 6141000,  N'Đã xác nhận',   N'Chờ đơn vị vận chuyển'),
+    (N'DH009', N'KH009', N'NV009', '2026-10-19 08:45:00', NULL,                  N'321 Sư Vạn Hạnh, Q.10, TP.HCM',       20480000, 500000,  N'KM002', 0,   0,      0,     0, 19980000, N'Mới tạo',       N'Khách đặt online chờ gọi xác nhận'),
+    (N'DH010', N'KH008', N'NV006', '2026-10-19 09:15:00', NULL,                  N'123 Phan Xích Long, Q.Phú Nhuận',     11990000, 0,       NULL,     0,   0,      0,     0, 11990000, N'Đã hủy',        N'Khách đổi ý muốn mua mẫu khác');
 GO
 
--- 12. Đơn hàng
-INSERT INTO DonHang (maDonHang, maKhachHang, maNhanVien, ngayDatHang, tongTienHang, tienGiamGia, maKhuyenMai, tongThanhToan, trangThai)
+-- 13. Chi tiết đơn hàng (BẢNG 13)
+INSERT INTO ChiTietDonHang (maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu)
 VALUES
-    (N'DH001', N'KH001', N'NV002', '2026-10-16 09:30:00', 34990000, 3499000, N'KM001', 31491000, N'Đã hoàn thành'),
-    (N'DH002', N'KH002', N'NV002', '2026-10-16 10:15:00', 9990000,  999000,  N'KM001', 8991000,  N'Đã hoàn thành'),
-    (N'DH003', N'KH003', N'NV006', '2026-10-17 14:20:00', 28990000, 0,       NULL,     28990000, N'Đã hoàn thành'),
-    (N'DH004', N'KH001', N'NV004', '2026-10-17 15:45:00', 8490000,  849000,  N'KM001', 7641000,  N'Đã hoàn thành'),
-    (N'DH005', N'KH004', N'NV006', '2026-10-18 08:00:00', 22990000, 500000,  N'KM002', 22490000, N'Đang xử lý'),
-    (N'DH006', NULL,     N'NV002', '2026-10-18 09:10:00', 3690000,  369000,  N'KM001', 3321000,  N'Mới tạo'),
-    (N'DH007', N'KH006', N'NV004', '2026-10-18 10:00:00', 38990000, 3899000, N'KM001', 35091000, N'Đang xử lý'),
-    (N'DH008', N'KH005', N'NV002', '2026-10-18 10:30:00', 6790000,  679000,  N'KM001', 6111000,  N'Mới tạo');
+    (N'DH001', N'SP001', 1, 34990000, 3499000, 31491000, N'Bảo hành 12 tháng chính hãng'),
+    (N'DH002', N'SP004', 1, 9990000,  999000,  8991000,  N'Tặng dán màn hình'),
+    (N'DH003', N'SP010', 1, 28990000, 0,       28990000, N'Bảo hành Apple Việt Nam'),
+    (N'DH004', N'SP014', 1, 8490000,  849000,  7641000,  NULL),
+    (N'DH005', N'SP002', 1, 22990000, 500000,  22490000, NULL),
+    (N'DH006', N'SP015', 1, 3690000,  369000,  3321000,  NULL),
+    (N'DH007', N'SP008', 1, 38990000, 3899000, 35091000, N'Cài sẵn Windows 11 & Office'),
+    (N'DH008', N'SP013', 1, 6790000,  679000,  6111000,  NULL),
+    (N'DH009', N'SP009', 1, 17990000, 500000,  17490000, NULL),
+    (N'DH009', N'SP018', 1, 2490000,  0,       2490000,  N'Mua kèm laptop'),
+    (N'DH010', N'SP012', 1, 11990000, 0,       11990000, N'Đơn đã hủy');
 GO
 
--- 13. Chi tiết đơn hàng
-INSERT INTO ChiTietDonHang (maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien)
+-- 14. Hóa đơn (BẢNG 14)
+INSERT INTO HoaDon (maHoaDon, maDonHang, maKhachHang, maNhanVien, ngayLapHoaDon, tongTienHang, tienGiamGia, tienDiem, thueVAT, tongThanhToan, tienKhachDua, tienTraLai, phuongThucThanhToan, soTaiKhoanNH, tenNganHang, maGiaoDich, diemCongThem, trangThai, ghiChu)
 VALUES
-    -- DH001: iPhone 15 Pro Max
-    (N'DH001', N'SP001', 1, 34990000, 3499000, 31491000),
-    -- DH002: Samsung Galaxy A55
-    (N'DH002', N'SP004', 1, 9990000,  999000,  8991000),
-    -- DH003: MacBook Air M3
-    (N'DH003', N'SP010', 1, 28990000, 0,       28990000),
-    -- DH004: Sony WH-1000XM5
-    (N'DH004', N'SP014', 1, 8490000,  849000,  7641000),
-    -- DH005: iPhone 15 128GB
-    (N'DH005', N'SP002', 1, 22990000, 500000,  22490000),
-    -- DH006: JBL Charge 5
-    (N'DH006', N'SP015', 1, 3690000,  369000,  3321000),
-    -- DH007: Dell XPS 15
-    (N'DH007', N'SP008', 1, 38990000, 3899000, 35091000),
-    -- DH008: AirPods Pro 2
-    (N'DH008', N'SP013', 1, 6790000,  679000,  6111000);
+    (N'HD001', N'DH001', N'KH001', N'NV002', '2026-10-16 09:35:00', 34990000, 3499000, 0,      0, 31491000, 32000000, 509000, N'Tiền mặt',     NULL,           NULL,          NULL,            315, N'Đã thanh toán', NULL),
+    (N'HD002', N'DH002', N'KH002', N'NV002', '2026-10-16 10:20:00', 9990000,  999000,  0,      0, 8991000,  9000000,  9000,   N'Tiền mặt',     NULL,           NULL,          NULL,            90,  N'Đã thanh toán', NULL),
+    (N'HD003', N'DH003', N'KH003', N'NV006', '2026-10-17 14:30:00', 28990000, 0,       0,      0, 28990000, 28990000, 0,      N'Chuyển khoản', N'19036889999', N'Techcombank',N'FT2629012345', 290, N'Đã thanh toán', N'Chuyển khoản QR'),
+    (N'HD004', N'DH004', N'KH001', N'NV002', '2026-10-17 15:50:00', 8490000,  849000,  0,      0, 7641000,  8000000,  359000, N'Tiền mặt',     NULL,           NULL,          NULL,            76,  N'Đã thanh toán', NULL),
+    (N'HD005', N'DH005', N'KH004', N'NV006', '2026-10-18 14:10:00', 22990000, 500000,  0,      0, 22490000, 22490000, 0,      N'Thẻ tín dụng', N'4111****8899',N'Vietcombank',N'POS261018005', 225, N'Đã thanh toán', N'Quẹt thẻ Visa'),
+    (N'HD006', N'DH006', NULL,     N'NV002', '2026-10-18 09:15:00', 3690000,  369000,  0,      0, 3321000,  3321000,  0,      N'Ví điện tử',   NULL,           N'MoMo',       N'MOMO99887766', 0,   N'Đã thanh toán', N'Khách lẻ thanh toán MoMo'),
+    (N'HD007', N'DH007', N'KH006', N'NV002', '2026-10-18 10:05:00', 38990000, 3899000, 100000, 0, 34991000, 0,        0,      N'Chuyển khoản', N'00710008888', N'Vietcombank',NULL,            350, N'Chờ thanh toán',N'Thanh toán khi nhận hàng');
 GO
 
--- 14. Hóa đơn (cho đơn đã hoàn thành)
-INSERT INTO HoaDon (maHoaDon, maDonHang, maKhachHang, maNhanVien, ngayLapHoaDon, tongTienHang, tienGiamGia, thueVAT, tongThanhToan, tienKhachDua, tienTraLai, phuongThucThanhToan, diemCongThem, trangThai)
+-- 15. Nhà cung cấp (BẢNG 15)
+INSERT INTO NhaCungCap (maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, nguoiLienHe, maSoThue, soTaiKhoanNH, tenNganHang, congNo, trangThai, ghiChu)
 VALUES
-    (N'HD001', N'DH001', N'KH001', N'NV002', '2026-10-16 09:35:00', 34990000, 3499000, 0, 31491000, 32000000, 509000,  N'Tiền mặt',     315, N'Đã thanh toán'),
-    (N'HD002', N'DH002', N'KH002', N'NV002', '2026-10-16 10:20:00', 9990000,  999000,  0, 8991000,  9000000,  9000,    N'Tiền mặt',     90,  N'Đã thanh toán'),
-    (N'HD003', N'DH003', N'KH003', N'NV006', '2026-10-17 14:30:00', 28990000, 0,       0, 28990000, 28990000, 0,       N'Chuyển khoản', 290, N'Đã thanh toán'),
-    (N'HD004', N'DH004', N'KH001', N'NV004', '2026-10-17 15:50:00', 8490000,  849000,  0, 7641000,  8000000,  359000,  N'Tiền mặt',     76,  N'Đã thanh toán');
+    (N'NCC001', N'Công ty TNHH Apple Việt Nam',             '02838001111', 'apple.vn@supplier.com',   N'Tòa nhà Bitexco, Q.1, TP.HCM',       N'Nguyễn Minh Tâm', N'0312345678', N'0071001112223', N'Vietcombank', 150000000, N'Hoạt động',     N'Nhà phân phối ủy quyền Apple'),
+    (N'NCC002', N'Samsung Electronics Việt Nam',            '02438002222', 'samsung.vn@supplier.com', N'KCN Yên Phong, Bắc Ninh',             N'Trần Quốc Bảo',   N'0312345679', N'1903444555666', N'Techcombank', 80000000,  N'Hoạt động',     N'Đối tác chiến lược Samsung'),
+    (N'NCC003', N'Công ty CP Phân phối FPT (FPT Trading)',  '02838003333', 'fpt@supplier.com',        N'Lô L29B-31B-33B, KCX Tân Thuận, Q.7', N'Lê Hoàng Nam',    N'0312345680', N'1122334455667', N'MB Bank',     0,         N'Hoạt động',     N'Phân phối Laptop & Phụ kiện'),
+    (N'NCC004', N'Công ty TNHH Synnex FPT',                 '02838004444', 'synnex@supplier.com',     N'Tầng 12, Tòa nhà TTC, Q.1, TP.HCM',  N'Phạm Anh Tuấn',   N'0312345681', N'8899001122334', N'ACB',         45000000,  N'Hoạt động',     NULL),
+    (N'NCC005', N'Xiaomi Technology Việt Nam',              '02838005555', 'xiaomi.vn@supplier.com',  N'Tầng 8, Lim Tower, Q.1, TP.HCM',     N'Vũ Thị Hương',    N'0312345682', N'5566778899001', N'VPBank',      0,         N'Hoạt động',     NULL),
+    (N'NCC006', N'Công ty TNHH Phụ kiện Số Sài Gòn',        '02838006666', 'phukienso@supplier.com',  N'99 Nguyễn Thị Nhỏ, Q.11, TP.HCM',    N'Đặng Văn Hòa',    N'0312345683', NULL,             NULL,           0,         N'Ngừng hợp tác', N'Ngừng nhập từ đầu năm 2026');
 GO
 
--- 15. Phiếu nhập kho
-INSERT INTO PhieuNhapKho (maPhieuNhap, maNhaCungCap, maNhanVien, ngayNhap, tongSoLuong, tongTienNhap, trangThai)
+-- 16. Phiếu nhập kho (BẢNG 16)
+INSERT INTO PhieuNhapKho (maPhieuNhap, maNhaCungCap, maNhanVien, ngayNhap, tongSoLuong, tongTienNhap, trangThai, ghiChu)
 VALUES
-    (N'PN001', N'NCC001', N'NV003', '2026-10-10 08:00:00', 150, 2850000000, N'Đã nhập'),
-    (N'PN002', N'NCC002', N'NV003', '2026-10-12 09:00:00', 190, 2375000000, N'Đã nhập'),
-    (N'PN003', N'NCC003', N'NV007', '2026-10-14 08:30:00', 125, 1075000000, N'Đã nhập'),
-    (N'PN004', N'NCC005', N'NV007', '2026-10-15 10:00:00', 30,  600000000,  N'Đã nhập');
+    (N'PN001', N'NCC001', N'NV003', '2026-10-10 08:00:00', 330, 2940000000, N'Đã nhập',   N'Nhập lô iPhone 15 và ốp lưng chính hãng'),
+    (N'PN002', N'NCC002', N'NV003', '2026-10-12 09:00:00', 495, 2250000000, N'Đã nhập',   N'Nhập điện thoại và đồng hồ Samsung'),
+    (N'PN003', N'NCC003', N'NV007', '2026-10-14 08:30:00', 145, 1654500000, N'Đã nhập',   N'Nhập Laptop ASUS, Dell, HP và phụ kiện'),
+    (N'PN004', N'NCC005', N'NV007', '2026-10-15 10:00:00', 30,  600000000,  N'Đã nhập',   N'Nhập Xiaomi 14 Ultra'),
+    (N'PN005', N'NCC004', N'NV003', '2026-10-19 08:30:00', 50,  420000000,  N'Đang nhập', N'Đang kiểm đếm hàng tai nghe & loa');
 GO
 
--- 16. Chi tiết phiếu nhập (Disable trigger tạm để insert dữ liệu mẫu không bị cộng dồn tồn kho)
+-- 17. Chi tiết phiếu nhập (BẢNG 17 - Disable trigger tạm để insert dữ liệu mẫu không bị cộng dồn tồn kho)
 DISABLE TRIGGER trg_ChiTietPhieuNhap_Insert ON ChiTietPhieuNhap;
 GO
 
-INSERT INTO ChiTietPhieuNhap (maPhieuNhap, maSanPham, soLuongNhap, donGiaNhap, thanhTien)
+INSERT INTO ChiTietPhieuNhap (maPhieuNhap, maSanPham, soLuongNhap, donGiaNhap, thanhTien, ngaySanXuat, hanSuDung, ghiChu)
 VALUES
     -- PN001: Nhập từ Apple
-    (N'PN001', N'SP001', 50,  28000000, 1400000000),
-    (N'PN001', N'SP002', 80,  18000000, 1440000000),
-    (N'PN001', N'SP016', 200, 500000,   100000000),
+    (N'PN001', N'SP001', 50,  28000000, 1400000000, '2026-06-01', NULL, N'Nguyên seal Apple'),
+    (N'PN001', N'SP002', 80,  18000000, 1440000000, '2026-06-15', NULL, N'Nguyên seal Apple'),
+    (N'PN001', N'SP016', 200, 500000,   100000000,  '2026-05-01', NULL, NULL),
     -- PN002: Nhập từ Samsung
-    (N'PN002', N'SP003', 45,  25000000, 1125000000),
-    (N'PN002', N'SP004', 120, 7500000,  900000000),
-    (N'PN002', N'SP017', 300, 150000,   45000000),
-    (N'PN002', N'SP020', 30,  6000000,  180000000),
+    (N'PN002', N'SP003', 45,  25000000, 1125000000, '2026-07-01', NULL, NULL),
+    (N'PN002', N'SP004', 120, 7500000,  900000000,  '2026-07-10', NULL, NULL),
+    (N'PN002', N'SP017', 300, 150000,   45000000,   '2026-04-01', NULL, NULL),
+    (N'PN002', N'SP020', 30,  6000000,  180000000,  '2026-08-01', NULL, NULL),
     -- PN003: Nhập từ FPT Trading
-    (N'PN003', N'SP007', 20,  28000000, 560000000),
-    (N'PN003', N'SP008', 15,  32000000, 480000000),
-    (N'PN003', N'SP009', 35,  14000000, 490000000),
-    (N'PN003', N'SP018', 40,  1800000,  72000000),
-    (N'PN003', N'SP019', 35,  1500000,  52500000),
+    (N'PN003', N'SP007', 20,  28000000, 560000000,  '2026-05-20', NULL, NULL),
+    (N'PN003', N'SP008', 15,  32000000, 480000000,  '2026-06-10', NULL, NULL),
+    (N'PN003', N'SP009', 35,  14000000, 490000000,  '2026-06-25', NULL, NULL),
+    (N'PN003', N'SP018', 40,  1800000,  72000000,   '2026-03-15', NULL, NULL),
+    (N'PN003', N'SP019', 35,  1500000,  52500000,   '2026-03-20', NULL, NULL),
     -- PN004: Nhập từ Xiaomi
-    (N'PN004', N'SP005', 30,  20000000, 600000000);
+    (N'PN004', N'SP005', 30,  20000000, 600000000,  '2026-08-10', NULL, NULL),
+    -- PN005: Nhập từ Synnex FPT
+    (N'PN005', N'SP013', 30,  4500000,  135000000,  '2026-07-05', NULL, NULL),
+    (N'PN005', N'SP014', 20,  6000000,  120000000,  '2026-07-12', NULL, NULL);
 GO
 
 ENABLE TRIGGER trg_ChiTietPhieuNhap_Insert ON ChiTietPhieuNhap;
 GO
 
--- 17. Phiếu xuất kho (cho đơn hoàn thành)
-INSERT INTO PhieuXuatKho (maPhieuXuat, maNhanVien, maDonHang, lyDoXuat, ngayXuat, tongSoLuong, tongTienXuat, trangThai)
+-- 18. Phiếu xuất kho (BẢNG 18)
+INSERT INTO PhieuXuatKho (maPhieuXuat, maNhanVien, maDonHang, lyDoXuat, ngayXuat, tongSoLuong, tongTienXuat, trangThai, ghiChu)
 VALUES
-    (N'PX001', N'NV003', N'DH001', N'Bán hàng', '2026-10-16 09:32:00', 1, 34990000, N'Đã xuất'),
-    (N'PX002', N'NV003', N'DH002', N'Bán hàng', '2026-10-16 10:17:00', 1, 9990000,  N'Đã xuất'),
-    (N'PX003', N'NV007', N'DH003', N'Bán hàng', '2026-10-17 14:25:00', 1, 28990000, N'Đã xuất'),
-    (N'PX004', N'NV007', N'DH004', N'Bán hàng', '2026-10-17 15:48:00', 1, 8490000,  N'Đã xuất');
+    (N'PX001', N'NV003', N'DH001', N'Bán hàng',     '2026-10-16 09:32:00', 1, 34990000, N'Đã xuất',   N'Xuất bán cho đơn DH001'),
+    (N'PX002', N'NV003', N'DH002', N'Bán hàng',     '2026-10-16 10:17:00', 1, 9990000,  N'Đã xuất',   N'Xuất bán cho đơn DH002'),
+    (N'PX003', N'NV007', N'DH003', N'Bán hàng',     '2026-10-17 14:25:00', 1, 28990000, N'Đã xuất',   N'Xuất bán cho đơn DH003'),
+    (N'PX004', N'NV007', N'DH004', N'Bán hàng',     '2026-10-17 15:48:00', 1, 8490000,  N'Đã xuất',   N'Xuất bán cho đơn DH004'),
+    (N'PX005', N'NV003', N'DH005', N'Bán hàng',     '2026-10-18 08:15:00', 1, 22990000, N'Đã xuất',   N'Xuất giao hàng đơn DH005'),
+    (N'PX006', N'NV007', NULL,     N'Trả hàng NCC', '2026-10-18 16:30:00', 2, 1000000,  N'Đã xuất',   N'Trả 2 ốp lưng bị lỗi ngoại quan'),
+    (N'PX007', N'NV003', N'DH007', N'Bán hàng',     '2026-10-18 10:10:00', 1, 38990000, N'Đang xuất', N'Đang đóng gói giao cho KH006');
 GO
 
--- Chi tiết phiếu xuất (Disable trigger tạm)
+-- 19. Chi tiết phiếu xuất (BẢNG 19 - Disable trigger tạm)
 DISABLE TRIGGER trg_ChiTietPhieuXuat_Insert ON ChiTietPhieuXuat;
 GO
 
-INSERT INTO ChiTietPhieuXuat (maPhieuXuat, maSanPham, soLuongXuat, donGiaXuat, thanhTien)
+INSERT INTO ChiTietPhieuXuat (maPhieuXuat, maSanPham, soLuongXuat, donGiaXuat, thanhTien, ghiChu)
 VALUES
-    (N'PX001', N'SP001', 1, 34990000, 34990000),
-    (N'PX002', N'SP004', 1, 9990000,  9990000),
-    (N'PX003', N'SP010', 1, 28990000, 28990000),
-    (N'PX004', N'SP014', 1, 8490000,  8490000);
+    (N'PX001', N'SP001', 1, 34990000, 34990000, NULL),
+    (N'PX002', N'SP004', 1, 9990000,  9990000,  NULL),
+    (N'PX003', N'SP010', 1, 28990000, 28990000, NULL),
+    (N'PX004', N'SP014', 1, 8490000,  8490000,  NULL),
+    (N'PX005', N'SP002', 1, 22990000, 22990000, NULL),
+    (N'PX006', N'SP016', 2, 500000,   1000000,  N'Lỗi trầy xước vỏ hộp'),
+    (N'PX007', N'SP008', 1, 38990000, 38990000, NULL);
 GO
 
 ENABLE TRIGGER trg_ChiTietPhieuXuat_Insert ON ChiTietPhieuXuat;
 GO
 
--- 18. Lịch sử điểm thưởng
+-- 20. Lịch sử điểm thưởng (BẢNG 20)
 INSERT INTO LichSuDiemThuong (maLichSu, maKhachHang, maDonHang, maHoaDon, loaiGiaoDich, soDiem, diemTruocGD, diemSauGD, moTa, ngayGiaoDich)
 VALUES
-    (N'LS001', N'KH001', N'DH001', N'HD001', N'Tích điểm',  315, 1185, 1500, N'Tích điểm từ đơn DH001', '2026-10-16 09:35:00'),
-    (N'LS002', N'KH002', N'DH002', N'HD002', N'Tích điểm',  90,  710,  800,  N'Tích điểm từ đơn DH002', '2026-10-16 10:20:00'),
-    (N'LS003', N'KH003', N'DH003', N'HD003', N'Tích điểm',  290, 0,    290,  N'Tích điểm từ đơn DH003 (khách mới)', '2026-10-17 14:30:00'),
-    (N'LS004', N'KH001', N'DH004', N'HD004', N'Tích điểm',  76,  1500, 1576, N'Tích điểm từ đơn DH004', '2026-10-17 15:50:00');
+    (N'LS001', N'KH001', N'DH001', N'HD001', N'Tích điểm',  315,  1185, 1500, N'Tích điểm từ đơn DH001',              '2026-10-16 09:35:00'),
+    (N'LS002', N'KH002', N'DH002', N'HD002', N'Tích điểm',  90,   710,  800,  N'Tích điểm từ đơn DH002',              '2026-10-16 10:20:00'),
+    (N'LS003', N'KH003', N'DH003', N'HD003', N'Tích điểm',  290,  0,    290,  N'Tích điểm từ đơn DH003 (khách mới)',  '2026-10-17 14:30:00'),
+    (N'LS004', N'KH001', N'DH004', N'HD004', N'Tích điểm',  76,   1500, 1576, N'Tích điểm từ đơn DH004',              '2026-10-17 15:50:00'),
+    (N'LS005', N'KH004', N'DH005', N'HD005', N'Tích điểm',  225,  0,    225,  N'Tích điểm từ đơn DH005',              '2026-10-18 14:10:00'),
+    (N'LS006', N'KH006', N'DH007', N'HD007', N'Sử dụng',   -100,  3300, 3200, N'Trừ 100 điểm giảm 100,000đ đơn DH007','2026-10-18 10:00:00');
 GO
+
+-- 21. Lịch sử đăng nhập (BẢNG 21)
+INSERT INTO LichSuDangNhap (maTaiKhoan, thoiGianDangNhap, thoiGianDangXuat, diaChiIP, tenMay, ketQua, lyDoThatBai)
+VALUES
+    (N'TK001', '2026-10-18 07:50:00', '2026-10-18 17:15:00', N'192.168.1.10', N'PC-QUANLY-01',  N'Thành công', NULL),
+    (N'TK002', '2026-10-18 07:55:00', '2026-10-18 12:05:00', N'192.168.1.21', N'POS-THUNGAN-01',N'Thành công', NULL),
+    (N'TK006', '2026-10-18 12:55:00', '2026-10-18 17:10:00', N'192.168.1.21', N'POS-THUNGAN-01',N'Thành công', NULL),
+    (N'TK003', '2026-10-18 08:00:00', '2026-10-18 17:00:00', N'192.168.1.30', N'PC-KHO-01',     N'Thành công', NULL),
+    (N'TK008', '2026-10-18 17:48:00', NULL,                  N'192.168.1.25', N'PC-BANHANG-02', N'Thất bại',   N'Sai mật khẩu'),
+    (N'TK008', '2026-10-18 17:50:00', '2026-10-18 22:15:00', N'192.168.1.25', N'PC-BANHANG-02', N'Thành công', NULL),
+    (N'TK001', '2026-10-19 08:00:00', NULL,                  N'192.168.1.10', N'PC-QUANLY-01',  N'Thành công', NULL),
+    (N'TK002', '2026-10-19 07:55:00', NULL,                  N'192.168.1.21', N'POS-THUNGAN-01',N'Thành công', NULL);
+GO
+
 
 
 -- ============================================================
