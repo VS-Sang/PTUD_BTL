@@ -148,8 +148,8 @@ public class LoginFrame extends JFrame {
                 int centerX = getWidth() / 2;
                 int centerY = getHeight() / 2;
                 Polygon bolt = new Polygon(
-                        new int[]{centerX + 9, centerX - 10, centerX + 1, centerX - 8, centerX + 13, centerX + 3},
-                        new int[]{centerY - 27, centerY + 1, centerY + 1, centerY + 27, centerY - 3, centerY - 3},
+                        new int[] { centerX + 9, centerX - 10, centerX + 1, centerX - 8, centerX + 13, centerX + 3 },
+                        new int[] { centerY - 27, centerY + 1, centerY + 1, centerY + 27, centerY - 3, centerY - 3 },
                         6);
                 g2.fillPolygon(bolt);
                 g2.dispose();
@@ -339,10 +339,10 @@ public class LoginFrame extends JFrame {
 
         // 1. Thử xác thực từ Database TaiKhoan
         try (java.sql.Connection con = connectDB.ConnectDB.getConnection();
-             java.sql.PreparedStatement stmt = con.prepareStatement(
-                     "SELECT tk.vaiTro, nv.hoTen FROM TaiKhoan tk "
-                     + "JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
-                     + "WHERE tk.tenDangNhap = ? AND (tk.matKhau = ? OR tk.matKhau = ?) AND tk.trangThai = N'Hoạt động'")) {
+                java.sql.PreparedStatement stmt = con.prepareStatement(
+                        "SELECT tk.vaiTro, nv.hoTen FROM TaiKhoan tk "
+                                + "JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+                                + "WHERE tk.tenDangNhap = ? AND (tk.matKhau = ? OR tk.matKhau = ?) AND tk.trangThai = N'Hoạt động'")) {
             stmt.setString(1, username);
             stmt.setString(2, passwordText);
             stmt.setString(3, md5Pass);
@@ -351,14 +351,16 @@ public class LoginFrame extends JFrame {
                 role = rs.getString(1);
                 fullName = rs.getString(2);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // 2. Mặc định hỗ trợ admin/admin hoặc nv/nv
         if (fullName == null) {
             if ("admin".equalsIgnoreCase(username) && ("admin".equals(passwordText) || "123456".equals(passwordText))) {
                 role = "Quản lý";
                 fullName = "Nguyễn Văn An";
-            } else if ("nv".equalsIgnoreCase(username) && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
+            } else if ("nv".equalsIgnoreCase(username)
+                    && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
                 role = "Nhân viên";
                 fullName = "Lê Thị Dung";
             }
