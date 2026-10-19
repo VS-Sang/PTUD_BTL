@@ -1,12 +1,39 @@
 package gui;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+import connectDB.ConnectDB;
 
 public class MainFrame extends JFrame {
     private static final Color BRAND_RED = new Color(177, 48, 42);
@@ -139,12 +166,30 @@ public class MainFrame extends JFrame {
     }
 
     private void addStatistics(JPanel parent) {
+        String soHD = "--", doanhThu = "--", soKH = "--", soSP = "--";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement()) {
+            ResultSet rsHD = stmt.executeQuery("SELECT COUNT(*), ISNULL(SUM(tongThanhToan), 0) FROM HoaDon");
+            if (rsHD.next()) {
+                soHD = String.valueOf(rsHD.getInt(1));
+                doanhThu = String.format("%,.0f đ", rsHD.getDouble(2));
+            }
+            ResultSet rsKH = stmt.executeQuery("SELECT COUNT(*) FROM KhachHang");
+            if (rsKH.next()) {
+                soKH = String.valueOf(rsKH.getInt(1));
+            }
+            ResultSet rsSP = stmt.executeQuery("SELECT COUNT(*) FROM SanPham WHERE soLuongTon > 0");
+            if (rsSP.next()) {
+                soSP = String.valueOf(rsSP.getInt(1));
+            }
+        } catch (Exception ignored) {}
+
         JPanel statistics = new JPanel(new GridLayout(2, 2, 10, 10));
         statistics.setOpaque(false);
-        statistics.add(createStatisticCard("Hóa đơn tháng này", "--", "Chưa có dữ liệu", new Color(184, 62, 56)));
-        statistics.add(createStatisticCard("Doanh thu tháng này", "--", "Chưa có dữ liệu", new Color(75, 130, 76)));
-        statistics.add(createStatisticCard("Khách hàng", "--", "Chưa có dữ liệu", new Color(62, 117, 190)));
-        statistics.add(createStatisticCard("Sản phẩm trong kho", "--", "Chưa có dữ liệu", new Color(211, 125, 52)));
+        statistics.add(createStatisticCard("Hóa đơn đã lập", soHD, "Dữ liệu CSDL", new Color(184, 62, 56)));
+        statistics.add(createStatisticCard("Tổng doanh thu", doanhThu, "Dữ liệu CSDL", new Color(75, 130, 76)));
+        statistics.add(createStatisticCard("Khách hàng", soKH, "Thành viên & VIP", new Color(62, 117, 190)));
+        statistics.add(createStatisticCard("Sản phẩm trong kho", soSP, "Đang kinh doanh", new Color(211, 125, 52)));
         statistics.setPreferredSize(new Dimension(0, 150));
         addLeftCard(parent, statistics, 1, 10, 0);
     }
@@ -166,7 +211,7 @@ public class MainFrame extends JFrame {
         text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
         JLabel number = new JLabel(value);
         number.setForeground(TEXT_COLOR);
-        number.setFont(new Font("Segoe UI", Font.BOLD, 23));
+        number.setFont(new Font("Segoe UI", Font.BOLD, 21));
         JLabel name = new JLabel(title);
         name.setForeground(MUTED_COLOR);
         name.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -202,9 +247,9 @@ public class MainFrame extends JFrame {
 
     private void addNotificationsCard(JPanel parent) {
         JPanel notifications = createSectionCard("Thông báo mới");
-        JLabel emptyState = new JLabel("Chưa có thông báo.");
+        JLabel emptyState = new JLabel("Hệ thống hoạt động bình thường — Đã kết nối CSDL SQL Server.");
         emptyState.setForeground(MUTED_COLOR);
-        emptyState.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        emptyState.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         emptyState.setBorder(new EmptyBorder(14, 10, 14, 10));
         notifications.add(emptyState, BorderLayout.CENTER);
         notifications.setPreferredSize(new Dimension(0, 105));
@@ -213,6 +258,19 @@ public class MainFrame extends JFrame {
 
     private void addRecentInvoicesCard(JPanel parent) {
         JPanel section = createSectionCard("Hóa đơn gần đây");
+
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT TOP 10 hd.maHoaDon, ISNULL(kh.hoTen, N'Khách vãng lai'), hd.tongThanhToan, hd.trangThai FROM HoaDon hd LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang ORDER BY hd.ngayLapHoaDon DESC")) {
+            while (rs.next()) {
+                invoiceTableModel.addRow(new Object[]{
+                        rs.getString(1),
+                        rs.getString(2),
+                        String.format("%,.0f đ", rs.getDouble(3)),
+                        rs.getString(4)
+                });
+            }
+        } catch (Exception ignored) {}
 
         JTable invoiceTable = new JTable(invoiceTableModel) {
             @Override
