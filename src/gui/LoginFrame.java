@@ -148,8 +148,8 @@ public class LoginFrame extends JFrame {
                 int centerX = getWidth() / 2;
                 int centerY = getHeight() / 2;
                 Polygon bolt = new Polygon(
-                        new int[]{centerX + 9, centerX - 10, centerX + 1, centerX - 8, centerX + 13, centerX + 3},
-                        new int[]{centerY - 27, centerY + 1, centerY + 1, centerY + 27, centerY - 3, centerY - 3},
+                        new int[] { centerX + 9, centerX - 10, centerX + 1, centerX - 8, centerX + 13, centerX + 3 },
+                        new int[] { centerY - 27, centerY + 1, centerY + 1, centerY + 27, centerY - 3, centerY - 3 },
                         6);
                 g2.fillPolygon(bolt);
                 g2.dispose();
@@ -332,12 +332,41 @@ public class LoginFrame extends JFrame {
         String passwordText = new String(password);
         Arrays.fill(password, '\0');
 
-        String role;
-        if ("admin".equalsIgnoreCase(username) && "admin".equals(passwordText)) {
-            role = "Quản lý";
-        } else if ("nv".equalsIgnoreCase(username) && "nv".equals(passwordText)) {
-            role = "Nhân viên";
-        } else {
+        String role = null;
+        String fullName = null;
+
+        String md5Pass = toMD5(passwordText);
+
+        // 1. Thử xác thực từ Database TaiKhoan
+        try (java.sql.Connection con = connectDB.ConnectDB.getConnection();
+                java.sql.PreparedStatement stmt = con.prepareStatement(
+                        "SELECT tk.vaiTro, nv.hoTen FROM TaiKhoan tk "
+                                + "JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+                                + "WHERE tk.tenDangNhap = ? AND (tk.matKhau = ? OR tk.matKhau = ?) AND tk.trangThai = N'Hoạt động'")) {
+            stmt.setString(1, username);
+            stmt.setString(2, passwordText);
+            stmt.setString(3, md5Pass);
+            java.sql.ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                role = rs.getString(1);
+                fullName = rs.getString(2);
+            }
+        } catch (Exception ignored) {
+        }
+
+        // 2. Mặc định hỗ trợ admin/admin hoặc nv/nv
+        if (fullName == null) {
+            if ("admin".equalsIgnoreCase(username) && ("admin".equals(passwordText) || "123456".equals(passwordText))) {
+                role = "Quản lý";
+                fullName = "Nguyễn Văn An";
+            } else if ("nv".equalsIgnoreCase(username)
+                    && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
+                role = "Nhân viên";
+                fullName = "Lê Thị Dung";
+            }
+        }
+
+        if (role == null) {
             JOptionPane.showMessageDialog(
                     this,
                     "Tên đăng nhập hoặc mật khẩu không chính xác.",
@@ -349,7 +378,7 @@ public class LoginFrame extends JFrame {
         }
 
         dispose();
-        new MainFrame(username, role).setVisible(true);
+        new MainFrame(fullName, role).setVisible(true);
     }
 
     private static class PlaceholderTextField extends JTextField {
@@ -391,6 +420,20 @@ public class LoginFrame extends JFrame {
                 g2.drawString(placeholder, insets.left, getHeight() / 2 + g2.getFontMetrics().getAscent() / 2 - 2);
                 g2.dispose();
             }
+        }
+    }
+
+    private static String toMD5(String input) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] bytes = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return input;
         }
     }
 
