@@ -1,12 +1,38 @@
 package gui;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 
-public class CustomerPanel extends JFrame {
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
+
+import DAO.KhachHang_DAO;
+import entity.KhachHang;
+
+public class CustomerPanel extends JFrame implements ActionListener {
     private DefaultTableModel model;
     private JTable table;
+    private JTextField txtSearch;
+    private JButton btnAdd, btnExport, btnTim;
+    private KhachHang_DAO kh_dao = new KhachHang_DAO();
+    private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
     public CustomerPanel() {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
@@ -31,17 +57,25 @@ public class CustomerPanel extends JFrame {
 
         JPanel pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pSubActions.setOpaque(false);
-        JButton btnAdd = new JButton("+ Thêm mới");
+        btnAdd = new JButton("+ Thêm mới");
         btnAdd.setBackground(new Color(180, 40, 40));
         btnAdd.setForeground(Color.WHITE);
-        JButton btnExport = new JButton("Xuất Excel");
+        btnAdd.setFocusPainted(false);
+        btnExport = new JButton("Xuất Excel");
+        btnExport.setBackground(Color.WHITE);
+        btnExport.setFocusPainted(false);
         pSubActions.add(btnAdd);
         pSubActions.add(btnExport);
         pSubHeader.add(pSubActions, BorderLayout.EAST);
 
         JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        JTextField txtSearch = new JTextField("🔍 Tìm tên, SĐT, email...", 30);
+        txtSearch = new JTextField(30);
+        txtSearch.setToolTipText("Tìm tên, SĐT, mã KH...");
+        btnTim = new JButton("🔍 Tìm");
+        btnTim.setBackground(Color.WHITE);
+        btnTim.setFocusPainted(false);
         pSearch.add(txtSearch);
+        pSearch.add(btnTim);
 
         JPanel pNorthCenter = new JPanel(new BorderLayout());
         pNorthCenter.add(pSubHeader, BorderLayout.NORTH);
@@ -49,31 +83,80 @@ public class CustomerPanel extends JFrame {
 
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
 
-        String[] columns = {"", "Mã KH", "Họ tên", "SĐT", "Email", "Địa chỉ", "Tổng mua", "Hạng", "Thao tác"};
+        String[] columns = {"", "Mã KH", "Họ tên", "Giới tính", "SĐT", "Email", "Địa chỉ", "Hạng KH", "Điểm thưởng", "Tổng chi tiêu"};
 
         model = new DefaultTableModel(columns, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
-                    return Boolean.class; // Biến cột đầu tiên thành ô Checkbox
+                    return Boolean.class;
                 }
                 return String.class;
             }
         };
 
         table = new JTable(model);
-        table.setRowHeight(30);
+        table.setRowHeight(34);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setBackground(new Color(180, 40, 40));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         JScrollPane scrollPane = new JScrollPane(table);
         pCenterContainer.add(scrollPane, BorderLayout.CENTER);
 
         add(pCenterContainer, BorderLayout.CENTER);
+
+        // Đọc dữ liệu từ Database
+        docDuLieuDatabaseVaoTable();
+
+        btnAdd.addActionListener(this);
+        btnExport.addActionListener(this);
+        btnTim.addActionListener(this);
+        txtSearch.addActionListener(this);
+    }
+
+    public void docDuLieuDatabaseVaoTable() {
+        model.setRowCount(0);
+        String tuKhoa = txtSearch.getText().trim().toLowerCase();
+
+        ArrayList<KhachHang> ds = kh_dao.getAllKhachHang();
+        for (KhachHang kh : ds) {
+            boolean match = tuKhoa.isEmpty()
+                    || kh.getMaKhachHang().toLowerCase().contains(tuKhoa)
+                    || kh.getHoTen().toLowerCase().contains(tuKhoa)
+                    || (kh.getSoDienThoai() != null && kh.getSoDienThoai().contains(tuKhoa));
+            if (match) {
+                model.addRow(new Object[]{
+                        false,
+                        kh.getMaKhachHang(),
+                        kh.getHoTen(),
+                        kh.getGioiTinh() != null ? kh.getGioiTinh() : "",
+                        kh.getSoDienThoai(),
+                        kh.getEmail() != null ? kh.getEmail() : "",
+                        kh.getDiaChi() != null ? kh.getDiaChi() : "",
+                        kh.getLoaiKhachHang(),
+                        kh.getDiemThuong(),
+                        df.format(kh.getTongChiTieu())
+                });
+            }
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object o = e.getSource();
+        if (o.equals(btnTim) || o.equals(txtSearch)) {
+            docDuLieuDatabaseVaoTable();
+        } else if (o.equals(btnExport)) {
+            JOptionPane.showMessageDialog(this, "Xuất danh sách khách hàng ra Excel thành công!");
+        } else if (o.equals(btnAdd)) {
+            JOptionPane.showMessageDialog(this, "Chức năng thêm mới khách hàng đang được phát triển.");
+        }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new CustomerPanel().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new CustomerPanel().setVisible(true));
     }
 }

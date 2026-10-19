@@ -1,3 +1,6 @@
+IF DB_ID('QuanLyBanHang') IS NOT NULL
+    ALTER DATABASE QuanLyBanHang SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
 
 IF DB_ID('QuanLyBanHang') IS NOT NULL
     DROP DATABASE QuanLyBanHang;
@@ -14,37 +17,37 @@ GO
 -- Lưu trữ thông tin nhân viên và nhân viên quản lý
 -- ============================================================
 CREATE TABLE NhanVien (
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-    hoTen           NVARCHAR(100)   NOT NULL,
-    gioiTinh        NVARCHAR(5)     NOT NULL CHECK (gioiTinh IN (N'Nam', N'Nữ')),
-    ngaySinh        DATE            NOT NULL,
-    soCMND          NVARCHAR(12)    NOT NULL UNIQUE,
-    soDienThoai     NVARCHAR(15)    NOT NULL UNIQUE,
-    email           NVARCHAR(100)   NULL UNIQUE,
-    diaChi          NVARCHAR(255)   NULL,
-    hinhAnh         NVARCHAR(255)   NULL,
-    chucVu          NVARCHAR(50)    NOT NULL DEFAULT N'Nhân viên',
-        -- Ví dụ: 'Nhân viên', 'Quản lý', 'Thu ngân', 'Nhân viên kho'
-    phongBan        NVARCHAR(50)    NULL,
-        -- Ví dụ: 'Bán hàng', 'Kho', 'Kế toán', 'Quản lý'
-    luongCoBan      DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (luongCoBan >= 0),
-    heSoLuong       FLOAT           NOT NULL DEFAULT 1.0 CHECK (heSoLuong > 0),
-    phuCap          DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (phuCap >= 0),
-    ngayVaoLam      DATE            NOT NULL DEFAULT GETDATE(),
-    ngayNghiViec    DATE            NULL,
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đang làm việc'
+                          maNhanVien      NVARCHAR(20)    NOT NULL,
+                          hoTen           NVARCHAR(100)   NOT NULL,
+                          gioiTinh        NVARCHAR(5)     NOT NULL CHECK (gioiTinh IN (N'Nam', N'Nữ')),
+                          ngaySinh        DATE            NOT NULL,
+                          soCMND          NVARCHAR(12)    NOT NULL UNIQUE,
+                          soDienThoai     NVARCHAR(15)    NOT NULL UNIQUE,
+                          email           NVARCHAR(100)   NULL UNIQUE,
+                          diaChi          NVARCHAR(255)   NULL,
+                          hinhAnh         NVARCHAR(255)   NULL,
+                          chucVu          NVARCHAR(50)    NOT NULL DEFAULT N'Nhân viên',
+    -- Ví dụ: 'Nhân viên', 'Quản lý', 'Thu ngân', 'Nhân viên kho'
+                          phongBan        NVARCHAR(50)    NULL,
+    -- Ví dụ: 'Bán hàng', 'Kho', 'Kế toán', 'Quản lý'
+                          luongCoBan      DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (luongCoBan >= 0),
+                          heSoLuong       FLOAT           NOT NULL DEFAULT 1.0 CHECK (heSoLuong > 0),
+                          phuCap          DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (phuCap >= 0),
+                          ngayVaoLam      DATE            NOT NULL DEFAULT GETDATE(),
+                          ngayNghiViec    DATE            NULL,
+                          trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đang làm việc'
         CHECK (trangThai IN (N'Đang làm việc', N'Đã nghỉ việc', N'Tạm nghỉ')),
     -- Nhân viên quản lý trực tiếp (self-referencing FK)
-    maNguoiQuanLy   NVARCHAR(20)    NULL,
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                          maNguoiQuanLy   NVARCHAR(20)    NULL,
+                          ghiChu          NVARCHAR(500)   NULL,
+                          ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                          ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_NhanVien PRIMARY KEY (maNhanVien),
-    CONSTRAINT FK_NhanVien_QuanLy FOREIGN KEY (maNguoiQuanLy)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT CK_NhanVien_NgaySinh CHECK (ngaySinh <= GETDATE()),
-    CONSTRAINT CK_NhanVien_NgayNghiViec CHECK (ngayNghiViec IS NULL OR ngayNghiViec >= ngayVaoLam)
+                          CONSTRAINT PK_NhanVien PRIMARY KEY (maNhanVien),
+                          CONSTRAINT FK_NhanVien_QuanLy FOREIGN KEY (maNguoiQuanLy)
+                              REFERENCES NhanVien(maNhanVien),
+                          CONSTRAINT CK_NhanVien_NgaySinh CHECK (ngaySinh <= GETDATE()),
+                          CONSTRAINT CK_NhanVien_NgayNghiViec CHECK (ngayNghiViec IS NULL OR ngayNghiViec >= ngayVaoLam)
 );
 GO
 
@@ -54,25 +57,25 @@ GO
 -- Mỗi tài khoản gắn liền với một nhân viên
 -- ============================================================
 CREATE TABLE TaiKhoan (
-    maTaiKhoan      NVARCHAR(20)    NOT NULL,
-    tenDangNhap     NVARCHAR(50)    NOT NULL UNIQUE,
-    matKhau         NVARCHAR(255)   NOT NULL,
-        -- Nên lưu dạng hash (SHA-256, BCrypt...)
-    vaiTro          NVARCHAR(30)    NOT NULL DEFAULT N'Nhân viên'
+                          maTaiKhoan      NVARCHAR(20)    NOT NULL,
+                          tenDangNhap     NVARCHAR(50)    NOT NULL UNIQUE,
+                          matKhau         NVARCHAR(255)   NOT NULL,
+    -- Nên lưu dạng hash (SHA-256, BCrypt...)
+                          vaiTro          NVARCHAR(30)    NOT NULL DEFAULT N'Nhân viên'
         CHECK (vaiTro IN (N'Admin', N'Quản lý', N'Nhân viên', N'Thu ngân', N'Nhân viên kho')),
-    maNhanVien      NVARCHAR(20)    NOT NULL UNIQUE,
-        -- Mỗi nhân viên chỉ có 1 tài khoản
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
+                          maNhanVien      NVARCHAR(20)    NOT NULL UNIQUE,
+    -- Mỗi nhân viên chỉ có 1 tài khoản
+                          trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
         CHECK (trangThai IN (N'Hoạt động', N'Bị khóa', N'Chưa kích hoạt')),
-    lanDangNhapCuoi DATETIME        NULL,
-    soLanDangNhapLoi INT            NOT NULL DEFAULT 0,
-    ngayDoiMatKhau  DATETIME        NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                          lanDangNhapCuoi DATETIME        NULL,
+                          soLanDangNhapLoi INT            NOT NULL DEFAULT 0,
+                          ngayDoiMatKhau  DATETIME        NULL,
+                          ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                          ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_TaiKhoan PRIMARY KEY (maTaiKhoan),
-    CONSTRAINT FK_TaiKhoan_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien)
+                          CONSTRAINT PK_TaiKhoan PRIMARY KEY (maTaiKhoan),
+                          CONSTRAINT FK_TaiKhoan_NhanVien FOREIGN KEY (maNhanVien)
+                              REFERENCES NhanVien(maNhanVien)
 );
 GO
 
@@ -81,15 +84,15 @@ GO
 -- Quản lý quyền truy cập theo từng chức năng của hệ thống
 -- ============================================================
 CREATE TABLE QuyenTruyCap (
-    maQuyen         NVARCHAR(20)    NOT NULL,
-    tenQuyen        NVARCHAR(100)   NOT NULL UNIQUE,
-        -- Ví dụ: 'Quản lý sản phẩm', 'Xem báo cáo', 'Quản lý nhân viên'
-    moTa            NVARCHAR(255)   NULL,
-    nhomQuyen       NVARCHAR(50)    NOT NULL,
-        -- Ví dụ: 'Sản phẩm', 'Đơn hàng', 'Nhân viên', 'Hệ thống', 'Báo cáo'
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                              maQuyen         NVARCHAR(20)    NOT NULL,
+                              tenQuyen        NVARCHAR(100)   NOT NULL UNIQUE,
+    -- Ví dụ: 'Quản lý sản phẩm', 'Xem báo cáo', 'Quản lý nhân viên'
+                              moTa            NVARCHAR(255)   NULL,
+                              nhomQuyen       NVARCHAR(50)    NOT NULL,
+    -- Ví dụ: 'Sản phẩm', 'Đơn hàng', 'Nhân viên', 'Hệ thống', 'Báo cáo'
+                              ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_QuyenTruyCap PRIMARY KEY (maQuyen)
+                              CONSTRAINT PK_QuyenTruyCap PRIMARY KEY (maQuyen)
 );
 GO
 
@@ -98,23 +101,23 @@ GO
 -- Gán quyền cho từng vai trò/tài khoản
 -- ============================================================
 CREATE TABLE PhanQuyen (
-    maTaiKhoan      NVARCHAR(20)    NOT NULL,
-    maQuyen         NVARCHAR(20)    NOT NULL,
-    coQuyenXem      BIT             NOT NULL DEFAULT 1,
-    coQuyenThem     BIT             NOT NULL DEFAULT 0,
-    coQuyenSua      BIT             NOT NULL DEFAULT 0,
-    coQuyenXoa      BIT             NOT NULL DEFAULT 0,
-    ngayGan         DATETIME        NOT NULL DEFAULT GETDATE(),
-    nguoiGan        NVARCHAR(20)    NULL,
-        -- Tài khoản admin nào đã gán quyền này
+                           maTaiKhoan      NVARCHAR(20)    NOT NULL,
+                           maQuyen         NVARCHAR(20)    NOT NULL,
+                           coQuyenXem      BIT             NOT NULL DEFAULT 1,
+                           coQuyenThem     BIT             NOT NULL DEFAULT 0,
+                           coQuyenSua      BIT             NOT NULL DEFAULT 0,
+                           coQuyenXoa      BIT             NOT NULL DEFAULT 0,
+                           ngayGan         DATETIME        NOT NULL DEFAULT GETDATE(),
+                           nguoiGan        NVARCHAR(20)    NULL,
+    -- Tài khoản admin nào đã gán quyền này
 
-    CONSTRAINT PK_PhanQuyen PRIMARY KEY (maTaiKhoan, maQuyen),
-    CONSTRAINT FK_PhanQuyen_TaiKhoan FOREIGN KEY (maTaiKhoan)
-        REFERENCES TaiKhoan(maTaiKhoan),
-    CONSTRAINT FK_PhanQuyen_Quyen FOREIGN KEY (maQuyen)
-        REFERENCES QuyenTruyCap(maQuyen),
-    CONSTRAINT FK_PhanQuyen_NguoiGan FOREIGN KEY (nguoiGan)
-        REFERENCES TaiKhoan(maTaiKhoan)
+                           CONSTRAINT PK_PhanQuyen PRIMARY KEY (maTaiKhoan, maQuyen),
+                           CONSTRAINT FK_PhanQuyen_TaiKhoan FOREIGN KEY (maTaiKhoan)
+                               REFERENCES TaiKhoan(maTaiKhoan),
+                           CONSTRAINT FK_PhanQuyen_Quyen FOREIGN KEY (maQuyen)
+                               REFERENCES QuyenTruyCap(maQuyen),
+                           CONSTRAINT FK_PhanQuyen_NguoiGan FOREIGN KEY (nguoiGan)
+                               REFERENCES TaiKhoan(maTaiKhoan)
 );
 GO
 
@@ -123,17 +126,17 @@ GO
 -- Định nghĩa các ca làm việc trong hệ thống
 -- ============================================================
 CREATE TABLE CaLamViec (
-    maCa            NVARCHAR(20)    NOT NULL,
-    tenCa           NVARCHAR(50)    NOT NULL,
-        -- Ví dụ: 'Ca sáng', 'Ca chiều', 'Ca tối'
-    gioVao          TIME            NOT NULL,
-    gioRa           TIME            NOT NULL,
-    moTa            NVARCHAR(255)   NULL,
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
+                           maCa            NVARCHAR(20)    NOT NULL,
+                           tenCa           NVARCHAR(50)    NOT NULL,
+    -- Ví dụ: 'Ca sáng', 'Ca chiều', 'Ca tối'
+                           gioVao          TIME            NOT NULL,
+                           gioRa           TIME            NOT NULL,
+                           moTa            NVARCHAR(255)   NULL,
+                           trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
         CHECK (trangThai IN (N'Hoạt động', N'Ngừng sử dụng')),
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                           ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_CaLamViec PRIMARY KEY (maCa)
+                           CONSTRAINT PK_CaLamViec PRIMARY KEY (maCa)
 );
 GO
 
@@ -142,29 +145,29 @@ GO
 -- Phân công nhân viên vào các ca làm việc
 -- ============================================================
 CREATE TABLE PhanCongCaLam (
-    maPhanCong      NVARCHAR(20)    NOT NULL,
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-    maCa            NVARCHAR(20)    NOT NULL,
-    ngayLamViec     DATE            NOT NULL,
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đã lên lịch'
+                               maPhanCong      NVARCHAR(20)    NOT NULL,
+                               maNhanVien      NVARCHAR(20)    NOT NULL,
+                               maCa            NVARCHAR(20)    NOT NULL,
+                               ngayLamViec     DATE            NOT NULL,
+                               trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đã lên lịch'
         CHECK (trangThai IN (N'Đã lên lịch', N'Đã điểm danh', N'Vắng mặt', N'Nghỉ phép', N'Đã hủy')),
-    gioDiemDanhVao  TIME            NULL,
-    gioDiemDanhRa   TIME            NULL,
-    soGioLamThem    FLOAT           NOT NULL DEFAULT 0 CHECK (soGioLamThem >= 0),
-    ghiChu          NVARCHAR(255)   NULL,
-    nguoiPhanCong   NVARCHAR(20)    NULL,
-        -- Mã nhân viên quản lý đã phân công
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                               gioDiemDanhVao  TIME            NULL,
+                               gioDiemDanhRa   TIME            NULL,
+                               soGioLamThem    FLOAT           NOT NULL DEFAULT 0 CHECK (soGioLamThem >= 0),
+                               ghiChu          NVARCHAR(255)   NULL,
+                               nguoiPhanCong   NVARCHAR(20)    NULL,
+    -- Mã nhân viên quản lý đã phân công
+                               ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                               ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_PhanCongCaLam PRIMARY KEY (maPhanCong),
-    CONSTRAINT FK_PhanCong_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT FK_PhanCong_CaLam FOREIGN KEY (maCa)
-        REFERENCES CaLamViec(maCa),
-    CONSTRAINT FK_PhanCong_NguoiPhanCong FOREIGN KEY (nguoiPhanCong)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT UQ_PhanCong_NV_Ca_Ngay UNIQUE (maNhanVien, maCa, ngayLamViec)
+                               CONSTRAINT PK_PhanCongCaLam PRIMARY KEY (maPhanCong),
+                               CONSTRAINT FK_PhanCong_NhanVien FOREIGN KEY (maNhanVien)
+                                   REFERENCES NhanVien(maNhanVien),
+                               CONSTRAINT FK_PhanCong_CaLam FOREIGN KEY (maCa)
+                                   REFERENCES CaLamViec(maCa),
+                               CONSTRAINT FK_PhanCong_NguoiPhanCong FOREIGN KEY (nguoiPhanCong)
+                                   REFERENCES NhanVien(maNhanVien),
+                               CONSTRAINT UQ_PhanCong_NV_Ca_Ngay UNIQUE (maNhanVien, maCa, ngayLamViec)
 );
 GO
 
@@ -173,21 +176,21 @@ GO
 -- Phân loại và nhóm các sản phẩm
 -- ============================================================
 CREATE TABLE DanhMuc (
-    maDanhMuc       NVARCHAR(20)    NOT NULL,
-    tenDanhMuc      NVARCHAR(100)   NOT NULL UNIQUE,
-    moTa            NVARCHAR(255)   NULL,
-    hinhAnh         NVARCHAR(255)   NULL,
-    maDanhMucCha    NVARCHAR(20)    NULL,
-        -- Cho phép cấu trúc danh mục đa cấp (self-referencing)
-    thuTuHienThi    INT             NOT NULL DEFAULT 0,
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
+                         maDanhMuc       NVARCHAR(20)    NOT NULL,
+                         tenDanhMuc      NVARCHAR(100)   NOT NULL UNIQUE,
+                         moTa            NVARCHAR(255)   NULL,
+                         hinhAnh         NVARCHAR(255)   NULL,
+                         maDanhMucCha    NVARCHAR(20)    NULL,
+    -- Cho phép cấu trúc danh mục đa cấp (self-referencing)
+                         thuTuHienThi    INT             NOT NULL DEFAULT 0,
+                         trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
         CHECK (trangThai IN (N'Hoạt động', N'Ngừng hoạt động')),
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_DanhMuc PRIMARY KEY (maDanhMuc),
-    CONSTRAINT FK_DanhMuc_DanhMucCha FOREIGN KEY (maDanhMucCha)
-        REFERENCES DanhMuc(maDanhMuc)
+                         CONSTRAINT PK_DanhMuc PRIMARY KEY (maDanhMuc),
+                         CONSTRAINT FK_DanhMuc_DanhMucCha FOREIGN KEY (maDanhMucCha)
+                             REFERENCES DanhMuc(maDanhMuc)
 );
 GO
 
@@ -196,36 +199,36 @@ GO
 -- Lưu trữ thông tin chi tiết hàng hoá
 -- ============================================================
 CREATE TABLE SanPham (
-    maSanPham       NVARCHAR(20)    NOT NULL,
-    tenSanPham      NVARCHAR(200)   NOT NULL,
-    maDanhMuc       NVARCHAR(20)    NOT NULL,
-    moTa            NVARCHAR(500)   NULL,
-    thuongHieu      NVARCHAR(100)   NULL,
-    xuatXu          NVARCHAR(100)   NULL,
-    donViTinh       NVARCHAR(30)    NOT NULL DEFAULT N'Cái',
-        -- Ví dụ: 'Cái', 'Kg', 'Lít', 'Hộp', 'Thùng'
-    giaNhap         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaNhap >= 0),
-    giaBan          DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaBan >= 0),
-    soLuongTon      INT             NOT NULL DEFAULT 0 CHECK (soLuongTon >= 0),
-    soLuongToiThieu INT             NOT NULL DEFAULT 10 CHECK (soLuongToiThieu >= 0),
-        -- Ngưỡng cảnh báo hết hàng
-    maSKU           NVARCHAR(50)    NULL UNIQUE,
-        -- Stock Keeping Unit – mã quản lý kho
-    maVach          NVARCHAR(50)    NULL UNIQUE,
-        -- Barcode
-    trongLuong      FLOAT           NULL CHECK (trongLuong IS NULL OR trongLuong >= 0),
-    kichThuoc       NVARCHAR(50)    NULL,
-        -- Ví dụ: '10x20x5 cm'
-    hinhAnh         NVARCHAR(255)   NULL,
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đang kinh doanh'
+                         maSanPham       NVARCHAR(20)    NOT NULL,
+                         tenSanPham      NVARCHAR(200)   NOT NULL,
+                         maDanhMuc       NVARCHAR(20)    NOT NULL,
+                         moTa            NVARCHAR(500)   NULL,
+                         thuongHieu      NVARCHAR(100)   NULL,
+                         xuatXu          NVARCHAR(100)   NULL,
+                         donViTinh       NVARCHAR(30)    NOT NULL DEFAULT N'Cái',
+    -- Ví dụ: 'Cái', 'Kg', 'Lít', 'Hộp', 'Thùng'
+                         giaNhap         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaNhap >= 0),
+                         giaBan          DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaBan >= 0),
+                         soLuongTon      INT             NOT NULL DEFAULT 0 CHECK (soLuongTon >= 0),
+                         soLuongToiThieu INT             NOT NULL DEFAULT 10 CHECK (soLuongToiThieu >= 0),
+    -- Ngưỡng cảnh báo hết hàng
+                         maSKU           NVARCHAR(50)    NULL UNIQUE,
+    -- Stock Keeping Unit – mã quản lý kho
+                         maVach          NVARCHAR(50)    NULL UNIQUE,
+    -- Barcode
+                         trongLuong      FLOAT           NULL CHECK (trongLuong IS NULL OR trongLuong >= 0),
+                         kichThuoc       NVARCHAR(50)    NULL,
+    -- Ví dụ: '10x20x5 cm'
+                         hinhAnh         NVARCHAR(255)   NULL,
+                         trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Đang kinh doanh'
         CHECK (trangThai IN (N'Đang kinh doanh', N'Ngừng kinh doanh', N'Hết hàng')),
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_SanPham PRIMARY KEY (maSanPham),
-    CONSTRAINT FK_SanPham_DanhMuc FOREIGN KEY (maDanhMuc)
-        REFERENCES DanhMuc(maDanhMuc),
-    CONSTRAINT CK_SanPham_GiaBan CHECK (giaBan >= giaNhap)
+                         CONSTRAINT PK_SanPham PRIMARY KEY (maSanPham),
+                         CONSTRAINT FK_SanPham_DanhMuc FOREIGN KEY (maDanhMuc)
+                             REFERENCES DanhMuc(maDanhMuc),
+                         CONSTRAINT CK_SanPham_GiaBan CHECK (giaBan >= giaNhap)
 );
 GO
 
@@ -234,35 +237,35 @@ GO
 -- Chứa dữ liệu chương trình giảm giá, khuyến mãi
 -- ============================================================
 CREATE TABLE KhuyenMai (
-    maKhuyenMai     NVARCHAR(20)    NOT NULL,
-    tenKhuyenMai    NVARCHAR(200)   NOT NULL,
-    moTa            NVARCHAR(500)   NULL,
-    loaiKhuyenMai   NVARCHAR(30)    NOT NULL
+                           maKhuyenMai     NVARCHAR(20)    NOT NULL,
+                           tenKhuyenMai    NVARCHAR(200)   NOT NULL,
+                           moTa            NVARCHAR(500)   NULL,
+                           loaiKhuyenMai   NVARCHAR(30)    NOT NULL
         CHECK (loaiKhuyenMai IN (N'Phần trăm', N'Số tiền', N'Mua X tặng Y', N'Miễn phí vận chuyển')),
-    giaTriGiam      DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaTriGiam >= 0),
-        -- Nếu loại = 'Phần trăm': giá trị 0-100
-        -- Nếu loại = 'Số tiền': số tiền giảm
-    giaTriGiamToiDa DECIMAL(15, 2)  NULL CHECK (giaTriGiamToiDa IS NULL OR giaTriGiamToiDa >= 0),
-        -- Số tiền giảm tối đa (áp dụng khi loại = 'Phần trăm')
-    donHangToiThieu DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (donHangToiThieu >= 0),
-        -- Giá trị đơn hàng tối thiểu để áp dụng
-    soLuongToiDa    INT             NULL CHECK (soLuongToiDa IS NULL OR soLuongToiDa > 0),
-        -- Số lượt sử dụng tối đa
-    soLuongDaSuDung INT             NOT NULL DEFAULT 0 CHECK (soLuongDaSuDung >= 0),
-    ngayBatDau      DATETIME        NOT NULL,
-    ngayKetThuc     DATETIME        NOT NULL,
-    apDungChoTatCa  BIT             NOT NULL DEFAULT 1,
-        -- 1: áp dụng cho tất cả sản phẩm, 0: chỉ một số sản phẩm
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Chưa bắt đầu'
+                           giaTriGiam      DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giaTriGiam >= 0),
+    -- Nếu loại = 'Phần trăm': giá trị 0-100
+    -- Nếu loại = 'Số tiền': số tiền giảm
+                           giaTriGiamToiDa DECIMAL(15, 2)  NULL CHECK (giaTriGiamToiDa IS NULL OR giaTriGiamToiDa >= 0),
+    -- Số tiền giảm tối đa (áp dụng khi loại = 'Phần trăm')
+                           donHangToiThieu DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (donHangToiThieu >= 0),
+    -- Giá trị đơn hàng tối thiểu để áp dụng
+                           soLuongToiDa    INT             NULL CHECK (soLuongToiDa IS NULL OR soLuongToiDa > 0),
+    -- Số lượt sử dụng tối đa
+                           soLuongDaSuDung INT             NOT NULL DEFAULT 0 CHECK (soLuongDaSuDung >= 0),
+                           ngayBatDau      DATETIME        NOT NULL,
+                           ngayKetThuc     DATETIME        NOT NULL,
+                           apDungChoTatCa  BIT             NOT NULL DEFAULT 1,
+    -- 1: áp dụng cho tất cả sản phẩm, 0: chỉ một số sản phẩm
+                           trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Chưa bắt đầu'
         CHECK (trangThai IN (N'Chưa bắt đầu', N'Đang diễn ra', N'Đã kết thúc', N'Đã hủy')),
-    nguoiTao        NVARCHAR(20)    NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                           nguoiTao        NVARCHAR(20)    NULL,
+                           ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                           ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_KhuyenMai PRIMARY KEY (maKhuyenMai),
-    CONSTRAINT FK_KhuyenMai_NguoiTao FOREIGN KEY (nguoiTao)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT CK_KhuyenMai_Ngay CHECK (ngayKetThuc > ngayBatDau)
+                           CONSTRAINT PK_KhuyenMai PRIMARY KEY (maKhuyenMai),
+                           CONSTRAINT FK_KhuyenMai_NguoiTao FOREIGN KEY (nguoiTao)
+                               REFERENCES NhanVien(maNhanVien),
+                           CONSTRAINT CK_KhuyenMai_Ngay CHECK (ngayKetThuc > ngayBatDau)
 );
 GO
 
@@ -271,17 +274,17 @@ GO
 -- Bảng trung gian: chương trình KM áp dụng cho sản phẩm nào
 -- ============================================================
 CREATE TABLE KhuyenMai_SanPham (
-    maKhuyenMai     NVARCHAR(20)    NOT NULL,
-    maSanPham       NVARCHAR(20)    NOT NULL,
-    giaTriGiamRieng DECIMAL(15, 2)  NULL,
-        -- Giá trị giảm riêng cho sản phẩm này (nếu khác mặc định)
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                                   maKhuyenMai     NVARCHAR(20)    NOT NULL,
+                                   maSanPham       NVARCHAR(20)    NOT NULL,
+                                   giaTriGiamRieng DECIMAL(15, 2)  NULL,
+    -- Giá trị giảm riêng cho sản phẩm này (nếu khác mặc định)
+                                   ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_KhuyenMai_SanPham PRIMARY KEY (maKhuyenMai, maSanPham),
-    CONSTRAINT FK_KMSP_KhuyenMai FOREIGN KEY (maKhuyenMai)
-        REFERENCES KhuyenMai(maKhuyenMai),
-    CONSTRAINT FK_KMSP_SanPham FOREIGN KEY (maSanPham)
-        REFERENCES SanPham(maSanPham)
+                                   CONSTRAINT PK_KhuyenMai_SanPham PRIMARY KEY (maKhuyenMai, maSanPham),
+                                   CONSTRAINT FK_KMSP_KhuyenMai FOREIGN KEY (maKhuyenMai)
+                                       REFERENCES KhuyenMai(maKhuyenMai),
+                                   CONSTRAINT FK_KMSP_SanPham FOREIGN KEY (maSanPham)
+                                       REFERENCES SanPham(maSanPham)
 );
 GO
 
@@ -290,29 +293,29 @@ GO
 -- Lưu trữ thông tin khách hàng và điểm thưởng
 -- ============================================================
 CREATE TABLE KhachHang (
-    maKhachHang     NVARCHAR(20)    NOT NULL,
-    hoTen           NVARCHAR(100)   NOT NULL,
-    gioiTinh        NVARCHAR(5)     NULL CHECK (gioiTinh IS NULL OR gioiTinh IN (N'Nam', N'Nữ')),
-    ngaySinh        DATE            NULL,
-    soDienThoai     NVARCHAR(15)    NOT NULL UNIQUE,
-    email           NVARCHAR(100)   NULL,
-    diaChi          NVARCHAR(255)   NULL,
-    loaiKhachHang   NVARCHAR(30)    NOT NULL DEFAULT N'Thường'
+                           maKhachHang     NVARCHAR(20)    NOT NULL,
+                           hoTen           NVARCHAR(100)   NOT NULL,
+                           gioiTinh        NVARCHAR(5)     NULL CHECK (gioiTinh IS NULL OR gioiTinh IN (N'Nam', N'Nữ')),
+                           ngaySinh        DATE            NULL,
+                           soDienThoai     NVARCHAR(15)    NOT NULL UNIQUE,
+                           email           NVARCHAR(100)   NULL,
+                           diaChi          NVARCHAR(255)   NULL,
+                           loaiKhachHang   NVARCHAR(30)    NOT NULL DEFAULT N'Thường'
         CHECK (loaiKhachHang IN (N'Thường', N'Thành viên', N'VIP', N'Vàng', N'Bạch kim')),
-    diemThuong      INT             NOT NULL DEFAULT 0 CHECK (diemThuong >= 0),
-    tongDiemTichLuy INT             NOT NULL DEFAULT 0 CHECK (tongDiemTichLuy >= 0),
-        -- Tổng điểm tích lũy từ trước tới nay (không bị trừ khi sử dụng)
-    tongChiTieu     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongChiTieu >= 0),
-        -- Tổng tiền đã chi tiêu
-    soLanMuaHang    INT             NOT NULL DEFAULT 0 CHECK (soLanMuaHang >= 0),
-    lanMuaGanNhat   DATETIME        NULL,
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
+                           diemThuong      INT             NOT NULL DEFAULT 0 CHECK (diemThuong >= 0),
+                           tongDiemTichLuy INT             NOT NULL DEFAULT 0 CHECK (tongDiemTichLuy >= 0),
+    -- Tổng điểm tích lũy từ trước tới nay (không bị trừ khi sử dụng)
+                           tongChiTieu     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongChiTieu >= 0),
+    -- Tổng tiền đã chi tiêu
+                           soLanMuaHang    INT             NOT NULL DEFAULT 0 CHECK (soLanMuaHang >= 0),
+                           lanMuaGanNhat   DATETIME        NULL,
+                           trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
         CHECK (trangThai IN (N'Hoạt động', N'Ngừng hoạt động')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                           ghiChu          NVARCHAR(500)   NULL,
+                           ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                           ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_KhachHang PRIMARY KEY (maKhachHang)
+                           CONSTRAINT PK_KhachHang PRIMARY KEY (maKhachHang)
 );
 GO
 
@@ -321,42 +324,42 @@ GO
 -- Đại diện cho các đơn hàng được tạo ra
 -- ============================================================
 CREATE TABLE DonHang (
-    maDonHang       NVARCHAR(20)    NOT NULL,
-    maKhachHang     NVARCHAR(20)    NULL,
-        -- Cho phép NULL cho khách vãng lai
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-        -- Nhân viên bán hàng tạo đơn
-    ngayDatHang     DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayGiaoHang    DATETIME        NULL,
-    diaChiGiaoHang  NVARCHAR(255)   NULL,
-    tongTienHang    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienHang >= 0),
-        -- Tổng tiền hàng trước giảm giá
-    tienGiamGia     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienGiamGia >= 0),
-        -- Tiền được giảm từ khuyến mãi
-    maKhuyenMai     NVARCHAR(20)    NULL,
-        -- Mã khuyến mãi đã áp dụng (nếu có)
-    diemSuDung      INT             NOT NULL DEFAULT 0 CHECK (diemSuDung >= 0),
-        -- Số điểm thưởng khách hàng sử dụng
-    tienDiem        DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienDiem >= 0),
-        -- Số tiền quy đổi từ điểm
-    phiVanChuyen    DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (phiVanChuyen >= 0),
-    thueVAT         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (thueVAT >= 0),
-    tongThanhToan   DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongThanhToan >= 0),
-        -- = tongTienHang - tienGiamGia - tienDiem + phiVanChuyen + thueVAT
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
+                         maDonHang       NVARCHAR(20)    NOT NULL,
+                         maKhachHang     NVARCHAR(20)    NULL,
+    -- Cho phép NULL cho khách vãng lai
+                         maNhanVien      NVARCHAR(20)    NOT NULL,
+    -- Nhân viên bán hàng tạo đơn
+                         ngayDatHang     DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayGiaoHang    DATETIME        NULL,
+                         diaChiGiaoHang  NVARCHAR(255)   NULL,
+                         tongTienHang    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienHang >= 0),
+    -- Tổng tiền hàng trước giảm giá
+                         tienGiamGia     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienGiamGia >= 0),
+    -- Tiền được giảm từ khuyến mãi
+                         maKhuyenMai     NVARCHAR(20)    NULL,
+    -- Mã khuyến mãi đã áp dụng (nếu có)
+                         diemSuDung      INT             NOT NULL DEFAULT 0 CHECK (diemSuDung >= 0),
+    -- Số điểm thưởng khách hàng sử dụng
+                         tienDiem        DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienDiem >= 0),
+    -- Số tiền quy đổi từ điểm
+                         phiVanChuyen    DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (phiVanChuyen >= 0),
+                         thueVAT         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (thueVAT >= 0),
+                         tongThanhToan   DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongThanhToan >= 0),
+    -- = tongTienHang - tienGiamGia - tienDiem + phiVanChuyen + thueVAT
+                         trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
         CHECK (trangThai IN (N'Mới tạo', N'Đang xử lý', N'Đã xác nhận', N'Đang giao hàng',
                              N'Đã giao hàng', N'Đã hoàn thành', N'Đã hủy', N'Trả hàng')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ghiChu          NVARCHAR(500)   NULL,
+                         ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                         ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_DonHang PRIMARY KEY (maDonHang),
-    CONSTRAINT FK_DonHang_KhachHang FOREIGN KEY (maKhachHang)
-        REFERENCES KhachHang(maKhachHang),
-    CONSTRAINT FK_DonHang_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT FK_DonHang_KhuyenMai FOREIGN KEY (maKhuyenMai)
-        REFERENCES KhuyenMai(maKhuyenMai)
+                         CONSTRAINT PK_DonHang PRIMARY KEY (maDonHang),
+                         CONSTRAINT FK_DonHang_KhachHang FOREIGN KEY (maKhachHang)
+                             REFERENCES KhachHang(maKhachHang),
+                         CONSTRAINT FK_DonHang_NhanVien FOREIGN KEY (maNhanVien)
+                             REFERENCES NhanVien(maNhanVien),
+                         CONSTRAINT FK_DonHang_KhuyenMai FOREIGN KEY (maKhuyenMai)
+                             REFERENCES KhuyenMai(maKhuyenMai)
 );
 GO
 
@@ -365,22 +368,22 @@ GO
 -- Chi tiết từng sản phẩm trong đơn hàng
 -- ============================================================
 CREATE TABLE ChiTietDonHang (
-    maDonHang       NVARCHAR(20)    NOT NULL,
-    maSanPham       NVARCHAR(20)    NOT NULL,
-    soLuong         INT             NOT NULL CHECK (soLuong > 0),
-    donGia          DECIMAL(15, 2)  NOT NULL CHECK (donGia >= 0),
-        -- Giá tại thời điểm bán
-    giamGia         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giamGia >= 0),
-        -- Giảm giá riêng cho sản phẩm này trong đơn
-    thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
-        -- = soLuong * donGia - giamGia
-    ghiChu          NVARCHAR(255)   NULL,
+                                maDonHang       NVARCHAR(20)    NOT NULL,
+                                maSanPham       NVARCHAR(20)    NOT NULL,
+                                soLuong         INT             NOT NULL CHECK (soLuong > 0),
+                                donGia          DECIMAL(15, 2)  NOT NULL CHECK (donGia >= 0),
+    -- Giá tại thời điểm bán
+                                giamGia         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giamGia >= 0),
+    -- Giảm giá riêng cho sản phẩm này trong đơn
+                                thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
+    -- = soLuong * donGia - giamGia
+                                ghiChu          NVARCHAR(255)   NULL,
 
-    CONSTRAINT PK_ChiTietDonHang PRIMARY KEY (maDonHang, maSanPham),
-    CONSTRAINT FK_CTDH_DonHang FOREIGN KEY (maDonHang)
-        REFERENCES DonHang(maDonHang),
-    CONSTRAINT FK_CTDH_SanPham FOREIGN KEY (maSanPham)
-        REFERENCES SanPham(maSanPham)
+                                CONSTRAINT PK_ChiTietDonHang PRIMARY KEY (maDonHang, maSanPham),
+                                CONSTRAINT FK_CTDH_DonHang FOREIGN KEY (maDonHang)
+                                    REFERENCES DonHang(maDonHang),
+                                CONSTRAINT FK_CTDH_SanPham FOREIGN KEY (maSanPham)
+                                    REFERENCES SanPham(maSanPham)
 );
 GO
 
@@ -389,42 +392,42 @@ GO
 -- Lưu trữ thông tin hoá đơn thanh toán
 -- ============================================================
 CREATE TABLE HoaDon (
-    maHoaDon        NVARCHAR(20)    NOT NULL,
-    maDonHang       NVARCHAR(20)    NOT NULL,
-    maKhachHang     NVARCHAR(20)    NULL,
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-        -- Nhân viên thu ngân lập hoá đơn
-    ngayLapHoaDon   DATETIME        NOT NULL DEFAULT GETDATE(),
-    tongTienHang    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienHang >= 0),
-    tienGiamGia     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienGiamGia >= 0),
-    tienDiem        DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienDiem >= 0),
-    thueVAT         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (thueVAT >= 0),
-    tongThanhToan   DECIMAL(18, 2)  NOT NULL CHECK (tongThanhToan >= 0),
-    tienKhachDua    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienKhachDua >= 0),
-    tienTraLai      DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienTraLai >= 0),
-    phuongThucThanhToan NVARCHAR(30) NOT NULL DEFAULT N'Tiền mặt'
+                        maHoaDon        NVARCHAR(20)    NOT NULL,
+                        maDonHang       NVARCHAR(20)    NOT NULL,
+                        maKhachHang     NVARCHAR(20)    NULL,
+                        maNhanVien      NVARCHAR(20)    NOT NULL,
+    -- Nhân viên thu ngân lập hoá đơn
+                        ngayLapHoaDon   DATETIME        NOT NULL DEFAULT GETDATE(),
+                        tongTienHang    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienHang >= 0),
+                        tienGiamGia     DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienGiamGia >= 0),
+                        tienDiem        DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienDiem >= 0),
+                        thueVAT         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (thueVAT >= 0),
+                        tongThanhToan   DECIMAL(18, 2)  NOT NULL CHECK (tongThanhToan >= 0),
+                        tienKhachDua    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienKhachDua >= 0),
+                        tienTraLai      DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tienTraLai >= 0),
+                        phuongThucThanhToan NVARCHAR(30) NOT NULL DEFAULT N'Tiền mặt'
         CHECK (phuongThucThanhToan IN (N'Tiền mặt', N'Chuyển khoản', N'Thẻ tín dụng',
                                         N'Ví điện tử', N'Kết hợp')),
-    soTaiKhoanNH    NVARCHAR(30)    NULL,
-        -- Số tài khoản ngân hàng (nếu thanh toán chuyển khoản)
-    tenNganHang     NVARCHAR(100)   NULL,
-    maGiaoDich      NVARCHAR(50)    NULL,
-        -- Mã giao dịch từ ngân hàng/ví điện tử
-    diemCongThem    INT             NOT NULL DEFAULT 0 CHECK (diemCongThem >= 0),
-        -- Điểm tích lũy được cộng cho khách hàng
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Đã thanh toán'
+                        soTaiKhoanNH    NVARCHAR(30)    NULL,
+    -- Số tài khoản ngân hàng (nếu thanh toán chuyển khoản)
+                        tenNganHang     NVARCHAR(100)   NULL,
+                        maGiaoDich      NVARCHAR(50)    NULL,
+    -- Mã giao dịch từ ngân hàng/ví điện tử
+                        diemCongThem    INT             NOT NULL DEFAULT 0 CHECK (diemCongThem >= 0),
+    -- Điểm tích lũy được cộng cho khách hàng
+                        trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Đã thanh toán'
         CHECK (trangThai IN (N'Đã thanh toán', N'Chờ thanh toán', N'Đã hủy', N'Hoàn tiền')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                        ghiChu          NVARCHAR(500)   NULL,
+                        ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                        ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_HoaDon PRIMARY KEY (maHoaDon),
-    CONSTRAINT FK_HoaDon_DonHang FOREIGN KEY (maDonHang)
-        REFERENCES DonHang(maDonHang),
-    CONSTRAINT FK_HoaDon_KhachHang FOREIGN KEY (maKhachHang)
-        REFERENCES KhachHang(maKhachHang),
-    CONSTRAINT FK_HoaDon_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien)
+                        CONSTRAINT PK_HoaDon PRIMARY KEY (maHoaDon),
+                        CONSTRAINT FK_HoaDon_DonHang FOREIGN KEY (maDonHang)
+                            REFERENCES DonHang(maDonHang),
+                        CONSTRAINT FK_HoaDon_KhachHang FOREIGN KEY (maKhachHang)
+                            REFERENCES KhachHang(maKhachHang),
+                        CONSTRAINT FK_HoaDon_NhanVien FOREIGN KEY (maNhanVien)
+                            REFERENCES NhanVien(maNhanVien)
 );
 GO
 
@@ -433,24 +436,24 @@ GO
 -- Thông tin nhà cung cấp cho phiếu nhập kho
 -- ============================================================
 CREATE TABLE NhaCungCap (
-    maNhaCungCap    NVARCHAR(20)    NOT NULL,
-    tenNhaCungCap   NVARCHAR(200)   NOT NULL,
-    soDienThoai     NVARCHAR(15)    NOT NULL,
-    email           NVARCHAR(100)   NULL,
-    diaChi          NVARCHAR(255)   NULL,
-    nguoiLienHe     NVARCHAR(100)   NULL,
-    maSoThue        NVARCHAR(20)    NULL,
-    soTaiKhoanNH    NVARCHAR(30)    NULL,
-    tenNganHang     NVARCHAR(100)   NULL,
-    congNo          DECIMAL(18, 2)  NOT NULL DEFAULT 0,
-        -- Tổng công nợ hiện tại
-    trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
+                            maNhaCungCap    NVARCHAR(20)    NOT NULL,
+                            tenNhaCungCap   NVARCHAR(200)   NOT NULL,
+                            soDienThoai     NVARCHAR(15)    NOT NULL,
+                            email           NVARCHAR(100)   NULL,
+                            diaChi          NVARCHAR(255)   NULL,
+                            nguoiLienHe     NVARCHAR(100)   NULL,
+                            maSoThue        NVARCHAR(20)    NULL,
+                            soTaiKhoanNH    NVARCHAR(30)    NULL,
+                            tenNganHang     NVARCHAR(100)   NULL,
+                            congNo          DECIMAL(18, 2)  NOT NULL DEFAULT 0,
+    -- Tổng công nợ hiện tại
+                            trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
         CHECK (trangThai IN (N'Hoạt động', N'Ngừng hợp tác')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                            ghiChu          NVARCHAR(500)   NULL,
+                            ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                            ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_NhaCungCap PRIMARY KEY (maNhaCungCap)
+                            CONSTRAINT PK_NhaCungCap PRIMARY KEY (maNhaCungCap)
 );
 GO
 
@@ -459,24 +462,24 @@ GO
 -- Lưu trữ dữ liệu về các lần nhập hàng vào kho
 -- ============================================================
 CREATE TABLE PhieuNhapKho (
-    maPhieuNhap     NVARCHAR(20)    NOT NULL,
-    maNhaCungCap    NVARCHAR(20)    NOT NULL,
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-        -- Nhân viên kho thực hiện nhập
-    ngayNhap        DATETIME        NOT NULL DEFAULT GETDATE(),
-    tongSoLuong     INT             NOT NULL DEFAULT 0 CHECK (tongSoLuong >= 0),
-    tongTienNhap    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienNhap >= 0),
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
+                              maPhieuNhap     NVARCHAR(20)    NOT NULL,
+                              maNhaCungCap    NVARCHAR(20)    NOT NULL,
+                              maNhanVien      NVARCHAR(20)    NOT NULL,
+    -- Nhân viên kho thực hiện nhập
+                              ngayNhap        DATETIME        NOT NULL DEFAULT GETDATE(),
+                              tongSoLuong     INT             NOT NULL DEFAULT 0 CHECK (tongSoLuong >= 0),
+                              tongTienNhap    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienNhap >= 0),
+                              trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
         CHECK (trangThai IN (N'Mới tạo', N'Đang nhập', N'Đã nhập', N'Đã hủy')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                              ghiChu          NVARCHAR(500)   NULL,
+                              ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                              ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_PhieuNhapKho PRIMARY KEY (maPhieuNhap),
-    CONSTRAINT FK_PNK_NhaCungCap FOREIGN KEY (maNhaCungCap)
-        REFERENCES NhaCungCap(maNhaCungCap),
-    CONSTRAINT FK_PNK_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien)
+                              CONSTRAINT PK_PhieuNhapKho PRIMARY KEY (maPhieuNhap),
+                              CONSTRAINT FK_PNK_NhaCungCap FOREIGN KEY (maNhaCungCap)
+                                  REFERENCES NhaCungCap(maNhaCungCap),
+                              CONSTRAINT FK_PNK_NhanVien FOREIGN KEY (maNhanVien)
+                                  REFERENCES NhanVien(maNhanVien)
 );
 GO
 
@@ -485,22 +488,22 @@ GO
 -- Chi tiết từng sản phẩm trong phiếu nhập kho
 -- ============================================================
 CREATE TABLE ChiTietPhieuNhap (
-    maPhieuNhap     NVARCHAR(20)    NOT NULL,
-    maSanPham       NVARCHAR(20)    NOT NULL,
-    soLuongNhap     INT             NOT NULL CHECK (soLuongNhap > 0),
-    donGiaNhap      DECIMAL(15, 2)  NOT NULL CHECK (donGiaNhap >= 0),
-    thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
-        -- = soLuongNhap * donGiaNhap
-    ngaySanXuat     DATE            NULL,
-    hanSuDung       DATE            NULL,
-    ghiChu          NVARCHAR(255)   NULL,
+                                  maPhieuNhap     NVARCHAR(20)    NOT NULL,
+                                  maSanPham       NVARCHAR(20)    NOT NULL,
+                                  soLuongNhap     INT             NOT NULL CHECK (soLuongNhap > 0),
+                                  donGiaNhap      DECIMAL(15, 2)  NOT NULL CHECK (donGiaNhap >= 0),
+                                  thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
+    -- = soLuongNhap * donGiaNhap
+                                  ngaySanXuat     DATE            NULL,
+                                  hanSuDung       DATE            NULL,
+                                  ghiChu          NVARCHAR(255)   NULL,
 
-    CONSTRAINT PK_ChiTietPhieuNhap PRIMARY KEY (maPhieuNhap, maSanPham),
-    CONSTRAINT FK_CTPN_PhieuNhap FOREIGN KEY (maPhieuNhap)
-        REFERENCES PhieuNhapKho(maPhieuNhap),
-    CONSTRAINT FK_CTPN_SanPham FOREIGN KEY (maSanPham)
-        REFERENCES SanPham(maSanPham),
-    CONSTRAINT CK_CTPN_HanSuDung CHECK (hanSuDung IS NULL OR ngaySanXuat IS NULL OR hanSuDung > ngaySanXuat)
+                                  CONSTRAINT PK_ChiTietPhieuNhap PRIMARY KEY (maPhieuNhap, maSanPham),
+                                  CONSTRAINT FK_CTPN_PhieuNhap FOREIGN KEY (maPhieuNhap)
+                                      REFERENCES PhieuNhapKho(maPhieuNhap),
+                                  CONSTRAINT FK_CTPN_SanPham FOREIGN KEY (maSanPham)
+                                      REFERENCES SanPham(maSanPham),
+                                  CONSTRAINT CK_CTPN_HanSuDung CHECK (hanSuDung IS NULL OR ngaySanXuat IS NULL OR hanSuDung > ngaySanXuat)
 );
 GO
 
@@ -509,27 +512,27 @@ GO
 -- Lưu trữ dữ liệu về các lần xuất hàng khỏi kho
 -- ============================================================
 CREATE TABLE PhieuXuatKho (
-    maPhieuXuat     NVARCHAR(20)    NOT NULL,
-    maNhanVien      NVARCHAR(20)    NOT NULL,
-        -- Nhân viên kho thực hiện xuất
-    maDonHang       NVARCHAR(20)    NULL,
-        -- Liên kết với đơn hàng (nếu xuất cho bán hàng)
-    lyDoXuat        NVARCHAR(50)    NOT NULL DEFAULT N'Bán hàng'
+                              maPhieuXuat     NVARCHAR(20)    NOT NULL,
+                              maNhanVien      NVARCHAR(20)    NOT NULL,
+    -- Nhân viên kho thực hiện xuất
+                              maDonHang       NVARCHAR(20)    NULL,
+    -- Liên kết với đơn hàng (nếu xuất cho bán hàng)
+                              lyDoXuat        NVARCHAR(50)    NOT NULL DEFAULT N'Bán hàng'
         CHECK (lyDoXuat IN (N'Bán hàng', N'Trả hàng NCC', N'Hàng hỏng', N'Điều chỉnh', N'Khác')),
-    ngayXuat        DATETIME        NOT NULL DEFAULT GETDATE(),
-    tongSoLuong     INT             NOT NULL DEFAULT 0 CHECK (tongSoLuong >= 0),
-    tongTienXuat    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienXuat >= 0),
-    trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
+                              ngayXuat        DATETIME        NOT NULL DEFAULT GETDATE(),
+                              tongSoLuong     INT             NOT NULL DEFAULT 0 CHECK (tongSoLuong >= 0),
+                              tongTienXuat    DECIMAL(18, 2)  NOT NULL DEFAULT 0 CHECK (tongTienXuat >= 0),
+                              trangThai       NVARCHAR(30)    NOT NULL DEFAULT N'Mới tạo'
         CHECK (trangThai IN (N'Mới tạo', N'Đang xuất', N'Đã xuất', N'Đã hủy')),
-    ghiChu          NVARCHAR(500)   NULL,
-    ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
-    ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
+                              ghiChu          NVARCHAR(500)   NULL,
+                              ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
+                              ngayCapNhat     DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_PhieuXuatKho PRIMARY KEY (maPhieuXuat),
-    CONSTRAINT FK_PXK_NhanVien FOREIGN KEY (maNhanVien)
-        REFERENCES NhanVien(maNhanVien),
-    CONSTRAINT FK_PXK_DonHang FOREIGN KEY (maDonHang)
-        REFERENCES DonHang(maDonHang)
+                              CONSTRAINT PK_PhieuXuatKho PRIMARY KEY (maPhieuXuat),
+                              CONSTRAINT FK_PXK_NhanVien FOREIGN KEY (maNhanVien)
+                                  REFERENCES NhanVien(maNhanVien),
+                              CONSTRAINT FK_PXK_DonHang FOREIGN KEY (maDonHang)
+                                  REFERENCES DonHang(maDonHang)
 );
 GO
 
@@ -538,19 +541,19 @@ GO
 -- Chi tiết từng sản phẩm trong phiếu xuất kho
 -- ============================================================
 CREATE TABLE ChiTietPhieuXuat (
-    maPhieuXuat     NVARCHAR(20)    NOT NULL,
-    maSanPham       NVARCHAR(20)    NOT NULL,
-    soLuongXuat     INT             NOT NULL CHECK (soLuongXuat > 0),
-    donGiaXuat      DECIMAL(15, 2)  NOT NULL CHECK (donGiaXuat >= 0),
-    thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
-        -- = soLuongXuat * donGiaXuat
-    ghiChu          NVARCHAR(255)   NULL,
+                                  maPhieuXuat     NVARCHAR(20)    NOT NULL,
+                                  maSanPham       NVARCHAR(20)    NOT NULL,
+                                  soLuongXuat     INT             NOT NULL CHECK (soLuongXuat > 0),
+                                  donGiaXuat      DECIMAL(15, 2)  NOT NULL CHECK (donGiaXuat >= 0),
+                                  thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
+    -- = soLuongXuat * donGiaXuat
+                                  ghiChu          NVARCHAR(255)   NULL,
 
-    CONSTRAINT PK_ChiTietPhieuXuat PRIMARY KEY (maPhieuXuat, maSanPham),
-    CONSTRAINT FK_CTPX_PhieuXuat FOREIGN KEY (maPhieuXuat)
-        REFERENCES PhieuXuatKho(maPhieuXuat),
-    CONSTRAINT FK_CTPX_SanPham FOREIGN KEY (maSanPham)
-        REFERENCES SanPham(maSanPham)
+                                  CONSTRAINT PK_ChiTietPhieuXuat PRIMARY KEY (maPhieuXuat, maSanPham),
+                                  CONSTRAINT FK_CTPX_PhieuXuat FOREIGN KEY (maPhieuXuat)
+                                      REFERENCES PhieuXuatKho(maPhieuXuat),
+                                  CONSTRAINT FK_CTPX_SanPham FOREIGN KEY (maSanPham)
+                                      REFERENCES SanPham(maSanPham)
 );
 GO
 
@@ -559,26 +562,26 @@ GO
 -- Lịch sử tích lũy và sử dụng điểm thưởng
 -- ============================================================
 CREATE TABLE LichSuDiemThuong (
-    maLichSu        NVARCHAR(20)    NOT NULL,
-    maKhachHang     NVARCHAR(20)    NOT NULL,
-    maDonHang       NVARCHAR(20)    NULL,
-    maHoaDon        NVARCHAR(20)    NULL,
-    loaiGiaoDich    NVARCHAR(20)    NOT NULL
+                                  maLichSu        NVARCHAR(20)    NOT NULL,
+                                  maKhachHang     NVARCHAR(20)    NOT NULL,
+                                  maDonHang       NVARCHAR(20)    NULL,
+                                  maHoaDon        NVARCHAR(20)    NULL,
+                                  loaiGiaoDich    NVARCHAR(20)    NOT NULL
         CHECK (loaiGiaoDich IN (N'Tích điểm', N'Sử dụng', N'Hoàn điểm', N'Điều chỉnh')),
-    soDiem          INT             NOT NULL,
-        -- Dương: tích điểm, Âm: sử dụng
-    diemTruocGD     INT             NOT NULL CHECK (diemTruocGD >= 0),
-    diemSauGD       INT             NOT NULL CHECK (diemSauGD >= 0),
-    moTa            NVARCHAR(255)   NULL,
-    ngayGiaoDich    DATETIME        NOT NULL DEFAULT GETDATE(),
+                                  soDiem          INT             NOT NULL,
+    -- Dương: tích điểm, Âm: sử dụng
+                                  diemTruocGD     INT             NOT NULL CHECK (diemTruocGD >= 0),
+                                  diemSauGD       INT             NOT NULL CHECK (diemSauGD >= 0),
+                                  moTa            NVARCHAR(255)   NULL,
+                                  ngayGiaoDich    DATETIME        NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT PK_LichSuDiemThuong PRIMARY KEY (maLichSu),
-    CONSTRAINT FK_LSDT_KhachHang FOREIGN KEY (maKhachHang)
-        REFERENCES KhachHang(maKhachHang),
-    CONSTRAINT FK_LSDT_DonHang FOREIGN KEY (maDonHang)
-        REFERENCES DonHang(maDonHang),
-    CONSTRAINT FK_LSDT_HoaDon FOREIGN KEY (maHoaDon)
-        REFERENCES HoaDon(maHoaDon)
+                                  CONSTRAINT PK_LichSuDiemThuong PRIMARY KEY (maLichSu),
+                                  CONSTRAINT FK_LSDT_KhachHang FOREIGN KEY (maKhachHang)
+                                      REFERENCES KhachHang(maKhachHang),
+                                  CONSTRAINT FK_LSDT_DonHang FOREIGN KEY (maDonHang)
+                                      REFERENCES DonHang(maDonHang),
+                                  CONSTRAINT FK_LSDT_HoaDon FOREIGN KEY (maHoaDon)
+                                      REFERENCES HoaDon(maHoaDon)
 );
 GO
 
@@ -587,19 +590,19 @@ GO
 -- Ghi lại lịch sử đăng nhập hệ thống
 -- ============================================================
 CREATE TABLE LichSuDangNhap (
-    maLichSu        INT IDENTITY(1,1) NOT NULL,
-    maTaiKhoan      NVARCHAR(20)    NOT NULL,
-    thoiGianDangNhap DATETIME       NOT NULL DEFAULT GETDATE(),
-    thoiGianDangXuat DATETIME       NULL,
-    diaChiIP        NVARCHAR(50)    NULL,
-    tenMay          NVARCHAR(100)   NULL,
-    ketQua          NVARCHAR(20)    NOT NULL
+                                maLichSu        INT IDENTITY(1,1) NOT NULL,
+                                maTaiKhoan      NVARCHAR(20)    NOT NULL,
+                                thoiGianDangNhap DATETIME       NOT NULL DEFAULT GETDATE(),
+                                thoiGianDangXuat DATETIME       NULL,
+                                diaChiIP        NVARCHAR(50)    NULL,
+                                tenMay          NVARCHAR(100)   NULL,
+                                ketQua          NVARCHAR(20)    NOT NULL
         CHECK (ketQua IN (N'Thành công', N'Thất bại')),
-    lyDoThatBai     NVARCHAR(255)   NULL,
+                                lyDoThatBai     NVARCHAR(255)   NULL,
 
-    CONSTRAINT PK_LichSuDangNhap PRIMARY KEY (maLichSu),
-    CONSTRAINT FK_LSDN_TaiKhoan FOREIGN KEY (maTaiKhoan)
-        REFERENCES TaiKhoan(maTaiKhoan)
+                                CONSTRAINT PK_LichSuDangNhap PRIMARY KEY (maLichSu),
+                                CONSTRAINT FK_LSDN_TaiKhoan FOREIGN KEY (maTaiKhoan)
+                                    REFERENCES TaiKhoan(maTaiKhoan)
 );
 GO
 
@@ -665,42 +668,42 @@ GO
 -- ============================================================
 
 CREATE TRIGGER trg_NhanVien_Update ON NhanVien
-AFTER UPDATE AS
+    AFTER UPDATE AS
 BEGIN
-    UPDATE NhanVien SET ngayCapNhat = GETDATE()
-    WHERE maNhanVien IN (SELECT maNhanVien FROM inserted);
+UPDATE NhanVien SET ngayCapNhat = GETDATE()
+WHERE maNhanVien IN (SELECT maNhanVien FROM inserted);
 END;
 GO
 
 CREATE TRIGGER trg_SanPham_Update ON SanPham
-AFTER UPDATE AS
+    AFTER UPDATE AS
 BEGIN
-    UPDATE SanPham SET ngayCapNhat = GETDATE()
-    WHERE maSanPham IN (SELECT maSanPham FROM inserted);
+UPDATE SanPham SET ngayCapNhat = GETDATE()
+WHERE maSanPham IN (SELECT maSanPham FROM inserted);
 END;
 GO
 
 CREATE TRIGGER trg_KhachHang_Update ON KhachHang
-AFTER UPDATE AS
+    AFTER UPDATE AS
 BEGIN
-    UPDATE KhachHang SET ngayCapNhat = GETDATE()
-    WHERE maKhachHang IN (SELECT maKhachHang FROM inserted);
+UPDATE KhachHang SET ngayCapNhat = GETDATE()
+WHERE maKhachHang IN (SELECT maKhachHang FROM inserted);
 END;
 GO
 
 CREATE TRIGGER trg_DonHang_Update ON DonHang
-AFTER UPDATE AS
+    AFTER UPDATE AS
 BEGIN
-    UPDATE DonHang SET ngayCapNhat = GETDATE()
-    WHERE maDonHang IN (SELECT maDonHang FROM inserted);
+UPDATE DonHang SET ngayCapNhat = GETDATE()
+WHERE maDonHang IN (SELECT maDonHang FROM inserted);
 END;
 GO
 
 CREATE TRIGGER trg_HoaDon_Update ON HoaDon
-AFTER UPDATE AS
+    AFTER UPDATE AS
 BEGIN
-    UPDATE HoaDon SET ngayCapNhat = GETDATE()
-    WHERE maHoaDon IN (SELECT maHoaDon FROM inserted);
+UPDATE HoaDon SET ngayCapNhat = GETDATE()
+WHERE maHoaDon IN (SELECT maHoaDon FROM inserted);
 END;
 GO
 
@@ -711,10 +714,10 @@ GO
 
 -- Khi thêm chi tiết phiếu nhập → tăng tồn kho
 CREATE TRIGGER trg_ChiTietPhieuNhap_Insert ON ChiTietPhieuNhap
-AFTER INSERT AS
+    AFTER INSERT AS
 BEGIN
-    UPDATE sp
-    SET sp.soLuongTon = sp.soLuongTon + i.soLuongNhap
+UPDATE sp
+SET sp.soLuongTon = sp.soLuongTon + i.soLuongNhap
     FROM SanPham sp
     INNER JOIN inserted i ON sp.maSanPham = i.maSanPham;
 END;
@@ -722,7 +725,7 @@ GO
 
 -- Khi thêm chi tiết phiếu xuất → giảm tồn kho
 CREATE TRIGGER trg_ChiTietPhieuXuat_Insert ON ChiTietPhieuXuat
-AFTER INSERT AS
+    AFTER INSERT AS
 BEGIN
     -- Kiểm tra tồn kho đủ không
     IF EXISTS (
@@ -731,14 +734,14 @@ BEGIN
         INNER JOIN SanPham sp ON sp.maSanPham = i.maSanPham
         WHERE sp.soLuongTon < i.soLuongXuat
     )
-    BEGIN
+BEGIN
         RAISERROR(N'Số lượng tồn kho không đủ để xuất!', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
+ROLLBACK TRANSACTION;
+RETURN;
+END
 
-    UPDATE sp
-    SET sp.soLuongTon = sp.soLuongTon - i.soLuongXuat
+UPDATE sp
+SET sp.soLuongTon = sp.soLuongTon - i.soLuongXuat
     FROM SanPham sp
     INNER JOIN inserted i ON sp.maSanPham = i.maSanPham;
 END;
@@ -945,7 +948,7 @@ VALUES
     (N'KH001', N'Nguyễn Thị Mai',     N'Nữ',  '1992-04-12', '0801234567', 'mai.nt@gmail.com',    N'12 Trần Hưng Đạo, Q.5, TP.HCM',      N'VIP',        1576, 3576, 92641000,  13, '2026-10-17 15:50:00', N'Hoạt động',       N'Khách hàng thân thiết lâu năm'),
     (N'KH002', N'Trần Văn Hùng',      N'Nam', '1988-09-05', '0812345678', 'hung.tv@gmail.com',   N'45 Lý Thường Kiệt, Q.Tân Bình',      N'Vàng',       800,  1800, 52000000,  8,  '2026-10-16 10:20:00', N'Hoạt động',       NULL),
     (N'KH003', N'Lê Thị Ngọc Ánh',    N'Nữ',  '1995-01-20', '0823456789', 'anh.ltn@gmail.com',   N'78 Nguyễn Đình Chiểu, Q.3, TP.HCM',  N'Thành viên', 290,  590,  43990000,  4,  '2026-10-17 14:30:00', N'Hoạt động',       NULL),
-    (N'KH004', N'Phạm Quốc Đạt',      N'Nam', '1990-11-15', '0834567890', 'dat.pq@gmail.com',    N'101 Cộng Hòa, Q.Tân Bình',            N'Thường',     50,   50,   3500000,   1,  '2026-10-18 08:00:00', N'Hoạt động',       NULL),
+    (N'KH004', N'Phạm Quốc Đạt',      N'Nam', '1990-11-15', '0834567890', 'dat.pq@gmail.com',    N'101 Cộng Hòa, Q.Tân Bình',            N'Thường',     225,  225,  22490000,  1,  '2026-10-18 08:00:00', N'Hoạt động',       NULL),
     (N'KH005', N'Hoàng Thị Linh',     N'Nữ',  '1997-06-30', '0845678901', 'linh.ht@gmail.com',   N'234 Điện Biên Phủ, Q.Bình Thạnh',     N'Thành viên', 350,  700,  22000000,  5,  '2026-10-18 10:30:00', N'Hoạt động',       NULL),
     (N'KH006', N'Võ Minh Tuấn',       N'Nam', '1985-03-08', '0856789012', 'tuan.vm@gmail.com',   N'567 Nguyễn Kiệm, Q.Gò Vấp',          N'Bạch kim',   3200, 6500, 185000000, 24, '2026-10-18 10:00:00', N'Hoạt động',       N'Khách hàng doanh nghiệp VIP'),
     (N'KH007', N'Đỗ Thị Hồng Nhung',  N'Nữ',  '2000-12-25', '0867890123', 'nhung.dth@gmail.com', N'890 Quang Trung, Q.Gò Vấp',           N'Thường',     0,    0,    0,         0,  NULL,                  N'Hoạt động',       N'Mới đăng ký thẻ thành viên'),
@@ -1015,7 +1018,7 @@ VALUES
     (N'PN002', N'NCC002', N'NV003', '2026-10-12 09:00:00', 495, 2250000000, N'Đã nhập',   N'Nhập điện thoại và đồng hồ Samsung'),
     (N'PN003', N'NCC003', N'NV007', '2026-10-14 08:30:00', 145, 1654500000, N'Đã nhập',   N'Nhập Laptop ASUS, Dell, HP và phụ kiện'),
     (N'PN004', N'NCC005', N'NV007', '2026-10-15 10:00:00', 30,  600000000,  N'Đã nhập',   N'Nhập Xiaomi 14 Ultra'),
-    (N'PN005', N'NCC004', N'NV003', '2026-10-19 08:30:00', 50,  420000000,  N'Đang nhập', N'Đang kiểm đếm hàng tai nghe & loa');
+    (N'PN005', N'NCC004', N'NV003', '2026-10-19 08:30:00', 50,  255000000,  N'Đang nhập', N'Đang kiểm đếm hàng tai nghe & loa');
 GO
 
 -- 17. Chi tiết phiếu nhập (BẢNG 17 - Disable trigger tạm để insert dữ liệu mẫu không bị cộng dồn tồn kho)
@@ -1118,16 +1121,16 @@ CREATE PROCEDURE sp_TimKiemSanPham
     @trangThai NVARCHAR(30) = NULL
 AS
 BEGIN
-    SELECT sp.maSanPham, sp.tenSanPham, dm.tenDanhMuc, sp.thuongHieu,
-           sp.giaBan, sp.soLuongTon, sp.trangThai
-    FROM SanPham sp
-    INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
-    WHERE (@tuKhoa IS NULL OR sp.tenSanPham LIKE '%' + @tuKhoa + '%' OR sp.thuongHieu LIKE '%' + @tuKhoa + '%')
-      AND (@maDanhMuc IS NULL OR sp.maDanhMuc = @maDanhMuc)
-      AND (@giaMin IS NULL OR sp.giaBan >= @giaMin)
-      AND (@giaMax IS NULL OR sp.giaBan <= @giaMax)
-      AND (@trangThai IS NULL OR sp.trangThai = @trangThai)
-    ORDER BY sp.tenSanPham;
+SELECT sp.maSanPham, sp.tenSanPham, dm.tenDanhMuc, sp.thuongHieu,
+       sp.giaBan, sp.soLuongTon, sp.trangThai
+FROM SanPham sp
+         INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
+WHERE (@tuKhoa IS NULL OR sp.tenSanPham LIKE '%' + @tuKhoa + '%' OR sp.thuongHieu LIKE '%' + @tuKhoa + '%')
+  AND (@maDanhMuc IS NULL OR sp.maDanhMuc = @maDanhMuc)
+  AND (@giaMin IS NULL OR sp.giaBan >= @giaMin)
+  AND (@giaMax IS NULL OR sp.giaBan <= @giaMax)
+  AND (@trangThai IS NULL OR sp.trangThai = @trangThai)
+ORDER BY sp.tenSanPham;
 END;
 GO
 
@@ -1137,15 +1140,15 @@ CREATE PROCEDURE sp_BaoCaoDoanhThuTheoNgay
     @denNgay DATE
 AS
 BEGIN
-    SELECT CAST(hd.ngayLapHoaDon AS DATE) AS ngay,
-           COUNT(hd.maHoaDon) AS soHoaDon,
-           SUM(hd.tongThanhToan) AS doanhThu,
-           SUM(hd.tienGiamGia) AS tongGiamGia
-    FROM HoaDon hd
-    WHERE hd.trangThai = N'Đã thanh toán'
-      AND CAST(hd.ngayLapHoaDon AS DATE) BETWEEN @tuNgay AND @denNgay
-    GROUP BY CAST(hd.ngayLapHoaDon AS DATE)
-    ORDER BY ngay;
+SELECT CAST(hd.ngayLapHoaDon AS DATE) AS ngay,
+       COUNT(hd.maHoaDon) AS soHoaDon,
+       SUM(hd.tongThanhToan) AS doanhThu,
+       SUM(hd.tienGiamGia) AS tongGiamGia
+FROM HoaDon hd
+WHERE hd.trangThai = N'Đã thanh toán'
+  AND CAST(hd.ngayLapHoaDon AS DATE) BETWEEN @tuNgay AND @denNgay
+GROUP BY CAST(hd.ngayLapHoaDon AS DATE)
+ORDER BY ngay;
 END;
 GO
 
@@ -1156,17 +1159,17 @@ CREATE PROCEDURE sp_SanPhamBanChay
     @top INT = 10
 AS
 BEGIN
-    SELECT TOP (@top)
-           sp.maSanPham, sp.tenSanPham, sp.thuongHieu,
-           SUM(ct.soLuong) AS tongSoLuong,
-           SUM(ct.thanhTien) AS tongDoanhThu
-    FROM ChiTietDonHang ct
-    INNER JOIN SanPham sp ON ct.maSanPham = sp.maSanPham
-    INNER JOIN DonHang dh ON ct.maDonHang = dh.maDonHang
-    WHERE dh.trangThai = N'Đã hoàn thành'
-      AND CAST(dh.ngayDatHang AS DATE) BETWEEN @tuNgay AND @denNgay
-    GROUP BY sp.maSanPham, sp.tenSanPham, sp.thuongHieu
-    ORDER BY tongSoLuong DESC;
+SELECT TOP (@top)
+    sp.maSanPham, sp.tenSanPham, sp.thuongHieu,
+       SUM(ct.soLuong) AS tongSoLuong,
+       SUM(ct.thanhTien) AS tongDoanhThu
+FROM ChiTietDonHang ct
+         INNER JOIN SanPham sp ON ct.maSanPham = sp.maSanPham
+         INNER JOIN DonHang dh ON ct.maDonHang = dh.maDonHang
+WHERE dh.trangThai = N'Đã hoàn thành'
+  AND CAST(dh.ngayDatHang AS DATE) BETWEEN @tuNgay AND @denNgay
+GROUP BY sp.maSanPham, sp.tenSanPham, sp.thuongHieu
+ORDER BY tongSoLuong DESC;
 END;
 GO
 
@@ -1175,15 +1178,15 @@ CREATE PROCEDURE sp_BaoCaoTonKho
     @sapHet BIT = 0
 AS
 BEGIN
-    SELECT sp.maSanPham, sp.tenSanPham, dm.tenDanhMuc, sp.thuongHieu,
-           sp.donViTinh, sp.soLuongTon, sp.soLuongToiThieu,
-           sp.giaNhap, sp.giaBan,
-           CASE WHEN sp.soLuongTon <= sp.soLuongToiThieu THEN N'Sắp hết' ELSE N'Đủ hàng' END AS tinhTrang
-    FROM SanPham sp
-    INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
-    WHERE sp.trangThai = N'Đang kinh doanh'
-      AND (@sapHet = 0 OR sp.soLuongTon <= sp.soLuongToiThieu)
-    ORDER BY sp.soLuongTon ASC;
+SELECT sp.maSanPham, sp.tenSanPham, dm.tenDanhMuc, sp.thuongHieu,
+       sp.donViTinh, sp.soLuongTon, sp.soLuongToiThieu,
+       sp.giaNhap, sp.giaBan,
+       IIF(sp.soLuongTon <= sp.soLuongToiThieu, N'Sắp hết', N'Đủ hàng') AS tinhTrang
+FROM SanPham sp
+         INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
+WHERE sp.trangThai = N'Đang kinh doanh'
+  AND (@sapHet = 0 OR sp.soLuongTon <= sp.soLuongToiThieu)
+ORDER BY sp.soLuongTon ASC;
 END;
 GO
 
@@ -1195,51 +1198,51 @@ AS
 BEGIN
     DECLARE @maTK NVARCHAR(20), @trangThai NVARCHAR(20);
 
-    SELECT @maTK = maTaiKhoan, @trangThai = trangThai
-    FROM TaiKhoan
-    WHERE tenDangNhap = @tenDangNhap AND matKhau = @matKhau;
+SELECT @maTK = maTaiKhoan, @trangThai = trangThai
+FROM TaiKhoan
+WHERE tenDangNhap = @tenDangNhap AND matKhau = @matKhau;
 
-    IF @maTK IS NULL
-    BEGIN
+IF @maTK IS NULL
+BEGIN
         -- Ghi log thất bại
         DECLARE @maTKFail NVARCHAR(20);
-        SELECT @maTKFail = maTaiKhoan FROM TaiKhoan WHERE tenDangNhap = @tenDangNhap;
-        IF @maTKFail IS NOT NULL
-        BEGIN
-            UPDATE TaiKhoan SET soLanDangNhapLoi = soLanDangNhapLoi + 1 WHERE maTaiKhoan = @maTKFail;
-            -- Khóa tài khoản nếu sai quá 5 lần
-            UPDATE TaiKhoan SET trangThai = N'Bị khóa'
-            WHERE maTaiKhoan = @maTKFail AND soLanDangNhapLoi >= 5;
+SELECT @maTKFail = maTaiKhoan FROM TaiKhoan WHERE tenDangNhap = @tenDangNhap;
+IF @maTKFail IS NOT NULL
+BEGIN
+UPDATE TaiKhoan SET soLanDangNhapLoi = soLanDangNhapLoi + 1 WHERE maTaiKhoan = @maTKFail;
+-- Khóa tài khoản nếu sai quá 5 lần
+UPDATE TaiKhoan SET trangThai = N'Bị khóa'
+WHERE maTaiKhoan = @maTKFail AND soLanDangNhapLoi >= 5;
 
-            INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai)
-            VALUES (@maTKFail, N'Thất bại', N'Sai mật khẩu');
-        END
-        SELECT 0 AS ketQua, N'Sai tên đăng nhập hoặc mật khẩu' AS thongBao;
-        RETURN;
-    END
+INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai)
+VALUES (@maTKFail, N'Thất bại', N'Sai mật khẩu');
+END
+SELECT 0 AS ketQua, N'Sai tên đăng nhập hoặc mật khẩu' AS thongBao;
+RETURN;
+END
 
     IF @trangThai = N'Bị khóa'
-    BEGIN
-        INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai)
-        VALUES (@maTK, N'Thất bại', N'Tài khoản bị khóa');
-        SELECT 0 AS ketQua, N'Tài khoản đã bị khóa' AS thongBao;
-        RETURN;
-    END
+BEGIN
+INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai)
+VALUES (@maTK, N'Thất bại', N'Tài khoản bị khóa');
+SELECT 0 AS ketQua, N'Tài khoản đã bị khóa' AS thongBao;
+RETURN;
+END
 
     -- Đăng nhập thành công
-    UPDATE TaiKhoan
-    SET lanDangNhapCuoi = GETDATE(), soLanDangNhapLoi = 0
-    WHERE maTaiKhoan = @maTK;
+UPDATE TaiKhoan
+SET lanDangNhapCuoi = GETDATE(), soLanDangNhapLoi = 0
+WHERE maTaiKhoan = @maTK;
 
-    INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua)
-    VALUES (@maTK, N'Thành công');
+INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua)
+VALUES (@maTK, N'Thành công');
 
-    SELECT 1 AS ketQua, N'Đăng nhập thành công' AS thongBao,
-           tk.maTaiKhoan, tk.tenDangNhap, tk.vaiTro,
-           nv.maNhanVien, nv.hoTen, nv.chucVu, nv.hinhAnh
-    FROM TaiKhoan tk
-    INNER JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien
-    WHERE tk.maTaiKhoan = @maTK;
+SELECT 1 AS ketQua, N'Đăng nhập thành công' AS thongBao,
+       tk.maTaiKhoan, tk.tenDangNhap, tk.vaiTro,
+       nv.maNhanVien, nv.hoTen, nv.chucVu, nv.hinhAnh
+FROM TaiKhoan tk
+         INNER JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien
+WHERE tk.maTaiKhoan = @maTK;
 END;
 GO
 
@@ -1248,12 +1251,12 @@ CREATE PROCEDURE sp_LayQuyenTaiKhoan
     @maTaiKhoan NVARCHAR(20)
 AS
 BEGIN
-    SELECT pq.maTaiKhoan, q.maQuyen, q.tenQuyen, q.nhomQuyen,
-           pq.coQuyenXem, pq.coQuyenThem, pq.coQuyenSua, pq.coQuyenXoa
-    FROM PhanQuyen pq
-    INNER JOIN QuyenTruyCap q ON pq.maQuyen = q.maQuyen
-    WHERE pq.maTaiKhoan = @maTaiKhoan
-    ORDER BY q.nhomQuyen, q.tenQuyen;
+SELECT pq.maTaiKhoan, q.maQuyen, q.tenQuyen, q.nhomQuyen,
+       pq.coQuyenXem, pq.coQuyenThem, pq.coQuyenSua, pq.coQuyenXoa
+FROM PhanQuyen pq
+         INNER JOIN QuyenTruyCap q ON pq.maQuyen = q.maQuyen
+WHERE pq.maTaiKhoan = @maTaiKhoan
+ORDER BY q.nhomQuyen, q.tenQuyen;
 END;
 GO
 
@@ -1270,8 +1273,8 @@ SELECT sp.maSanPham, sp.tenSanPham, sp.moTa, sp.thuongHieu, sp.xuatXu,
        dm.maDanhMuc, dm.tenDanhMuc,
        dmc.maDanhMuc AS maDanhMucCha, dmc.tenDanhMuc AS tenDanhMucCha
 FROM SanPham sp
-INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
-LEFT JOIN DanhMuc dmc ON dm.maDanhMucCha = dmc.maDanhMuc;
+         INNER JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc
+         LEFT JOIN DanhMuc dmc ON dm.maDanhMucCha = dmc.maDanhMuc;
 GO
 
 -- View: Đơn hàng chi tiết
@@ -1282,9 +1285,9 @@ SELECT dh.maDonHang, dh.ngayDatHang, dh.tongTienHang, dh.tienGiamGia,
        nv.maNhanVien, nv.hoTen AS tenNhanVien,
        km.maKhuyenMai, km.tenKhuyenMai
 FROM DonHang dh
-LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang
-INNER JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien
-LEFT JOIN KhuyenMai km ON dh.maKhuyenMai = km.maKhuyenMai;
+         LEFT JOIN KhachHang kh ON dh.maKhachHang = kh.maKhachHang
+         INNER JOIN NhanVien nv ON dh.maNhanVien = nv.maNhanVien
+         LEFT JOIN KhuyenMai km ON dh.maKhuyenMai = km.maKhuyenMai;
 GO
 
 -- View: Hóa đơn đầy đủ
@@ -1296,9 +1299,9 @@ SELECT hd.maHoaDon, hd.ngayLapHoaDon, hd.tongTienHang, hd.tienGiamGia,
        kh.maKhachHang, kh.hoTen AS tenKhachHang,
        nv.maNhanVien, nv.hoTen AS tenNhanVienThuNgan
 FROM HoaDon hd
-INNER JOIN DonHang dh ON hd.maDonHang = dh.maDonHang
-LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang
-INNER JOIN NhanVien nv ON hd.maNhanVien = nv.maNhanVien;
+         INNER JOIN DonHang dh ON hd.maDonHang = dh.maDonHang
+         LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang
+         INNER JOIN NhanVien nv ON hd.maNhanVien = nv.maNhanVien;
 GO
 
 -- View: Nhân viên & tài khoản
@@ -1309,8 +1312,8 @@ SELECT nv.maNhanVien, nv.hoTen, nv.gioiTinh, nv.ngaySinh, nv.soDienThoai,
        nql.hoTen AS tenNguoiQuanLy,
        tk.maTaiKhoan, tk.tenDangNhap, tk.vaiTro, tk.trangThai AS trangThaiTK
 FROM NhanVien nv
-LEFT JOIN NhanVien nql ON nv.maNguoiQuanLy = nql.maNhanVien
-LEFT JOIN TaiKhoan tk ON nv.maNhanVien = tk.maNhanVien;
+         LEFT JOIN NhanVien nql ON nv.maNguoiQuanLy = nql.maNhanVien
+         LEFT JOIN TaiKhoan tk ON nv.maNhanVien = tk.maNhanVien;
 GO
 
 
