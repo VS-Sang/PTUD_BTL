@@ -16,34 +16,70 @@ import entity.PhanCongCaLam;
 
 public class PhanCongCaLam_DAO {
 
-    // Lấy toàn bộ danh sách phân công ca làm
+    private PhanCongCaLam docPhanCongTuResultSet(ResultSet rs) throws SQLException {
+        NhanVien nv = new NhanVien(rs.getString("maNhanVien"));
+        nv.setHoTen(rs.getString("hoTen"));
+
+        CaLamViec ca = new CaLamViec(rs.getString("maCa"));
+        ca.setTenCa(rs.getString("tenCa"));
+        ca.setGioVao(rs.getTime("gioVao"));
+        ca.setGioRa(rs.getTime("gioRa"));
+
+        String maNguoiPC = rs.getString("nguoiPhanCong");
+        NhanVien nguoiPC = (maNguoiPC != null) ? new NhanVien(maNguoiPC) : null;
+
+        return new PhanCongCaLam(
+                rs.getString("maPhanCong"),
+                nv,
+                ca,
+                rs.getDate("ngayLamViec"),
+                rs.getString("trangThai"),
+                rs.getTime("gioDiemDanhVao"),
+                rs.getTime("gioDiemDanhRa"),
+                rs.getDouble("soGioLamThem"),
+                rs.getString("ghiChu"),
+                nguoiPC,
+                rs.getTimestamp("ngayTao"),
+                rs.getTimestamp("ngayCapNhat")
+        );
+    }
+
+    // Lấy toàn bộ danh sách phân công ca làm (kèm họ tên NV và tên ca)
     public ArrayList<PhanCongCaLam> getAllPhanCongCaLam() {
         ArrayList<PhanCongCaLam> dsPhanCong = new ArrayList<>();
-        try {
-            Connection con = ConnectDB.getConnection();
-            String sql = "SELECT * FROM PhanCongCaLam";
-            Statement statement = con.createStatement();
-            ResultSet rs = statement.executeQuery(sql);
+        String sql = "SELECT pc.*, nv.hoTen, ca.tenCa, ca.gioVao, ca.gioRa "
+                + "FROM PhanCongCaLam pc "
+                + "JOIN NhanVien nv ON pc.maNhanVien = nv.maNhanVien "
+                + "JOIN CaLamViec ca ON pc.maCa = ca.maCa "
+                + "ORDER BY pc.ngayLamViec DESC, pc.maPhanCong ASC";
+        try (Connection con = ConnectDB.getConnection();
+             Statement statement = con.createStatement();
+             ResultSet rs = statement.executeQuery(sql)) {
             while (rs.next()) {
-                String maNV = rs.getString("maNhanVien");
-                String maCa = rs.getString("maCa");
-                String maNguoiPC = rs.getString("nguoiPhanCong");
+                dsPhanCong.add(docPhanCongTuResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dsPhanCong;
+    }
 
-                PhanCongCaLam pc = new PhanCongCaLam(
-                        rs.getString("maPhanCong"),
-                        maNV != null ? new NhanVien(maNV) : null,
-                        maCa != null ? new CaLamViec(maCa) : null,
-                        rs.getDate("ngayLamViec"),
-                        rs.getString("trangThai"),
-                        rs.getTime("gioDiemDanhVao"),
-                        rs.getTime("gioDiemDanhRa"),
-                        rs.getDouble("soGioLamThem"),
-                        rs.getString("ghiChu"),
-                        maNguoiPC != null ? new NhanVien(maNguoiPC) : null,
-                        rs.getTimestamp("ngayTao"),
-                        rs.getTimestamp("ngayCapNhat")
-                );
-                dsPhanCong.add(pc);
+    // Lấy danh sách phân công ca làm của 1 nhân viên
+    public ArrayList<PhanCongCaLam> getPhanCongTheoNhanVien(String maNhanVien) {
+        ArrayList<PhanCongCaLam> dsPhanCong = new ArrayList<>();
+        String sql = "SELECT pc.*, nv.hoTen, ca.tenCa, ca.gioVao, ca.gioRa "
+                + "FROM PhanCongCaLam pc "
+                + "JOIN NhanVien nv ON pc.maNhanVien = nv.maNhanVien "
+                + "JOIN CaLamViec ca ON pc.maCa = ca.maCa "
+                + "WHERE pc.maNhanVien = ? "
+                + "ORDER BY pc.ngayLamViec ASC";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, maNhanVien);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    dsPhanCong.add(docPhanCongTuResultSet(rs));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -53,13 +89,10 @@ public class PhanCongCaLam_DAO {
 
     // Thêm phân công ca làm mới
     public boolean themPhanCongCaLam(PhanCongCaLam pc) {
-        PreparedStatement stmt = null;
-        int n = 0;
-        try {
-            Connection con = ConnectDB.getConnection();
-            String sql = "INSERT INTO PhanCongCaLam (maPhanCong, maNhanVien, maCa, ngayLamViec, trangThai, gioDiemDanhVao, gioDiemDanhRa, soGioLamThem, ghiChu, nguoiPhanCong) "
-                    + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            stmt = con.prepareStatement(sql);
+        String sql = "INSERT INTO PhanCongCaLam (maPhanCong, maNhanVien, maCa, ngayLamViec, trangThai, gioDiemDanhVao, gioDiemDanhRa, soGioLamThem, ghiChu, nguoiPhanCong) "
+                + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, pc.getMaPhanCong());
             stmt.setString(2, pc.getNhanVien() != null ? pc.getNhanVien().getMaNhanVien() : null);
             stmt.setString(3, pc.getCaLamViec() != null ? pc.getCaLamViec().getMaCa() : null);
@@ -69,88 +102,63 @@ public class PhanCongCaLam_DAO {
             stmt.setTime(7, pc.getGioDiemDanhRa() != null ? new Time(pc.getGioDiemDanhRa().getTime()) : null);
             stmt.setDouble(8, pc.getSoGioLamThem());
             stmt.setString(9, pc.getGhiChu());
-            stmt.setString(10, pc.getNguoiPhanCong() != null ? pc.getNguoiPhanCong().getMaNhanVien() : null);
-            n = stmt.executeUpdate();
+            stmt.setString(10, pc.getNguoiPhanCong() != null ? pc.getNguoiPhanCong().getMaNhanVien() : "NV001");
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return n > 0;
+        return false;
     }
 
     // Cập nhật phân công ca làm
     public boolean capNhatPhanCongCaLam(PhanCongCaLam pc) {
-        PreparedStatement stmt = null;
-        int n = 0;
-        try {
-            Connection con = ConnectDB.getConnection();
-            String sql = "UPDATE PhanCongCaLam SET maNhanVien = ?, maCa = ?, ngayLamViec = ?, trangThai = ?, gioDiemDanhVao = ?, gioDiemDanhRa = ?, soGioLamThem = ?, ghiChu = ?, nguoiPhanCong = ? WHERE maPhanCong = ?";
-            stmt = con.prepareStatement(sql);
+        String sql = "UPDATE PhanCongCaLam SET maNhanVien = ?, maCa = ?, ngayLamViec = ?, trangThai = ?, ghiChu = ? WHERE maPhanCong = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, pc.getNhanVien() != null ? pc.getNhanVien().getMaNhanVien() : null);
             stmt.setString(2, pc.getCaLamViec() != null ? pc.getCaLamViec().getMaCa() : null);
             stmt.setDate(3, pc.getNgayLamViec() != null ? new Date(pc.getNgayLamViec().getTime()) : null);
             stmt.setString(4, pc.getTrangThai());
-            stmt.setTime(5, pc.getGioDiemDanhVao() != null ? new Time(pc.getGioDiemDanhVao().getTime()) : null);
-            stmt.setTime(6, pc.getGioDiemDanhRa() != null ? new Time(pc.getGioDiemDanhRa().getTime()) : null);
-            stmt.setDouble(7, pc.getSoGioLamThem());
-            stmt.setString(8, pc.getGhiChu());
-            stmt.setString(9, pc.getNguoiPhanCong() != null ? pc.getNguoiPhanCong().getMaNhanVien() : null);
-            stmt.setString(10, pc.getMaPhanCong());
-            n = stmt.executeUpdate();
+            stmt.setString(5, pc.getGhiChu());
+            stmt.setString(6, pc.getMaPhanCong());
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return n > 0;
+        return false;
     }
 
     // Xóa phân công ca làm theo mã
     public boolean xoaPhanCongCaLam(String maPhanCong) {
-        PreparedStatement stmt = null;
-        int n = 0;
-        try {
-            Connection con = ConnectDB.getConnection();
-            String sql = "DELETE FROM PhanCongCaLam WHERE maPhanCong = ?";
-            stmt = con.prepareStatement(sql);
+        String sql = "DELETE FROM PhanCongCaLam WHERE maPhanCong = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, maPhanCong);
-            n = stmt.executeUpdate();
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return n > 0;
+        return false;
     }
 
-    // Tìm kiếm phân công ca làm theo mã phân công, mã nhân viên hoặc mã ca
+    // Tìm kiếm phân công ca làm theo từ khóa
     public ArrayList<PhanCongCaLam> timKiemPhanCongCaLam(String tuKhoa) {
         ArrayList<PhanCongCaLam> dsPhanCong = new ArrayList<>();
-        PreparedStatement stmt = null;
-        try {
-            Connection con = ConnectDB.getConnection();
-            String sql = "SELECT * FROM PhanCongCaLam WHERE maPhanCong LIKE ? OR maNhanVien LIKE ? OR maCa LIKE ?";
-            stmt = con.prepareStatement(sql);
+        String sql = "SELECT pc.*, nv.hoTen, ca.tenCa, ca.gioVao, ca.gioRa "
+                + "FROM PhanCongCaLam pc "
+                + "JOIN NhanVien nv ON pc.maNhanVien = nv.maNhanVien "
+                + "JOIN CaLamViec ca ON pc.maCa = ca.maCa "
+                + "WHERE pc.maPhanCong LIKE ? OR pc.maNhanVien LIKE ? OR nv.hoTen LIKE ? OR pc.maCa LIKE ? OR ca.tenCa LIKE ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
             String key = "%" + tuKhoa + "%";
-            stmt.setString(1, key);
-            stmt.setString(2, key);
-            stmt.setString(3, key);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                String maNV = rs.getString("maNhanVien");
-                String maCa = rs.getString("maCa");
-                String maNguoiPC = rs.getString("nguoiPhanCong");
-
-                PhanCongCaLam pc = new PhanCongCaLam(
-                        rs.getString("maPhanCong"),
-                        maNV != null ? new NhanVien(maNV) : null,
-                        maCa != null ? new CaLamViec(maCa) : null,
-                        rs.getDate("ngayLamViec"),
-                        rs.getString("trangThai"),
-                        rs.getTime("gioDiemDanhVao"),
-                        rs.getTime("gioDiemDanhRa"),
-                        rs.getDouble("soGioLamThem"),
-                        rs.getString("ghiChu"),
-                        maNguoiPC != null ? new NhanVien(maNguoiPC) : null,
-                        rs.getTimestamp("ngayTao"),
-                        rs.getTimestamp("ngayCapNhat")
-                );
-                dsPhanCong.add(pc);
+            for (int i = 1; i <= 5; i++) {
+                stmt.setString(i, key);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    dsPhanCong.add(docPhanCongTuResultSet(rs));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,17 +29,18 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import DAO.NhanVien_DAO;
+import entity.NhanVien;
+
 public class EmployeePanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
-    private JPanel pCenterContainer, pNorthCenter, pSubHeader, pSubActions, pSearch;
-    private JLabel lblSubTitle;
-    private JButton btnAdd, btnExport;
+    private JButton btnAdd, btnExport, btnTim;
     private JTextField txtSearch;
     private JComboBox<String> cboDepartment, cboStatus;
     private DefaultTableModel model;
     private JTable table;
-    private JScrollPane scrollPane;
+    private NhanVien_DAO nv_dao = new NhanVien_DAO();
 
     public EmployeePanel() {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
@@ -51,18 +53,18 @@ public class EmployeePanel extends JFrame implements ActionListener {
         add(menuPanel, BorderLayout.NORTH);
 
         // 1. TIÊU ĐỀ PHỤ VÀ NÚT THÊM MỚI / XUẤT EXCEL
-        pCenterContainer = new JPanel(new BorderLayout());
+        JPanel pCenterContainer = new JPanel(new BorderLayout());
 
-        pSubHeader = new JPanel(new BorderLayout());
+        JPanel pSubHeader = new JPanel(new BorderLayout());
         pSubHeader.setBackground(new Color(245, 245, 245));
         pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        lblSubTitle = new JLabel("👥 Quản lý Nhân Viên");
+        JLabel lblSubTitle = new JLabel("👥 Quản lý Nhân Viên");
         lblSubTitle.setForeground(new Color(180, 40, 40));
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
 
-        pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pSubActions.setOpaque(false);
 
         btnAdd = new JButton("+ Thêm mới");
@@ -79,16 +81,22 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pSubHeader.add(pSubActions, BorderLayout.EAST);
 
         // 2. THANH TÌM KIẾM VÀ BỘ LỌC
-        pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        txtSearch = new JTextField("🔍 Tìm tên, mã NV, SĐT...", 25);
+        JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        txtSearch = new JTextField(25);
+        txtSearch.setToolTipText("Tìm tên, mã NV, SĐT...");
+        btnTim = new JButton("🔍 Tìm");
+        btnTim.setBackground(Color.WHITE);
+        btnTim.setFocusPainted(false);
+
         cboDepartment = new JComboBox<>(new String[]{"Tất cả phòng ban", "Quản lý", "Bán hàng", "Kho", "Kế toán"});
-        cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm", "Nghỉ phép"});
+        cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
 
         pSearch.add(txtSearch);
+        pSearch.add(btnTim);
         pSearch.add(cboDepartment);
         pSearch.add(cboStatus);
 
-        pNorthCenter = new JPanel(new BorderLayout());
+        JPanel pNorthCenter = new JPanel(new BorderLayout());
         pNorthCenter.add(pSubHeader, BorderLayout.NORTH);
         pNorthCenter.add(pSearch, BorderLayout.CENTER);
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
@@ -130,10 +138,12 @@ public class EmployeePanel extends JFrame implements ActionListener {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(SwingConstants.CENTER);
                 String val = value != null ? value.toString() : "";
-                if ("Đang làm".equals(val)) {
+                if ("Đang làm việc".equals(val) || "Đang làm".equals(val)) {
                     setForeground(new Color(46, 125, 50));
-                } else if ("Nghỉ phép".equals(val)) {
+                } else if ("Tạm nghỉ".equals(val) || "Nghỉ phép".equals(val)) {
                     setForeground(new Color(230, 81, 0));
+                } else {
+                    setForeground(new Color(205, 32, 38));
                 }
                 return this;
             }
@@ -171,39 +181,93 @@ public class EmployeePanel extends JFrame implements ActionListener {
             }
         });
 
-        model.addRow(new Object[]{false, "NV001", "Nguyễn Văn An", "Nam", "0901234567", "Quản lý", "Trưởng phòng", "Đang làm", ""});
-        model.addRow(new Object[]{false, "NV002", "Trần Thị Bình", "Nữ", "0912345678", "Bán hàng", "Nhân viên", "Đang làm", ""});
-        model.addRow(new Object[]{false, "NV003", "Phạm Văn Cường", "Nam", "0923456789", "Kho", "Nhân viên", "Đang làm", ""});
-        model.addRow(new Object[]{false, "NV004", "Lê Thị Dung", "Nữ", "0934567890", "Bán hàng", "Nhân viên", "Nghỉ phép", ""});
-        model.addRow(new Object[]{false, "NV005", "Hoàng Minh Đức", "Nam", "0945678901", "Kế toán", "Phó phòng", "Đang làm", ""});
-
-        scrollPane = new JScrollPane(table);
-        pCenterContainer.add(scrollPane, BorderLayout.CENTER);
+        pCenterContainer.add(new JScrollPane(table), BorderLayout.CENTER);
         add(pCenterContainer, BorderLayout.CENTER);
+
+        // Đọc dữ liệu từ Database vào bảng
+        docDuLieuDatabaseVaoTable();
 
         // Đăng ký sự kiện
         btnAdd.addActionListener(this);
         btnExport.addActionListener(this);
+        btnTim.addActionListener(this);
+        txtSearch.addActionListener(this);
+        cboDepartment.addActionListener(this);
+        cboStatus.addActionListener(this);
 
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = table.getSelectedRow();
-                int col = table.getSelectedColumn();
+                int row = table.rowAtPoint(e.getPoint());
+                int col = table.columnAtPoint(e.getPoint());
                 if (row >= 0 && col == 8) {
-                    new EmployeeUpdatePanel().setVisible(true);
+                    String maNV = model.getValueAt(row, 1).toString();
+                    int cellX = e.getX() - table.getCellRect(row, col, false).x;
+                    int cellWidth = table.getColumnModel().getColumn(col).getWidth();
+                    // Nếu click vào phần bên phải của ô Thao tác (nút Xóa 🗑)
+                    if (cellX > cellWidth * 2 / 3) {
+                        if (JOptionPane.showConfirmDialog(EmployeePanel.this,
+                                "Bạn có chắc muốn xóa nhân viên " + maNV + "?", "Xác nhận xóa",
+                                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                            if (nv_dao.xoaNhanVien(maNV)) {
+                                docDuLieuDatabaseVaoTable();
+                                JOptionPane.showMessageDialog(EmployeePanel.this, "Xóa nhân viên thành công!");
+                            } else {
+                                JOptionPane.showMessageDialog(EmployeePanel.this,
+                                        "Không thể xóa nhân viên (đang có dữ liệu liên quan trong hệ thống)!");
+                            }
+                        }
+                    } else {
+                        // Click nút Sửa 📝 hoặc Xem 👁 -> Mở màn hình Cập nhật nhân viên
+                        new EmployeeUpdatePanel(EmployeePanel.this, maNV).setVisible(true);
+                    }
                 }
             }
         });
+    }
+
+    public void docDuLieuDatabaseVaoTable() {
+        model.setRowCount(0);
+        String tuKhoa = txtSearch.getText().trim().toLowerCase();
+        String phongBan = cboDepartment.getSelectedItem().toString();
+        String trangThai = cboStatus.getSelectedItem().toString();
+
+        ArrayList<NhanVien> ds = nv_dao.getAllNhanVien();
+        for (NhanVien nv : ds) {
+            boolean matchKey = tuKhoa.isEmpty()
+                    || nv.getMaNhanVien().toLowerCase().contains(tuKhoa)
+                    || nv.getHoTen().toLowerCase().contains(tuKhoa)
+                    || (nv.getSoDienThoai() != null && nv.getSoDienThoai().contains(tuKhoa));
+            boolean matchDept = "Tất cả phòng ban".equals(phongBan)
+                    || phongBan.equalsIgnoreCase(nv.getPhongBan());
+            boolean matchStatus = "Tất cả trạng thái".equals(trangThai)
+                    || trangThai.equalsIgnoreCase(nv.getTrangThai());
+
+            if (matchKey && matchDept && matchStatus) {
+                model.addRow(new Object[]{
+                        false,
+                        nv.getMaNhanVien(),
+                        nv.getHoTen(),
+                        nv.getGioiTinh(),
+                        nv.getSoDienThoai(),
+                        nv.getPhongBan(),
+                        nv.getChucVu(),
+                        nv.getTrangThai(),
+                        ""
+                });
+            }
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
         if (o.equals(btnAdd)) {
-            new EmployeeUpdatePanel().setVisible(true);
+            new EmployeeUpdatePanel(this, null).setVisible(true);
         } else if (o.equals(btnExport)) {
             JOptionPane.showMessageDialog(this, "Xuất Excel thành công!");
+        } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboDepartment) || o.equals(cboStatus)) {
+            docDuLieuDatabaseVaoTable();
         }
     }
 
