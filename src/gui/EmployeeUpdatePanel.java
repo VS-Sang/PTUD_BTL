@@ -8,6 +8,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -22,6 +26,11 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import DAO.NhanVien_DAO;
+import DAO.PhanCongCaLam_DAO;
+import entity.NhanVien;
+import entity.PhanCongCaLam;
+
 public class EmployeeUpdatePanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
@@ -29,8 +38,23 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
     private JComboBox<String> cboGioiTinh, cboPhongBan, cboChucVu, cboTrangThai;
     private JTextArea txtDiaChi;
     private JButton btnLuu, btnLamMoi, btnHuy;
+    private JPanel pShiftCard;
+
+    private EmployeePanel parentPanel;
+    private boolean isUpdateMode;
+    private NhanVien_DAO nv_dao = new NhanVien_DAO();
+    private PhanCongCaLam_DAO pc_dao = new PhanCongCaLam_DAO();
+    private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
     public EmployeeUpdatePanel() {
+        this(null, "NV001");
+    }
+
+    public EmployeeUpdatePanel(EmployeePanel parentPanel, String maNV) {
+        this.parentPanel = parentPanel;
+        this.isUpdateMode = (maNV != null);
+
         setTitle("Điện Máy Đỏ — Nhân viên — Thêm / Cập nhật");
         setSize(1200, 720);
         setLocationRelativeTo(null);
@@ -48,7 +72,9 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         pSubHeader.setBackground(new Color(235, 235, 235));
         pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        JLabel lblSubTitle = new JLabel("👤+ Nhân viên — Thêm / Cập nhật");
+        JLabel lblSubTitle = new JLabel(isUpdateMode
+                ? "👤 Nhân viên — Cập nhật (" + maNV + ")"
+                : "👤+ Nhân viên — Thêm mới");
         lblSubTitle.setForeground(new Color(180, 40, 40));
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
@@ -64,28 +90,28 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         pGrid.setBorder(BorderFactory.createEmptyBorder(10, 15, 5, 15));
 
         pGrid.add(new JLabel("Mã nhân viên:"));
-        txtMaNV = new JTextField("NV001");
+        txtMaNV = new JTextField();
         txtMaNV.setEditable(false);
         pGrid.add(txtMaNV);
 
         pGrid.add(new JLabel("Họ và tên (*):"));
-        txtHoTen = new JTextField("Nguyễn Văn An");
+        txtHoTen = new JTextField();
         pGrid.add(txtHoTen);
 
         pGrid.add(new JLabel("Giới tính:"));
         cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
         pGrid.add(cboGioiTinh);
 
-        pGrid.add(new JLabel("Ngày sinh (*):"));
-        txtNgaySinh = new JTextField("1990-05-15");
+        pGrid.add(new JLabel("Ngày sinh (* yyyy-MM-dd):"));
+        txtNgaySinh = new JTextField("1995-01-01");
         pGrid.add(txtNgaySinh);
 
         pGrid.add(new JLabel("SĐT (*):"));
-        txtSDT = new JTextField("0901234567");
+        txtSDT = new JTextField();
         pGrid.add(txtSDT);
 
         pGrid.add(new JLabel("Email:"));
-        txtEmail = new JTextField("an@dienmaydo.vn");
+        txtEmail = new JTextField();
         pGrid.add(txtEmail);
 
         pGrid.add(new JLabel("Phòng ban (*):"));
@@ -93,15 +119,15 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         pGrid.add(cboPhongBan);
 
         pGrid.add(new JLabel("Chức vụ:"));
-        cboChucVu = new JComboBox<>(new String[]{"Nhân viên", "Trưởng phòng", "Phó phòng", "Quản lý", "Thu ngân"});
+        cboChucVu = new JComboBox<>(new String[]{"Nhân viên", "Quản lý", "Thu ngân", "Nhân viên kho"});
         pGrid.add(cboChucVu);
 
         pGrid.add(new JLabel("Mức lương (VNĐ):"));
-        txtMucLuong = new JTextField("8000000");
+        txtMucLuong = new JTextField("7500000");
         pGrid.add(txtMucLuong);
 
         pGrid.add(new JLabel("Trạng thái:"));
-        cboTrangThai = new JComboBox<>(new String[]{"Đang làm", "Nghỉ phép", "Đã nghỉ việc"});
+        cboTrangThai = new JComboBox<>(new String[]{"Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
         pGrid.add(cboTrangThai);
 
         pFormCard.add(pGrid, BorderLayout.NORTH);
@@ -113,7 +139,6 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
 
         pAddressAndButtons.add(new JLabel("Địa chỉ:"), BorderLayout.NORTH);
         txtDiaChi = new JTextArea(2, 20);
-        txtDiaChi.setText("Nhập địa chỉ...");
         pAddressAndButtons.add(new JScrollPane(txtDiaChi), BorderLayout.CENTER);
 
         JPanel pButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
@@ -140,27 +165,75 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         pFormCard.add(pAddressAndButtons, BorderLayout.CENTER);
         pMain.add(pFormCard, BorderLayout.CENTER);
 
-        // 3. KHUNG CA TRỰC TUẦN NÀY
-        JPanel pShiftCard = new JPanel(new GridLayout(1, 7, 10, 0));
+        // 3. KHUNG CA TRỰC TUẦN NÀY (Đọc từ Database PhanCongCaLam)
+        pShiftCard = new JPanel(new GridLayout(1, 7, 10, 0));
         pShiftCard.setBackground(Color.WHITE);
         pShiftCard.setBorder(BorderFactory.createTitledBorder("📅 Ca trực tuần này"));
         pShiftCard.setPreferredSize(new Dimension(0, 130));
 
-        pShiftCard.add(createDayBox("Thứ 2", "Sáng: 8h-12h"));
-        pShiftCard.add(createDayBox("Thứ 3", "Chiều: 13h-17h"));
-        pShiftCard.add(createDayBox("Thứ 4", "Sáng: 8h-12h"));
-        pShiftCard.add(createDayBox("Thứ 5", ""));
-        pShiftCard.add(createDayBox("Thứ 6", "Chiều: 13h-17h"));
-        pShiftCard.add(createDayBox("Thứ 7", "Tối: 18h-22h"));
-        pShiftCard.add(createDayBox("CN", ""));
-
         pMain.add(pShiftCard, BorderLayout.SOUTH);
         add(pMain, BorderLayout.CENTER);
+
+        // Đổ dữ liệu từ Database lên Form
+        if (isUpdateMode) {
+            taiThongTinNhanVien(maNV);
+        } else {
+            txtMaNV.setText(nv_dao.phatSinhMaNhanVien());
+            hienThiCaTruc(null);
+        }
 
         // Đăng ký sự kiện
         btnLuu.addActionListener(this);
         btnLamMoi.addActionListener(this);
         btnHuy.addActionListener(this);
+    }
+
+    private void taiThongTinNhanVien(String maNV) {
+        NhanVien nv = nv_dao.getNhanVienTheoMa(maNV);
+        if (nv != null) {
+            txtMaNV.setText(nv.getMaNhanVien());
+            txtHoTen.setText(nv.getHoTen());
+            cboGioiTinh.setSelectedItem(nv.getGioiTinh());
+            txtNgaySinh.setText(nv.getNgaySinh() != null ? sdfDate.format(nv.getNgaySinh()) : "");
+            txtSDT.setText(nv.getSoDienThoai());
+            txtEmail.setText(nv.getEmail() != null ? nv.getEmail() : "");
+            cboPhongBan.setSelectedItem(nv.getPhongBan());
+            cboChucVu.setSelectedItem(nv.getChucVu());
+            txtMucLuong.setText(String.format("%.0f", nv.getLuongCoBan()));
+            cboTrangThai.setSelectedItem(nv.getTrangThai());
+            txtDiaChi.setText(nv.getDiaChi() != null ? nv.getDiaChi() : "");
+        }
+        hienThiCaTruc(maNV);
+    }
+
+    private void hienThiCaTruc(String maNV) {
+        pShiftCard.removeAll();
+        String[] days = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN"};
+        String[] shifts = {"", "", "", "", "", "", ""};
+
+        if (maNV != null) {
+            ArrayList<PhanCongCaLam> dsPC = pc_dao.getPhanCongTheoNhanVien(maNV);
+            Calendar cal = Calendar.getInstance();
+            for (PhanCongCaLam pc : dsPC) {
+                if (pc.getNgayLamViec() != null && pc.getCaLamViec() != null) {
+                    cal.setTime(pc.getNgayLamViec());
+                    int dow = cal.get(Calendar.DAY_OF_WEEK); // CN = 1, T2 = 2..T7 = 7
+                    int idx = (dow == Calendar.SUNDAY) ? 6 : (dow - 2);
+                    String gio = "";
+                    if (pc.getCaLamViec().getGioVao() != null && pc.getCaLamViec().getGioRa() != null) {
+                        gio = ": " + sdfTime.format(pc.getCaLamViec().getGioVao())
+                                + "-" + sdfTime.format(pc.getCaLamViec().getGioRa());
+                    }
+                    shifts[idx] = pc.getCaLamViec().getTenCa() + gio;
+                }
+            }
+        }
+
+        for (int i = 0; i < 7; i++) {
+            pShiftCard.add(createDayBox(days[i], shifts[i]));
+        }
+        pShiftCard.revalidate();
+        pShiftCard.repaint();
     }
 
     private JPanel createDayBox(String day, String shift) {
@@ -174,7 +247,7 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         lblDay.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
         box.add(lblDay, BorderLayout.NORTH);
 
-        if (!shift.isEmpty()) {
+        if (shift != null && !shift.isEmpty()) {
             JLabel lblShift = new JLabel(shift, SwingConstants.CENTER);
             lblShift.setOpaque(true);
             lblShift.setBackground(new Color(253, 232, 232));
@@ -187,12 +260,12 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
     private void xoaRong() {
         txtHoTen.setText("");
         cboGioiTinh.setSelectedIndex(0);
-        txtNgaySinh.setText("");
+        txtNgaySinh.setText("1995-01-01");
         txtSDT.setText("");
         txtEmail.setText("");
         cboPhongBan.setSelectedIndex(0);
         cboChucVu.setSelectedIndex(0);
-        txtMucLuong.setText("");
+        txtMucLuong.setText("7500000");
         cboTrangThai.setSelectedIndex(0);
         txtDiaChi.setText("");
         txtHoTen.requestFocus();
@@ -206,11 +279,43 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         } else if (o.equals(btnHuy)) {
             dispose();
         } else if (o.equals(btnLuu)) {
-            if (txtHoTen.getText().trim().isEmpty() || txtSDT.getText().trim().isEmpty()) {
+            String hoTen = txtHoTen.getText().trim();
+            String sdt = txtSDT.getText().trim();
+            if (hoTen.isEmpty() || sdt.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Họ tên và SĐT!");
                 return;
             }
-            JOptionPane.showMessageDialog(this, "Lưu thông tin nhân viên thành công!");
+            try {
+                Date ngaySinh = sdfDate.parse(txtNgaySinh.getText().trim());
+                double luong = Double.parseDouble(txtMucLuong.getText().trim().isEmpty() ? "0" : txtMucLuong.getText().trim());
+
+                NhanVien nv = new NhanVien();
+                nv.setMaNhanVien(txtMaNV.getText().trim());
+                nv.setHoTen(hoTen);
+                nv.setGioiTinh(cboGioiTinh.getSelectedItem().toString());
+                nv.setNgaySinh(ngaySinh);
+                nv.setSoDienThoai(sdt);
+                nv.setEmail(txtEmail.getText().trim());
+                nv.setPhongBan(cboPhongBan.getSelectedItem().toString());
+                nv.setChucVu(cboChucVu.getSelectedItem().toString());
+                nv.setLuongCoBan(luong);
+                nv.setTrangThai(cboTrangThai.getSelectedItem().toString());
+                nv.setDiaChi(txtDiaChi.getText().trim());
+
+                boolean ok = isUpdateMode ? nv_dao.capNhatNhanVien(nv) : nv_dao.themNhanVien(nv);
+                if (ok) {
+                    if (parentPanel != null) {
+                        parentPanel.docDuLieuDatabaseVaoTable();
+                    }
+                    JOptionPane.showMessageDialog(this,
+                            isUpdateMode ? "Cập nhật nhân viên thành công!" : "Thêm nhân viên mới thành công!");
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Lưu thất bại! Vui lòng kiểm tra SĐT/Email không bị trùng.");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Định dạng Ngày sinh (yyyy-MM-dd) hoặc Mức lương không hợp lệ!");
+            }
         }
     }
 
