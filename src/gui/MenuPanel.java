@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -54,6 +55,11 @@ public class MenuPanel extends JPanel {
 
     private final Map<Menu, JButton> menuButtons = new EnumMap<>(Menu.class);
     private final Map<Shortcut, JButton> shortcutButtons = new EnumMap<>(Shortcut.class);
+    private String currentUserName = "Nguyễn Văn An";
+    private String currentUserRole = "Quản lý";
+    private JMenuItem mnuDoanhThu;
+    private JMenuItem mnuBanChay;
+    private JMenuItem mnuTongHop;
 
     public MenuPanel() {
         this("Nguyễn Văn An", "Quản lý");
@@ -61,6 +67,8 @@ public class MenuPanel extends JPanel {
 
     public MenuPanel(String userName, String userRole) {
         super(new BorderLayout());
+        this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
+        this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(HEADER_COLOR);
@@ -202,10 +210,49 @@ public class MenuPanel extends JPanel {
         // Menu Thống kê
         JButton btnReports = menuButtons.get(Menu.REPORTS);
         if (btnReports != null) {
-            btnReports.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new MainFrame().setVisible(true);
-            });
+            boolean isQuanLy = currentUserRole != null && (
+                    currentUserRole.equalsIgnoreCase("Quản lý") ||
+                    currentUserRole.equalsIgnoreCase("Admin") ||
+                    currentUserRole.equalsIgnoreCase("Quan Ly") ||
+                    currentUserRole.toLowerCase().contains("quản lý") ||
+                    currentUserRole.toLowerCase().contains("quan ly") ||
+                    currentUserRole.toLowerCase().contains("admin")
+            );
+
+            if (isQuanLy) {
+                JPopupMenu popupReports = new JPopupMenu();
+                mnuDoanhThu = new JMenuItem("📈 Doanh thu theo tháng");
+                mnuBanChay = new JMenuItem("📊 Sản phẩm bán chạy");
+                mnuTongHop = new JMenuItem("📄 Báo cáo tổng hợp");
+
+                mnuDoanhThu.addActionListener(e -> {
+                    dongCuaSoHienTai();
+                    new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
+                });
+
+                mnuBanChay.addActionListener(e -> {
+                    dongCuaSoHienTai();
+                    new TopProductsPanel(currentUserName, currentUserRole).setVisible(true);
+                });
+
+                mnuTongHop.addActionListener(e -> {
+                    dongCuaSoHienTai();
+                    new GeneralReportPanel(currentUserName, currentUserRole).setVisible(true);
+                });
+
+                popupReports.add(mnuDoanhThu);
+                popupReports.add(mnuBanChay);
+                popupReports.add(mnuTongHop);
+                btnReports.addActionListener(e -> popupReports.show(btnReports, 0, btnReports.getHeight()));
+            } else {
+                btnReports.addActionListener(e -> {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
+                            "Phân quyền hệ thống",
+                            JOptionPane.WARNING_MESSAGE);
+                });
+            }
         }
 
         // Shortcut Home
@@ -213,7 +260,7 @@ public class MenuPanel extends JPanel {
         if (btnHome != null) {
             btnHome.addActionListener(e -> {
                 dongCuaSoHienTai();
-                new MainFrame().setVisible(true);
+                new MainFrame(currentUserName, currentUserRole).setVisible(true);
             });
         }
 
@@ -222,7 +269,7 @@ public class MenuPanel extends JPanel {
         if (btnShortcutReports != null) {
             btnShortcutReports.addActionListener(e -> {
                 dongCuaSoHienTai();
-                new MainFrame().setVisible(true);
+                new MainFrame(currentUserName, currentUserRole).setVisible(true);
             });
         }
 
@@ -261,6 +308,28 @@ public class MenuPanel extends JPanel {
             }
             b.addActionListener(action);
         }
+    }
+
+
+
+    public String getCurrentUserName() {
+        return currentUserName;
+    }
+
+    public String getCurrentUserRole() {
+        return currentUserRole;
+    }
+
+    public JMenuItem getMnuDoanhThu() {
+        return mnuDoanhThu;
+    }
+
+    public JMenuItem getMnuBanChay() {
+        return mnuBanChay;
+    }
+
+    public JMenuItem getMnuTongHop() {
+        return mnuTongHop;
     }
 
     public static void main(String[] args) {
