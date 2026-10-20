@@ -5,16 +5,21 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.EnumMap;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -39,6 +44,8 @@ public class MenuPanel extends JPanel {
         INVOICING,
         IMPORT_GOODS,
         RETURN,
+        WORK_SCHEDULE,
+        ASSIGNMENT,
 
         FIND_PRODUCT,
         FIND_CUSTOMER,
@@ -129,6 +136,8 @@ public class MenuPanel extends JPanel {
         addItem(processMenu, MenuItem.INVOICING, "Lập hoá đơn bán hàng");
         addItem(processMenu, MenuItem.IMPORT_GOODS, "Nhập hàng vào kho");
         addItem(processMenu, MenuItem.RETURN, "Xử lí trả hàng");
+        addItem(processMenu, MenuItem.WORK_SCHEDULE, "Quản lý ca làm việc");
+        addItem(processMenu, MenuItem.ASSIGNMENT, "Phân công ca làm");
 
         JMenu findMenu = new JMenu("🔍 Tìm kiếm ▾");
         addItem(findMenu, MenuItem.FIND_PRODUCT, "Tìm sản phẩm");
@@ -171,139 +180,106 @@ public class MenuPanel extends JPanel {
     }
 
     private void caiDatDieuHuongMacDinh() {
-        // Menu Danh mục
-        JButton btnCatalog = menuButtons.get(Menu.CATALOG);
-        if (btnCatalog != null) {
-            JPopupMenu popupCatalog = new JPopupMenu();
-            JMenuItem mnuNhanVien = new JMenuItem("👥 Quản lý Nhân viên");
-            JMenuItem mnuSanPham = new JMenuItem("📦 Quản lý Sản phẩm");
-            JMenuItem mnuKhachHang = new JMenuItem("👤 Quản lý Khách hàng");
+        // Hệ thống
+        setMenuItemAction(MenuItem.HOME, e -> {
+            dongCuaSoHienTai();
+            new MainFrame(currentUserName, currentUserRole).setVisible(true);
+        });
+        setMenuItemAction(MenuItem.LOGOUT, e -> {
+            dongCuaSoHienTai();
+            new LoginFrame().setVisible(true);
+        });
 
-            mnuNhanVien.addActionListener(e -> {
+        // Danh mục
+        setMenuItemAction(MenuItem.INVOICE, e -> {
+            dongCuaSoHienTai();
+            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
+        });
+        setMenuItemAction(MenuItem.CUSTOMER, e -> {
+            dongCuaSoHienTai();
+            new CustomerPanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.EMPLOYEE, e -> {
+            dongCuaSoHienTai();
+            new EmployeePanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.PRODUCT, e -> {
+            dongCuaSoHienTai();
+            new ProductPanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.PROMOTION, e -> {
+            dongCuaSoHienTai();
+            new PromotionPanel().setVisible(true);
+        });
+
+        // Xử lý
+        setMenuItemAction(MenuItem.INVOICING, e -> {
+            dongCuaSoHienTai();
+            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
+        });
+        setMenuItemAction(MenuItem.IMPORT_GOODS, e -> {
+            dongCuaSoHienTai();
+            new ImportGoodsPanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.WORK_SCHEDULE, e -> {
+            dongCuaSoHienTai();
+            new WorkSchedulePanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.ASSIGNMENT, e -> {
+            dongCuaSoHienTai();
+            new AssignmentPanel().setVisible(true);
+        });
+
+        // Tìm kiếm
+        setMenuItemAction(MenuItem.FIND_PRODUCT, e -> {
+            dongCuaSoHienTai();
+            new ProductPanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.FIND_CUSTOMER, e -> {
+            dongCuaSoHienTai();
+            new CustomerPanel().setVisible(true);
+        });
+        setMenuItemAction(MenuItem.INVOICE_SEARCH, e -> {
+            dongCuaSoHienTai();
+            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
+        });
+
+        // Thống kê
+        mnuDoanhThu = menuItemMap.get(MenuItem.MONTHLY_REVENUE);
+        mnuBanChay = menuItemMap.get(MenuItem.BEST_SELLERS);
+        mnuTongHop = menuItemMap.get(MenuItem.SUMMARY_REPORT);
+
+        boolean isQuanLy = currentUserRole != null && (currentUserRole.equalsIgnoreCase("Quản lý") ||
+                currentUserRole.equalsIgnoreCase("Admin") ||
+                currentUserRole.equalsIgnoreCase("Quan Ly") ||
+                currentUserRole.toLowerCase().contains("quản lý") ||
+                currentUserRole.toLowerCase().contains("quan ly") ||
+                currentUserRole.toLowerCase().contains("admin"));
+
+        if (isQuanLy) {
+            setMenuItemAction(MenuItem.MONTHLY_REVENUE, e -> {
                 dongCuaSoHienTai();
-                new EmployeePanel().setVisible(true);
+                new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
             });
-            mnuSanPham.addActionListener(e -> {
+            setMenuItemAction(MenuItem.BEST_SELLERS, e -> {
                 dongCuaSoHienTai();
-                new ProductPanel().setVisible(true);
+                new TopProductsPanel(currentUserName, currentUserRole).setVisible(true);
             });
-            mnuKhachHang.addActionListener(e -> {
+            setMenuItemAction(MenuItem.SUMMARY_REPORT, e -> {
                 dongCuaSoHienTai();
-                new CustomerPanel().setVisible(true);
+                new GeneralReportPanel(currentUserName, currentUserRole).setVisible(true);
             });
-
-            popupCatalog.add(mnuNhanVien);
-            popupCatalog.add(mnuSanPham);
-            popupCatalog.add(mnuKhachHang);
-            btnCatalog.addActionListener(e -> popupCatalog.show(btnCatalog, 0, btnCatalog.getHeight()));
-        }
-
-        // Menu Xử lý
-        JButton btnOps = menuButtons.get(Menu.OPERATIONS);
-        if (btnOps != null) {
-            JPopupMenu popupOps = new JPopupMenu();
-            JMenuItem mnuCaLam = new JMenuItem("🕒 Quản lý Ca làm việc");
-            JMenuItem mnuPhanCong = new JMenuItem("📅 Phân công ca làm");
-            JMenuItem mnuHoaDon = new JMenuItem("🧾 Quản lý Hóa đơn");
-
-            mnuCaLam.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new WorkSchedulePanel().setVisible(true);
-            });
-            mnuPhanCong.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new AssignmentPanel().setVisible(true);
-            });
-            mnuHoaDon.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new InvoicePanel().setVisible(true);
-            });
-
-            popupOps.add(mnuCaLam);
-            popupOps.add(mnuPhanCong);
-            popupOps.add(mnuHoaDon);
-            btnOps.addActionListener(e -> popupOps.show(btnOps, 0, btnOps.getHeight()));
-        }
-
-        // Menu Tìm kiếm
-        JButton btnSearch = menuButtons.get(Menu.SEARCH);
-        if (btnSearch != null) {
-            JPopupMenu popupSearch = new JPopupMenu();
-            JMenuItem mnuTimSP = new JMenuItem("📦 Tìm Sản phẩm");
-            JMenuItem mnuTimNV = new JMenuItem("👥 Tìm Nhân viên");
-            JMenuItem mnuTimKH = new JMenuItem("👤 Tìm Khách hàng");
-            JMenuItem mnuTimHD = new JMenuItem("🧾 Tìm Hóa đơn");
-
-            mnuTimSP.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new ProductPanel().setVisible(true);
-            });
-            mnuTimNV.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new EmployeePanel().setVisible(true);
-            });
-            mnuTimKH.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new CustomerPanel().setVisible(true);
-            });
-            mnuTimHD.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new InvoicePanel().setVisible(true);
-            });
-
-            popupSearch.add(mnuTimSP);
-            popupSearch.add(mnuTimNV);
-            popupSearch.add(mnuTimKH);
-            popupSearch.add(mnuTimHD);
-            btnSearch.addActionListener(e -> popupSearch.show(btnSearch, 0, btnSearch.getHeight()));
-        }
-
-        // Menu Thống kê
-        JButton btnReports = menuButtons.get(Menu.REPORTS);
-        if (btnReports != null) {
-            boolean isQuanLy = currentUserRole != null && (
-                    currentUserRole.equalsIgnoreCase("Quản lý") ||
-                    currentUserRole.equalsIgnoreCase("Admin") ||
-                    currentUserRole.equalsIgnoreCase("Quan Ly") ||
-                    currentUserRole.toLowerCase().contains("quản lý") ||
-                    currentUserRole.toLowerCase().contains("quan ly") ||
-                    currentUserRole.toLowerCase().contains("admin")
-            );
-
-            if (isQuanLy) {
-                JPopupMenu popupReports = new JPopupMenu();
-                mnuDoanhThu = new JMenuItem("📈 Doanh thu theo tháng");
-                mnuBanChay = new JMenuItem("📊 Sản phẩm bán chạy");
-                mnuTongHop = new JMenuItem("📄 Báo cáo tổng hợp");
-
-                mnuDoanhThu.addActionListener(e -> {
-                    dongCuaSoHienTai();
-                    new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
-                });
-
-                mnuBanChay.addActionListener(e -> {
-                    dongCuaSoHienTai();
-                    new TopProductsPanel(currentUserName, currentUserRole).setVisible(true);
-                });
-
-                mnuTongHop.addActionListener(e -> {
-                    dongCuaSoHienTai();
-                    new GeneralReportPanel(currentUserName, currentUserRole).setVisible(true);
-                });
-
-                popupReports.add(mnuDoanhThu);
-                popupReports.add(mnuBanChay);
-                popupReports.add(mnuTongHop);
-                btnReports.addActionListener(e -> popupReports.show(btnReports, 0, btnReports.getHeight()));
-            } else {
-                btnReports.addActionListener(e -> {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
-                            "Phân quyền hệ thống",
-                            JOptionPane.WARNING_MESSAGE);
-                });
-            }
+        } else {
+            ActionListener baoChuaPhanQuyen = e -> {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
+                        "Phân quyền hệ thống",
+                        JOptionPane.WARNING_MESSAGE);
+            };
+            setMenuItemAction(MenuItem.MONTHLY_REVENUE, baoChuaPhanQuyen);
+            setMenuItemAction(MenuItem.BEST_SELLERS, baoChuaPhanQuyen);
+            setMenuItemAction(MenuItem.SUMMARY_REPORT, baoChuaPhanQuyen);
         }
 
         // Shortcut Home
@@ -319,8 +295,16 @@ public class MenuPanel extends JPanel {
         JButton btnShortcutReports = shortcutButtons.get(Shortcut.REPORTS);
         if (btnShortcutReports != null) {
             btnShortcutReports.addActionListener(e -> {
-                dongCuaSoHienTai();
-                new MainFrame(currentUserName, currentUserRole).setVisible(true);
+                if (isQuanLy) {
+                    dongCuaSoHienTai();
+                    new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
+                            "Phân quyền hệ thống",
+                            JOptionPane.WARNING_MESSAGE);
+                }
             });
         }
 
@@ -352,9 +336,14 @@ public class MenuPanel extends JPanel {
         btn.setToolTipText(sc.label);
         if (sc.iconPath != null) {
             try {
-                ImageIcon icon = new ImageIcon(getClass().getResource(sc.iconPath));
-                Image img = icon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
-                btn.setIcon(new ImageIcon(img));
+                URL iconUrl = getClass().getResource(sc.iconPath);
+                if (iconUrl != null) {
+                    ImageIcon icon = new ImageIcon(iconUrl);
+                    Image img = icon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+                    btn.setIcon(new ImageIcon(img));
+                } else {
+                    btn.setText(sc.label);
+                }
             } catch (Exception ex) {
                 btn.setText(sc.label);
             }
@@ -365,7 +354,13 @@ public class MenuPanel extends JPanel {
     }
 
     public void setMenuItemAction(MenuItem item, ActionListener action) {
-        menuItemMap.get(item).addActionListener(action);
+        JMenuItem b = menuItemMap.get(item);
+        if (b != null) {
+            for (ActionListener al : b.getActionListeners()) {
+                b.removeActionListener(al);
+            }
+            b.addActionListener(action);
+        }
     }
 
     public void setShortcutAction(Shortcut shortcut, ActionListener action) {
@@ -377,8 +372,6 @@ public class MenuPanel extends JPanel {
             b.addActionListener(action);
         }
     }
-
-
 
     public String getCurrentUserName() {
         return currentUserName;
