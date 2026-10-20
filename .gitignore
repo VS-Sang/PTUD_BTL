@@ -3,3 +3,6 @@ out
 .classpath
 .project
 PTUD_BTL.iml
+bin/
+target/
+.vscode
