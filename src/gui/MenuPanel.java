@@ -195,6 +195,10 @@ public class MenuPanel extends JPanel {
         setMenuItemAction(MenuItem.CHANGE_PASSWORD, e ->
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
                         currentUserName, currentUserRole).setVisible(true));
+        setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
+            dongCuaSoHienTai();
+            new AccountPanel().setVisible(true);
+        });
 
         // Danh mục
         setMenuItemAction(MenuItem.INVOICE, e -> {
