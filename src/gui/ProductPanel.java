@@ -2,18 +2,14 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -33,6 +29,7 @@ import entity.SanPham;
 public class ProductPanel extends JFrame implements ActionListener {
     private DefaultTableModel model;
     private JTable table;
+    private MenuPanel menuPanel;
     private JTextField txtSearch;
     private JComboBox<String> cboStatus;
     private JButton btnExport;
@@ -46,7 +43,27 @@ public class ProductPanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        add(new MenuPanel(), BorderLayout.NORTH);
+        // MenuPanel tích hợp chuyển màn hình từ nhánh thuy
+        menuPanel = new MenuPanel();
+        menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
+            new MainFrame().setVisible(true);
+            dispose();
+        });
+        menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
+            new LoginFrame().setVisible(true);
+            dispose();
+        });
+
+        menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
+            new MainFrame().setVisible(true);
+            dispose();
+        });
+        menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
+            new LoginFrame().setVisible(true);
+            dispose();
+        });
+
+        add(menuPanel, BorderLayout.NORTH);
 
         JPanel pCenterContainer = new JPanel(new BorderLayout());
 

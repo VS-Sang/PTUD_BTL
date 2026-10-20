@@ -25,35 +25,49 @@ public class MenuPanel extends JPanel {
     private static final Color HEADER_COLOR = new Color(180, 40, 40);
     private static final Color MENU_COLOR = new Color(240, 240, 240);
 
-    public enum Menu {
-        SYSTEM("⚙ Hệ thống ▾"),
-        CATALOG("📁 Danh mục ▾"),
-        OPERATIONS("📋 Xử lý ▾"),
-        SEARCH("🔍 Tìm kiếm ▾"),
-        REPORTS("📊 Thống kê ▾"),
-        ACCOUNT("👤 Tài khoản ▾");
+    public enum MenuItem {
+        HOME,
+        PERSONAL_INFO,
+        CHANGE_PASSWORD,
+        LOGOUT,
+        INVOICE,
+        CUSTOMER,
+        EMPLOYEE,
+        PRODUCT,
+        PROMOTION,
 
-        private final String label;
+        INVOICING,
+        IMPORT_GOODS,
+        RETURN,
 
-        Menu(String label) {
-            this.label = label;
-        }
+        FIND_PRODUCT,
+        FIND_CUSTOMER,
+        INVOICE_SEARCH,
+
+        MONTHLY_REVENUE,
+        BEST_SELLERS,
+        SUMMARY_REPORT,
+
+        LIST_ACCOUNT,
+        AUTHORIZATION
     }
 
     public enum Shortcut {
-        HOME("🏠"),
-        CALCULATOR("🖩"),
-        REPORTS("📊"),
-        LOGOUT("🚪");
+        HOME("Trang chủ", "/img/home.png"),
+        CALCULATOR("🖩", null),
+        REPORTS("📊", null),
+        LOGOUT("Đăng xuất", "/img/lo.png");
 
-        private final String label;
+        public final String label;
+        public final String iconPath;
 
-        Shortcut(String label) {
+        Shortcut(String label, String iconPath) {
             this.label = label;
+            this.iconPath = iconPath;
         }
     }
 
-    private final Map<Menu, JButton> menuButtons = new EnumMap<>(Menu.class);
+    private final Map<MenuItem, JMenuItem> menuItemMap = new EnumMap<>(MenuItem.class);
     private final Map<Shortcut, JButton> shortcutButtons = new EnumMap<>(Shortcut.class);
     private String currentUserName = "Nguyễn Văn An";
     private String currentUserRole = "Quản lý";
@@ -81,7 +95,6 @@ public class MenuPanel extends JPanel {
 
         JPanel userInfo = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         userInfo.setOpaque(false);
-
         JLabel userLabel = new JLabel("👤 " + userName);
         userLabel.setForeground(Color.WHITE);
         JButton roleButton = new JButton(userRole);
@@ -94,24 +107,62 @@ public class MenuPanel extends JPanel {
         navigation.setBackground(MENU_COLOR);
         navigation.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
 
-        JPanel menuItems = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));
-        menuItems.setOpaque(false);
-        for (Menu menu : Menu.values()) {
-            JButton button = new JButton(menu.label);
-            menuButtons.put(menu, button);
-            menuItems.add(button);
-        }
+        JPanel menuLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 3));
+        menuLeft.setOpaque(false);
+
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu sysMenu = new JMenu("⚙ Hệ thống ▾");
+        addItem(sysMenu, MenuItem.HOME, "Trang chủ");
+        addItem(sysMenu, MenuItem.PERSONAL_INFO, "Thông tin cá nhân");
+        addItem(sysMenu, MenuItem.CHANGE_PASSWORD, "Đổi mật khẩu");
+        addItem(sysMenu, MenuItem.LOGOUT, "Đăng xuất");
+
+        JMenu categoryMenu = new JMenu("📁 Danh mục ▾");
+        addItem(categoryMenu, MenuItem.INVOICE, "Hoá đơn");
+        addItem(categoryMenu, MenuItem.CUSTOMER, "Khách hàng");
+        addItem(categoryMenu, MenuItem.EMPLOYEE, "Nhân viên");
+        addItem(categoryMenu, MenuItem.PRODUCT, "Sản phẩm");
+        addItem(categoryMenu, MenuItem.PROMOTION, "Khuyến mãi");
+
+        JMenu processMenu = new JMenu("📋 Xử lý ▾");
+        addItem(processMenu, MenuItem.INVOICING, "Lập hoá đơn bán hàng");
+        addItem(processMenu, MenuItem.IMPORT_GOODS, "Nhập hàng vào kho");
+        addItem(processMenu, MenuItem.RETURN, "Xử lí trả hàng");
+
+        JMenu findMenu = new JMenu("🔍 Tìm kiếm ▾");
+        addItem(findMenu, MenuItem.FIND_PRODUCT, "Tìm sản phẩm");
+        addItem(findMenu, MenuItem.FIND_CUSTOMER, "Tìm kiếm khách hàng");
+        addItem(findMenu, MenuItem.INVOICE_SEARCH, "Tra cứu hoá đơn");
+
+        JMenu statsMenu = new JMenu("📊 Thống kê ▾");
+        addItem(statsMenu, MenuItem.MONTHLY_REVENUE, "Doanh thu theo tháng");
+        addItem(statsMenu, MenuItem.BEST_SELLERS, "Sản phẩm bán chạy");
+        addItem(statsMenu, MenuItem.SUMMARY_REPORT, "Báo cáo tổng hợp");
+
+        JMenu accountMenu = new JMenu("👤 Tài khoản ▾");
+        addItem(accountMenu, MenuItem.LIST_ACCOUNT, "Danh sách tài khoản");
+        addItem(accountMenu, MenuItem.AUTHORIZATION, "Phân quyền hệ thống");
+
+        menuBar.add(sysMenu);
+        menuBar.add(categoryMenu);
+        menuBar.add(processMenu);
+        menuBar.add(findMenu);
+        menuBar.add(statsMenu);
+        menuBar.add(accountMenu);
+        menuLeft.add(menuBar);
 
         JPanel shortcuts = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 3));
         shortcuts.setOpaque(false);
-        for (Shortcut shortcut : Shortcut.values()) {
-            JButton button = new JButton(shortcut.label);
-            shortcutButtons.put(shortcut, button);
-            shortcuts.add(button);
+        for (Shortcut sc : Shortcut.values()) {
+            JButton btn = buildShortcutButton(sc);
+            shortcutButtons.put(sc, btn);
+            shortcuts.add(btn);
         }
 
-        navigation.add(menuItems, BorderLayout.WEST);
+        navigation.add(menuLeft, BorderLayout.WEST);
         navigation.add(shortcuts, BorderLayout.EAST);
+
         add(header, BorderLayout.NORTH);
         add(navigation, BorderLayout.CENTER);
 
@@ -290,14 +341,31 @@ public class MenuPanel extends JPanel {
         }
     }
 
-    public void setMenuAction(Menu menu, ActionListener action) {
-        JButton b = menuButtons.get(menu);
-        if (b != null) {
-            for (ActionListener al : b.getActionListeners()) {
-                b.removeActionListener(al);
+    private void addItem(JMenu menu, MenuItem key, String label) {
+        JMenuItem item = new JMenuItem(label);
+        menuItemMap.put(key, item);
+        menu.add(item);
+    }
+
+    private JButton buildShortcutButton(Shortcut sc) {
+        JButton btn = new JButton();
+        btn.setToolTipText(sc.label);
+        if (sc.iconPath != null) {
+            try {
+                ImageIcon icon = new ImageIcon(getClass().getResource(sc.iconPath));
+                Image img = icon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+                btn.setIcon(new ImageIcon(img));
+            } catch (Exception ex) {
+                btn.setText(sc.label);
             }
-            b.addActionListener(action);
+        } else {
+            btn.setText(sc.label);
         }
+        return btn;
+    }
+
+    public void setMenuItemAction(MenuItem item, ActionListener action) {
+        menuItemMap.get(item).addActionListener(action);
     }
 
     public void setShortcutAction(Shortcut shortcut, ActionListener action) {
@@ -334,11 +402,13 @@ public class MenuPanel extends JPanel {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Điện Máy Đỏ — Hệ Thống Quản Lý");
+            JFrame frame = new JFrame("Điện Máy Đỏ — MenuPanel Preview");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setContentPane(new MenuPanel());
             frame.setSize(1200, 100);
             frame.setLocationRelativeTo(null);
+            MenuPanel mp = new MenuPanel();
+            mp.setShortcutAction(Shortcut.LOGOUT, e -> System.exit(0));
+            frame.setContentPane(mp);
             frame.setVisible(true);
         });
     }
