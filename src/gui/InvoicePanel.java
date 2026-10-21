@@ -34,6 +34,8 @@ public class InvoicePanel extends JFrame implements ActionListener {
     private JTextField txtSearch;
     private JComboBox<String> cboStatus;
     private JButton btnCreate, btnExport, btnPrint, btnTim;
+    private final String currentUserName;
+    private final String currentUserRole;
     private HoaDon_DAO hd_dao = new HoaDon_DAO();
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
@@ -43,6 +45,10 @@ public class InvoicePanel extends JFrame implements ActionListener {
     }
 
     public InvoicePanel(String userName, String userRole) {
+        currentUserName = userName == null || userName.trim().isEmpty()
+                ? "Nguyễn Văn An" : userName;
+        currentUserRole = userRole == null || userRole.trim().isEmpty()
+                ? "Quản lý" : userRole;
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
@@ -177,7 +183,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
         } else if (o.equals(btnPrint)) {
             JOptionPane.showMessageDialog(this, "In báo cáo doanh thu thành công!");
         } else if (o.equals(btnCreate)) {
-            JOptionPane.showMessageDialog(this, "Chức năng tạo hóa đơn tại quầy.");
+            new CreateInvoiceDialog(this, currentUserName, currentUserRole).setVisible(true);
         }
     }
 
