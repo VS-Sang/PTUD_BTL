@@ -362,7 +362,7 @@ public class LoginFrame extends JFrame {
             } else if ("nv".equalsIgnoreCase(username)
                     && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
                 role = "Nhân viên";
-                fullName = "Lê Thị Dung";
+                fullName = "Phạm Thị Dung";
             }
         }
 
