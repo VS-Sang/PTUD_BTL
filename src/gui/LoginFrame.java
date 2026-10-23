@@ -22,6 +22,7 @@ public class LoginFrame extends JFrame {
         setMinimumSize(new Dimension(620, 700));
         setSize(760, 800);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
 
         JPanel background = new JPanel(new BorderLayout());

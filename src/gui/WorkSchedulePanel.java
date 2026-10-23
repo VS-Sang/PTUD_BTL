@@ -48,6 +48,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         setTitle("Điện Máy Đỏ — Quản lý Ca Làm Việc");
         setSize(1200, 680);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
