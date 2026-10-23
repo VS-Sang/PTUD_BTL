@@ -22,6 +22,7 @@ public class LoginFrame extends JFrame {
         setMinimumSize(new Dimension(620, 700));
         setSize(760, 800);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
 
         JPanel background = new JPanel(new BorderLayout());
@@ -423,7 +424,7 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    private static String toMD5(String input) {
+    static String toMD5(String input) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
             byte[] bytes = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));

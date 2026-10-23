@@ -55,6 +55,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         setTitle("Điện Máy Đỏ — Phân Công Ca Làm Việc");
         setSize(1200, 680);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 

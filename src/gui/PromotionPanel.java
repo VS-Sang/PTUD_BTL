@@ -20,6 +20,7 @@ public class PromotionPanel extends JFrame {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -68,6 +69,8 @@ public class PromotionPanel extends JFrame {
             JFrame createFrame = new JFrame("Tạo khuyến mãi");
             createFrame.setSize(1200, 650);
             createFrame.setLocationRelativeTo(null);
+            createFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            createFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             createFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             createPromtionPanel cpp = new createPromtionPanel(createFrame);
             createFrame.setContentPane(cpp);

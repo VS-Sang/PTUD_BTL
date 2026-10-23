@@ -293,6 +293,7 @@ public class createPromtionPanel extends JPanel {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1200, 700);
             frame.setLocationRelativeTo(null);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             frame.setContentPane(new createPromtionPanel(frame));
             frame.setVisible(true);
         });
