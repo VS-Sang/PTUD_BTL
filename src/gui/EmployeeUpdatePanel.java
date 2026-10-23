@@ -58,6 +58,7 @@ public class EmployeeUpdatePanel extends JFrame implements ActionListener {
         setTitle("Điện Máy Đỏ — Nhân viên — Thêm / Cập nhật");
         setSize(1200, 720);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
