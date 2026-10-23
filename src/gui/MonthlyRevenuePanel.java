@@ -73,6 +73,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         setMinimumSize(new Dimension(1100, 680));
         setSize(1440, 820);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
         add(new MenuPanel(userName, userRole), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);

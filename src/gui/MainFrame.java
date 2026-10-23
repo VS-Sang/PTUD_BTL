@@ -58,6 +58,7 @@ public class MainFrame extends JFrame {
         setMinimumSize(new Dimension(1000, 680));
         setSize(1440, 820);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
 
         MenuPanel menuPanel = new MenuPanel(userName, userRole);

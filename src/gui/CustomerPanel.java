@@ -38,6 +38,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 

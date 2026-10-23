@@ -78,6 +78,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         setSize(1280, 700);
         setMinimumSize(new Dimension(1100, 620));
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
