@@ -60,17 +60,19 @@ public class MenuPanel extends JPanel {
     }
 
     public enum Shortcut {
-        HOME("Trang chủ", "/img/home.png"),
-        CALCULATOR("🖩", null),
-        REPORTS("📊", null),
-        LOGOUT("Đăng xuất", "/img/lo.png");
+        HOME("Trang chủ","/img/lo.png", "Trang chủ"),
+        CALCULATOR("🖩", null,"Tạo hóa đơn"),
+        REPORTS("📊", null,"Thống kê theo tháng"),
+        LOGOUT("Đăng xuất", "/img/lo.png","Đăng xuất");
 
         public final String label;
         public final String iconPath;
+        public final String tooltip;
 
-        Shortcut(String label, String iconPath) {
+        Shortcut(String label, String iconPath,String tooltip) {
             this.label = label;
             this.iconPath = iconPath;
+            this.tooltip = tooltip;
         }
     }
 
@@ -301,6 +303,14 @@ public class MenuPanel extends JPanel {
             });
         }
 
+        JButton btnShortcutInvoice = shortcutButtons.get(Shortcut.CALCULATOR);
+        if (btnShortcutInvoice != null) {
+            btnShortcutInvoice.addActionListener(e -> {
+                dongCuaSoHienTai();
+                new CreateInvoiceDialog(null, currentUserName, currentUserRole).setVisible(true);
+            });
+        }
+
         // Shortcut Reports
         JButton btnShortcutReports = shortcutButtons.get(Shortcut.REPORTS);
         if (btnShortcutReports != null) {
@@ -343,7 +353,7 @@ public class MenuPanel extends JPanel {
 
     private JButton buildShortcutButton(Shortcut sc) {
         JButton btn = new JButton();
-        btn.setToolTipText(sc.label);
+        btn.setToolTipText(sc.tooltip);
         if (sc.iconPath != null) {
             try {
                 URL iconUrl = getClass().getResource(sc.iconPath);
