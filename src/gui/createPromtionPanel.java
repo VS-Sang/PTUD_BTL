@@ -4,6 +4,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import DAO.KhuyenMai_DAO;
+import entity.KhuyenMai;
 
 public class createPromtionPanel extends JPanel {
 
@@ -20,7 +26,18 @@ public class createPromtionPanel extends JPanel {
     private JButton btnTao;
     private JButton btnHuy;
 
+    // Placeholders
+    private static final String PH_TEN = "Nhập tên KM...";
+    private static final String PH_GIA_TRI = "VD: 25 (%), 500000 (VNĐ)";
+    private static final String PH_DIEU_KIEN = "VD: 5000000";
+    private static final String PH_NGAY_BD = "dd/mm/yyyy";
+    private static final String PH_NGAY_KT = "dd/mm/yyyy";
+    private static final String PH_MO_TA = "Mô tả chi tiết...";
+
+    private Window parentWindow;
+
     public createPromtionPanel(Window parentWindow) {
+        this.parentWindow = parentWindow;
         setLayout(new BorderLayout());
         setBackground(new Color(238, 238, 238));
 
@@ -91,7 +108,7 @@ public class createPromtionPanel extends JPanel {
 
     private JPanel createFormPanel() {
         JPanel cardPanel = new JPanel(new BorderLayout());
-        cardPanel.setPreferredSize(new Dimension(600, 380));
+        cardPanel.setPreferredSize(new Dimension(600, 420));
         cardPanel.setBackground(Color.WHITE);
         cardPanel.setBorder(new LineBorder(new Color(210, 210, 210), 1));
 
@@ -125,18 +142,18 @@ public class createPromtionPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 1;
         txtTenChuongTrinh = new JTextField();
-        setPlaceholder(txtTenChuongTrinh, "Nhập tên KM...");
+        setPlaceholder(txtTenChuongTrinh, PH_TEN);
         formBody.add(txtTenChuongTrinh, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
-        cboLoaiKhuyenMai = new JComboBox<>(new String[] { "% Giảm giá", "Giảm tiền trực tiếp" });
+        cboLoaiKhuyenMai = new JComboBox<>(new String[] { "Phần trăm", "Số tiền" });
         cboLoaiKhuyenMai.setBackground(Color.WHITE);
         formBody.add(cboLoaiKhuyenMai, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        formBody.add(createFieldLabel("Giá trị giảm"), gbc);
+        formBody.add(createFieldLabel("Giá trị giảm *"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 2;
         formBody.add(createFieldLabel("Điều kiện (đơn tối thiểu)"), gbc);
@@ -144,32 +161,32 @@ public class createPromtionPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 3;
         txtGiaTriGiam = new JTextField();
-        setPlaceholder(txtGiaTriGiam, "VD: 25 (%), 500000 (VNĐ)");
+        setPlaceholder(txtGiaTriGiam, PH_GIA_TRI);
         formBody.add(txtGiaTriGiam, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 3;
         txtDieuKien = new JTextField();
-        setPlaceholder(txtDieuKien, "VD: 5000000");
+        setPlaceholder(txtDieuKien, PH_DIEU_KIEN);
         formBody.add(txtDieuKien, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
-        formBody.add(createFieldLabel("Ngày bắt đầu *"), gbc);
+        formBody.add(createFieldLabel("Ngày bắt đầu * (dd/mm/yyyy)"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 4;
-        formBody.add(createFieldLabel("Ngày kết thúc *"), gbc);
+        formBody.add(createFieldLabel("Ngày kết thúc * (dd/mm/yyyy)"), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
         txtNgayBatDau = new JTextField();
-        setPlaceholder(txtNgayBatDau, "dd/mm/yyyy 📅");
+        setPlaceholder(txtNgayBatDau, PH_NGAY_BD);
         formBody.add(txtNgayBatDau, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 5;
         txtNgayKetThuc = new JTextField();
-        setPlaceholder(txtNgayKetThuc, "dd/mm/yyyy 📅");
+        setPlaceholder(txtNgayKetThuc, PH_NGAY_KT);
         formBody.add(txtNgayKetThuc, gbc);
 
         gbc.gridx = 0;
@@ -187,7 +204,7 @@ public class createPromtionPanel extends JPanel {
         txtMoTa.setLineWrap(true);
         txtMoTa.setWrapStyleWord(true);
         txtMoTa.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        setPlaceholderArea(txtMoTa, "Mô tả chi tiết...");
+        setPlaceholderArea(txtMoTa, PH_MO_TA);
 
         JScrollPane scrollMoTa = new JScrollPane(txtMoTa);
         formBody.add(scrollMoTa, gbc);
@@ -208,11 +225,20 @@ public class createPromtionPanel extends JPanel {
         btnTao.setForeground(Color.WHITE);
         btnTao.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnTao.setFocusPainted(false);
+        btnTao.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnTao.addActionListener(e -> handleCreate());
 
         btnHuy = new JButton("✖ Hủy");
         btnHuy.setBackground(new Color(230, 230, 230));
         btnHuy.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnHuy.setFocusPainted(false);
+        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHuy.addActionListener(e -> {
+            new PromotionPanel().setVisible(true);
+            if (parentWindow != null) {
+                parentWindow.dispose();
+            }
+        });
 
         buttonBar.add(btnTao);
         buttonBar.add(btnHuy);
@@ -221,6 +247,198 @@ public class createPromtionPanel extends JPanel {
 
         cardPanel.add(formBody, BorderLayout.CENTER);
         return cardPanel;
+    }
+
+    /**
+     * Xử lý sự kiện tạo khuyến mãi: validate + lưu database + quay về trang quản lý.
+     */
+    private void handleCreate() {
+        // === VALIDATION ===
+        // 1. Tên chương trình: bắt buộc, 3–200 ký tự, cho phép chữ cái Unicode, số, khoảng trắng, dấu gạch ngang
+        String tenCT = getFieldText(txtTenChuongTrinh, PH_TEN);
+        if (tenCT.isEmpty()) {
+            showError("Tên chương trình không được để trống!");
+            txtTenChuongTrinh.requestFocus();
+            return;
+        }
+        if (!tenCT.matches("^[\\p{L}\\d\\s\\-–_,.:!()]{3,200}$")) {
+            showError("Tên chương trình phải từ 3–200 ký tự.\nChỉ chứa chữ cái, số, khoảng trắng và các ký tự - _ , . : ! ( )");
+            txtTenChuongTrinh.requestFocus();
+            return;
+        }
+
+        // 2. Giá trị giảm: bắt buộc, số dương
+        String giaTriStr = getFieldText(txtGiaTriGiam, PH_GIA_TRI);
+        if (giaTriStr.isEmpty()) {
+            showError("Giá trị giảm không được để trống!");
+            txtGiaTriGiam.requestFocus();
+            return;
+        }
+        if (!giaTriStr.matches("^\\d+(\\.\\d{1,2})?$")) {
+            showError("Giá trị giảm phải là số dương.\nVD: 25 hoặc 500000 hoặc 10.5");
+            txtGiaTriGiam.requestFocus();
+            return;
+        }
+        double giaTriGiam = Double.parseDouble(giaTriStr);
+        if (giaTriGiam <= 0) {
+            showError("Giá trị giảm phải lớn hơn 0!");
+            txtGiaTriGiam.requestFocus();
+            return;
+        }
+
+        // Kiểm tra % giảm giá <= 100
+        String loai = (String) cboLoaiKhuyenMai.getSelectedItem();
+        if ("Phần trăm".equals(loai) && giaTriGiam > 100) {
+            showError("Giảm giá theo phần trăm không được vượt quá 100%!");
+            txtGiaTriGiam.requestFocus();
+            return;
+        }
+
+        // 3. Điều kiện đơn tối thiểu: không bắt buộc, nhưng nếu nhập thì phải là số >= 0
+        String dieuKienStr = getFieldText(txtDieuKien, PH_DIEU_KIEN);
+        double donHangToiThieu = 0;
+        if (!dieuKienStr.isEmpty()) {
+            if (!dieuKienStr.matches("^\\d+(\\.\\d{1,2})?$")) {
+                showError("Điều kiện đơn tối thiểu phải là số.\nVD: 5000000");
+                txtDieuKien.requestFocus();
+                return;
+            }
+            donHangToiThieu = Double.parseDouble(dieuKienStr);
+        }
+
+        // 4. Ngày bắt đầu: bắt buộc, đúng định dạng dd/mm/yyyy
+        String ngayBDStr = getFieldText(txtNgayBatDau, PH_NGAY_BD);
+        if (ngayBDStr.isEmpty()) {
+            showError("Ngày bắt đầu không được để trống!");
+            txtNgayBatDau.requestFocus();
+            return;
+        }
+        if (!ngayBDStr.matches("^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$")) {
+            showError("Ngày bắt đầu phải đúng định dạng dd/mm/yyyy.\nVD: 25/12/2026");
+            txtNgayBatDau.requestFocus();
+            return;
+        }
+
+        // 5. Ngày kết thúc: bắt buộc, đúng định dạng dd/mm/yyyy
+        String ngayKTStr = getFieldText(txtNgayKetThuc, PH_NGAY_KT);
+        if (ngayKTStr.isEmpty()) {
+            showError("Ngày kết thúc không được để trống!");
+            txtNgayKetThuc.requestFocus();
+            return;
+        }
+        if (!ngayKTStr.matches("^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$")) {
+            showError("Ngày kết thúc phải đúng định dạng dd/mm/yyyy.\nVD: 31/12/2026");
+            txtNgayKetThuc.requestFocus();
+            return;
+        }
+
+        // Parse ngày tháng
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        sdf.setLenient(false);
+        Date ngayBatDau, ngayKetThuc;
+        try {
+            ngayBatDau = sdf.parse(ngayBDStr);
+        } catch (ParseException ex) {
+            showError("Ngày bắt đầu không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.");
+            txtNgayBatDau.requestFocus();
+            return;
+        }
+        try {
+            ngayKetThuc = sdf.parse(ngayKTStr);
+        } catch (ParseException ex) {
+            showError("Ngày kết thúc không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.");
+            txtNgayKetThuc.requestFocus();
+            return;
+        }
+
+        // Ngày kết thúc phải sau ngày bắt đầu
+        if (!ngayKetThuc.after(ngayBatDau)) {
+            showError("Ngày kết thúc phải sau ngày bắt đầu!");
+            txtNgayKetThuc.requestFocus();
+            return;
+        }
+
+        // 6. Mô tả: không bắt buộc, tối đa 500 ký tự
+        String moTa = getFieldText(txtMoTa, PH_MO_TA);
+        if (moTa.length() > 500) {
+            showError("Mô tả không được vượt quá 500 ký tự!\nHiện tại: " + moTa.length() + " ký tự.");
+            txtMoTa.requestFocus();
+            return;
+        }
+
+        // === TẠO ĐỐI TƯỢNG VÀ LƯU DATABASE ===
+        KhuyenMai_DAO dao = new KhuyenMai_DAO();
+        String maKM = dao.sinhMaKhuyenMai();
+
+        // Xác định trạng thái dựa trên ngày
+        Date now = new Date();
+        String trangThai;
+        if (now.before(ngayBatDau)) {
+            trangThai = "Chưa bắt đầu";
+        } else if (now.after(ngayKetThuc)) {
+            trangThai = "Đã kết thúc";
+        } else {
+            trangThai = "Đang diễn ra";
+        }
+
+        KhuyenMai km = new KhuyenMai();
+        km.setMaKhuyenMai(maKM);
+        km.setTenKhuyenMai(tenCT);
+        km.setMoTa(moTa.isEmpty() ? null : moTa);
+        km.setLoaiKhuyenMai(loai);
+        km.setGiaTriGiam(giaTriGiam);
+        km.setGiaTriGiamToiDa(0); // Có thể mở rộng thêm field
+        km.setDonHangToiThieu(donHangToiThieu);
+        km.setSoLuongToiDa(0);
+        km.setNgayBatDau(ngayBatDau);
+        km.setNgayKetThuc(ngayKetThuc);
+        km.setApDungChoTatCa(true);
+        km.setTrangThai(trangThai);
+        km.setNguoiTao(null);
+
+        boolean success = dao.themKhuyenMai(km);
+
+        if (success) {
+            JOptionPane.showMessageDialog(this,
+                    "Tạo khuyến mãi \"" + tenCT + "\" thành công!\nMã: " + maKM,
+                    "Thành công",
+                    JOptionPane.INFORMATION_MESSAGE);
+            // Quay về trang quản lý khuyến mãi
+            new PromotionPanel().setVisible(true);
+            if (parentWindow != null) {
+                parentWindow.dispose();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tạo khuyến mãi. Vui lòng kiểm tra kết nối database và thử lại.",
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Lấy text thực từ field, bỏ qua placeholder.
+     */
+    private String getFieldText(JTextField field, String placeholder) {
+        String text = field.getText().trim();
+        if (text.equals(placeholder)) return "";
+        return text;
+    }
+
+    /**
+     * Lấy text thực từ JTextArea, bỏ qua placeholder.
+     */
+    private String getFieldText(JTextArea area, String placeholder) {
+        String text = area.getText().trim();
+        if (text.equals(placeholder)) return "";
+        return text;
+    }
+
+    /**
+     * Hiện thông báo lỗi.
+     */
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
     }
 
     private JLabel createFieldLabel(String text) {
