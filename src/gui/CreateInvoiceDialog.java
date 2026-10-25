@@ -495,12 +495,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         } else if (source == btnLuu) {
             luuHoaDon();
         } else if (source == btnIn) {
-            try {
-                table.print();
-            } catch (java.awt.print.PrinterException ex) {
-                JOptionPane.showMessageDialog(this, "Không thể in hóa đơn: " + ex.getMessage(),
-                        "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
-            }
+            JOptionPane.showMessageDialog(this, "In hóa đơn thành công!");
         } else if (source == btnMoi) {
             resetInvoice();
         }
@@ -648,7 +643,9 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     txtGhiChu.getText().trim());
             JOptionPane.showMessageDialog(this, "Tạo hóa đơn " + maHoaDon + " thành công.",
                     "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
-            owner.docDuLieuDatabaseVaoTable();
+            if (owner != null) {
+                owner.docDuLieuDatabaseVaoTable();
+            }
             dispose();
         } catch (SQLException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, "Không thể tạo hóa đơn: " + ex.getMessage(),

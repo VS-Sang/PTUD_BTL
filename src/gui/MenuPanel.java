@@ -225,7 +225,7 @@ public class MenuPanel extends JPanel {
         // Xử lý
         setMenuItemAction(MenuItem.INVOICING, e -> {
             dongCuaSoHienTai();
-            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
+            new CreateInvoiceDialog(null, currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.IMPORT_GOODS, e -> {
             dongCuaSoHienTai();
