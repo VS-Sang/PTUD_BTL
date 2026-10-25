@@ -207,7 +207,7 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.CUSTOMER, e -> {
             dongCuaSoHienTai();
-            new CustomerPanel().setVisible(true);
+            new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.EMPLOYEE, e -> {
             dongCuaSoHienTai();
@@ -247,7 +247,7 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.FIND_CUSTOMER, e -> {
             dongCuaSoHienTai();
-            new CustomerPanel().setVisible(true);
+            new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.INVOICE_SEARCH, e -> {
             dongCuaSoHienTai();
