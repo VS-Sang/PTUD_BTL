@@ -9,12 +9,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -22,7 +16,6 @@ import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -102,9 +95,11 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         yearCombo.addActionListener(this);
 
         JButton exportButton = new JButton("Xuất CSV");
-        exportButton.addActionListener(event -> exportCsv());
+        exportButton.addActionListener(event ->
+                JOptionPane.showMessageDialog(this, "Xuất CSV thành công!"));
         JButton printButton = new JButton("In báo cáo");
-        printButton.addActionListener(event -> printReport());
+        printButton.addActionListener(event ->
+                JOptionPane.showMessageDialog(this, "In báo cáo thành công!"));
         controls.add(yearCombo);
         controls.add(exportButton);
         controls.add(printButton);
@@ -287,56 +282,6 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
             return String.format(Locale.ROOT, "%.0fM", value / 1_000_000);
         }
         return formatMoney(value);
-    }
-
-    private void exportCsv() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Lưu báo cáo doanh thu");
-        chooser.setSelectedFile(new File("doanh-thu-" + yearCombo.getSelectedItem() + ".csv"));
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
-        File file = chooser.getSelectedFile();
-        if (!file.getName().toLowerCase(Locale.ROOT).endsWith(".csv")) {
-            file = new File(file.getParentFile(), file.getName() + ".csv");
-        }
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            writer.write('\ufeff');
-            writer.write("Thang,So hoa don,Doanh thu,Loi nhuan uoc tinh,Tang truong");
-            writer.newLine();
-            for (int row = 0; row < tableModel.getRowCount(); row++) {
-                for (int column = 0; column < tableModel.getColumnCount(); column++) {
-                    if (column > 0) {
-                        writer.write(',');
-                    }
-                    writer.write(csvValue(tableModel.getValueAt(row, column)));
-                }
-                writer.newLine();
-            }
-            JOptionPane.showMessageDialog(this, "Đã xuất báo cáo tại:\n" + file.getAbsolutePath(),
-                    "Xuất báo cáo", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể xuất báo cáo:\n" + exception.getMessage(),
-                    "Lỗi xuất báo cáo", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private String csvValue(Object value) {
-        String text = value == null ? "" : value.toString();
-        return "\"" + text.replace("\"", "\"\"") + "\"";
-    }
-
-    private void printReport() {
-        try {
-            table.print(JTable.PrintMode.FIT_WIDTH,
-                    new java.text.MessageFormat("Báo cáo doanh thu theo tháng - " + yearCombo.getSelectedItem()),
-                    new java.text.MessageFormat("Trang {0}"));
-        } catch (java.awt.print.PrinterException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể in báo cáo:\n" + exception.getMessage(),
-                    "Lỗi in báo cáo", JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     @Override

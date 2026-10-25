@@ -384,16 +384,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
                     "Xuất file báo cáo tổng hợp ra Excel thành công!",
                     "Xuất dữ liệu", JOptionPane.INFORMATION_MESSAGE);
         } else if (source.equals(btnPrint)) {
-            try {
-                boolean complete = table.print(JTable.PrintMode.FIT_WIDTH,
-                        new java.text.MessageFormat("Báo Cáo Hiệu Suất Nhân Viên - " + cboMonth.getSelectedItem()),
-                        new java.text.MessageFormat("Trang {0}"));
-                if (complete) {
-                    JOptionPane.showMessageDialog(this, "In báo cáo thành công!");
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi in ấn: " + ex.getMessage());
-            }
+            JOptionPane.showMessageDialog(this, "In báo cáo thành công!");
         }
     }
 

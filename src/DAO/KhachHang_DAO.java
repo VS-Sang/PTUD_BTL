@@ -68,4 +68,48 @@ public class KhachHang_DAO {
         }
         return ds;
     }
+
+    public boolean themKhachHang(KhachHang kh) throws SQLException {
+        String sql = "INSERT INTO KhachHang (maKhachHang, hoTen, gioiTinh, ngaySinh, "
+                + "soDienThoai, email, diaChi, ghiChu) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection con = ConnectDB.getConnection()) {
+            kh.setMaKhachHang(phatSinhMaKhachHang(con));
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setString(1, kh.getMaKhachHang());
+                stmt.setString(2, kh.getHoTen());
+                stmt.setString(3, kh.getGioiTinh());
+                if (kh.getNgaySinh() == null) {
+                    stmt.setNull(4, java.sql.Types.DATE);
+                } else {
+                    stmt.setDate(4, new java.sql.Date(kh.getNgaySinh().getTime()));
+                }
+                stmt.setString(5, kh.getSoDienThoai());
+                stmt.setString(6, kh.getEmail());
+                stmt.setString(7, kh.getDiaChi());
+                stmt.setString(8, kh.getGhiChu());
+                return stmt.executeUpdate() > 0;
+            }
+        }
+    }
+
+    public String phatSinhMaKhachHang() throws SQLException {
+        try (Connection con = ConnectDB.getConnection()) {
+            return phatSinhMaKhachHang(con);
+        }
+    }
+
+    private String phatSinhMaKhachHang(Connection con) throws SQLException {
+        String sql = "SELECT maKhachHang FROM KhachHang WHERE maKhachHang LIKE N'KH%'";
+        int max = 0;
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String ma = rs.getString("maKhachHang");
+                if (ma != null && ma.matches("KH\\d+")) {
+                    max = Math.max(max, Integer.parseInt(ma.substring(2)));
+                }
+            }
+        }
+        return String.format(java.util.Locale.ROOT, "KH%03d", max + 1);
+    }
 }
