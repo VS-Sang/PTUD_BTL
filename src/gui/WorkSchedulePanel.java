@@ -37,7 +37,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
     private MenuPanel menuPanel;
     private JTextField txtMaCa, txtTenCa, txtGioBatDau, txtGioKetThuc, txtMoTa, txtSearch;
     private JComboBox<String> cboTrangThai, cboFilterStatus;
-    private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnPhanCong, btnExport, btnTim;
+    private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnPhanCong, btnTim;
     private DefaultTableModel model;
     private JTable table;
 
@@ -77,12 +77,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         btnPhanCong.setForeground(Color.WHITE);
         btnPhanCong.setFocusPainted(false);
 
-        btnExport = new JButton("Xuất Excel");
-        btnExport.setBackground(Color.WHITE);
-        btnExport.setFocusPainted(false);
-
         pSubActions.add(btnPhanCong);
-        pSubActions.add(btnExport);
         pSubHeader.add(pSubActions, BorderLayout.EAST);
         pTop.add(pSubHeader, BorderLayout.NORTH);
 
@@ -95,8 +90,10 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         pGrid.setBackground(Color.WHITE);
         pGrid.setBorder(BorderFactory.createEmptyBorder(8, 12, 5, 12));
 
-        pGrid.add(new JLabel("Mã ca (*):"));
+        pGrid.add(new JLabel("Mã ca:"));
         txtMaCa = new JTextField();
+        txtMaCa.setEditable(false);
+        txtMaCa.setBackground(new Color(242, 242, 242));
         pGrid.add(txtMaCa);
 
         pGrid.add(new JLabel("Tên ca (*):"));
@@ -169,7 +166,12 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
 
         // 3. BẢNG DANH SÁCH CA LÀM VIỆC
         String[] columns = {"Mã ca", "Tên ca làm việc", "Giờ bắt đầu", "Giờ kết thúc", "Mô tả", "Trạng thái"};
-        model = new DefaultTableModel(columns, 0);
+        model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         table = new JTable(model);
         table.setRowHeight(34);
         table.getTableHeader().setReorderingAllowed(false);
@@ -199,6 +201,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
 
         // Đọc dữ liệu từ Database
         docDuLieuDatabaseVaoTable();
+        xoaRong();
 
         // Đăng ký sự kiện
         btnThem.addActionListener(this);
@@ -206,7 +209,6 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         btnXoa.addActionListener(this);
         btnLamMoi.addActionListener(this);
         btnPhanCong.addActionListener(this);
-        btnExport.addActionListener(this);
         btnTim.addActionListener(this);
         txtSearch.addActionListener(this);
         cboFilterStatus.addActionListener(this);
@@ -254,14 +256,14 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
     }
 
     private void xoaRong() {
-        txtMaCa.setText("");
+        txtMaCa.setText(ca_dao.phatSinhMaCa());
         txtTenCa.setText("");
         txtGioBatDau.setText("08:00");
         txtGioKetThuc.setText("12:00");
         txtMoTa.setText("");
         cboTrangThai.setSelectedIndex(0);
         table.clearSelection();
-        txtMaCa.requestFocus();
+        txtTenCa.requestFocus();
     }
 
     @Override
@@ -272,17 +274,18 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboFilterStatus)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnThem)) {
-            String ma = txtMaCa.getText().trim();
             String ten = txtTenCa.getText().trim();
             String bd = txtGioBatDau.getText().trim();
             String kt = txtGioKetThuc.getText().trim();
-            if (ma.isEmpty() || ten.isEmpty() || bd.isEmpty() || kt.isEmpty()) {
+            if (ten.isEmpty() || bd.isEmpty() || kt.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin ca làm việc!");
                 return;
             }
             try {
                 Date gioVao = sdfTime.parse(bd);
                 Date gioRa = sdfTime.parse(kt);
+
+                String ma = ca_dao.phatSinhMaCa();
                 CaLamViec ca = new CaLamViec(ma, ten, gioVao, gioRa, txtMoTa.getText().trim(),
                         cboTrangThai.getSelectedItem().toString(), new Date());
                 if (ca_dao.themCaLamViec(ca)) {
@@ -335,8 +338,6 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
             }
         } else if (o.equals(btnPhanCong)) {
             new AssignmentPanel().setVisible(true);
-        } else if (o.equals(btnExport)) {
-            JOptionPane.showMessageDialog(this, "Xuất danh sách ca làm việc ra Excel thành công!");
         }
     }
 
