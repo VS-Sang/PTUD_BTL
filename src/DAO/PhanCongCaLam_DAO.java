@@ -87,6 +87,25 @@ public class PhanCongCaLam_DAO {
         return dsPhanCong;
     }
 
+    // Phát sinh mã phân công ca làm tiếp theo (VD: PC013)
+    public String phatSinhMaPhanCong() {
+        String sql = "SELECT TOP 1 maPhanCong FROM PhanCongCaLam ORDER BY maPhanCong DESC";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String lastId = rs.getString("maPhanCong");
+                if (lastId != null && lastId.startsWith("PC")) {
+                    int num = Integer.parseInt(lastId.substring(2)) + 1;
+                    return String.format("PC%03d", num);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "PC001";
+    }
+
     // Thêm phân công ca làm mới
     public boolean themPhanCongCaLam(PhanCongCaLam pc) {
         String sql = "INSERT INTO PhanCongCaLam (maPhanCong, maNhanVien, maCa, ngayLamViec, trangThai, gioDiemDanhVao, gioDiemDanhRa, soGioLamThem, ghiChu, nguoiPhanCong) "
@@ -105,9 +124,8 @@ public class PhanCongCaLam_DAO {
             stmt.setString(10, pc.getNguoiPhanCong() != null ? pc.getNguoiPhanCong().getMaNhanVien() : "NV001");
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Cập nhật phân công ca làm
@@ -123,9 +141,8 @@ public class PhanCongCaLam_DAO {
             stmt.setString(6, pc.getMaPhanCong());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Xóa phân công ca làm theo mã

@@ -131,6 +131,7 @@ public class MenuPanel extends JPanel {
         addItem(categoryMenu, MenuItem.INVOICE, "Hoá đơn");
         addItem(categoryMenu, MenuItem.CUSTOMER, "Khách hàng");
         addItem(categoryMenu, MenuItem.EMPLOYEE, "Nhân viên");
+        addItem(categoryMenu, MenuItem.WORK_SCHEDULE, "Ca làm việc");
         addItem(categoryMenu, MenuItem.PRODUCT, "Sản phẩm");
         addItem(categoryMenu, MenuItem.PROMOTION, "Khuyến mãi");
 
@@ -138,7 +139,6 @@ public class MenuPanel extends JPanel {
         addItem(processMenu, MenuItem.INVOICING, "Lập hoá đơn bán hàng");
         addItem(processMenu, MenuItem.IMPORT_GOODS, "Nhập hàng vào kho");
         addItem(processMenu, MenuItem.RETURN, "Xử lí trả hàng");
-        addItem(processMenu, MenuItem.WORK_SCHEDULE, "Quản lý ca làm việc");
         addItem(processMenu, MenuItem.ASSIGNMENT, "Phân công ca làm");
 
         JMenu findMenu = new JMenu("🔍 Tìm kiếm ▾");

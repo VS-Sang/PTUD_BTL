@@ -17,6 +17,15 @@ public class NhanVien_DAO {
         String maNQL = rs.getString("maNguoiQuanLy");
         NhanVien nguoiQuanLy = (maNQL != null) ? new NhanVien(maNQL) : null;
 
+        String chucVu = rs.getString("chucVu");
+        if (!"Quản lý".equalsIgnoreCase(chucVu)) {
+            chucVu = "Nhân viên bán hàng";
+        }
+        String phongBan = rs.getString("phongBan");
+        if (!"Quản lý".equalsIgnoreCase(phongBan)) {
+            phongBan = "Bán hàng";
+        }
+
         return new NhanVien(
                 rs.getString("maNhanVien"),
                 rs.getString("hoTen"),
@@ -27,8 +36,8 @@ public class NhanVien_DAO {
                 rs.getString("email"),
                 rs.getString("diaChi"),
                 rs.getString("hinhAnh"),
-                rs.getString("chucVu"),
-                rs.getString("phongBan"),
+                chucVu,
+                phongBan,
                 rs.getDouble("luongCoBan"),
                 rs.getDouble("heSoLuong"),
                 rs.getDouble("phuCap"),
@@ -168,9 +177,8 @@ public class NhanVien_DAO {
             stmt.setString(1, maNhanVien);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Tìm kiếm nhân viên theo từ khóa (mã, tên, SĐT)
