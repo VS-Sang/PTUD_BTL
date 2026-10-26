@@ -77,6 +77,25 @@ public class CaLamViec_DAO {
         return false;
     }
 
+    // Phát sinh mã ca làm việc tiếp theo (VD: CA005)
+    public String phatSinhMaCa() {
+        String sql = "SELECT TOP 1 maCa FROM CaLamViec ORDER BY maCa DESC";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String lastId = rs.getString("maCa");
+                if (lastId != null && lastId.startsWith("CA")) {
+                    int num = Integer.parseInt(lastId.substring(2)) + 1;
+                    return String.format("CA%03d", num);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "CA001";
+    }
+
     // Xóa ca làm việc theo mã
     public boolean xoaCaLamViec(String maCa) {
         String sql = "DELETE FROM CaLamViec WHERE maCa = ?";
@@ -85,9 +104,8 @@ public class CaLamViec_DAO {
             stmt.setString(1, maCa);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Tìm kiếm ca làm việc theo từ khóa (mã ca, tên ca)
