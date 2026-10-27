@@ -40,15 +40,19 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.HoaDon_DAO;
 import DAO.KhachHang_DAO;
+import DAO.KhuyenMai_DAO;
 import DAO.NhanVien_DAO;
 import DAO.SanPham_DAO;
 import entity.ChiTietDonHang;
 import entity.KhachHang;
+import entity.KhuyenMai;
 import entity.NhanVien;
 import entity.SanPham;
 
@@ -88,8 +92,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             new JComboBox<>(new String[]{"Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Ví điện tử"});
     private final JSpinner spnSoLuong =
             new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
-    private final JSpinner spnKhuyenMai =
-            new JSpinner(new SpinnerNumberModel(0.0, 0.0, 100.0, 1.0));
+    private final JComboBox<KhuyenMai> cboKhuyenMai = new JComboBox<>();
+    private final KhuyenMai_DAO khuyenMaiDao = new KhuyenMai_DAO();
     private final JTextField txtMaHoaDon = new JTextField();
     private final JTextField txtNgayLap = new JTextField();
     private final JTextField txtNhanVien = new JTextField();
@@ -309,19 +313,9 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         addSummaryRow(fields, c, "Tổng số lượng:", lblTongSoLuong, Color.DARK_GRAY);
         addSummaryRow(fields, c, "Tổng tiền hàng:", lblTongTienHang, Color.DARK_GRAY);
 
-        JPanel discountRow = new JPanel(new BorderLayout(4, 4));
-        discountRow.setOpaque(false);
-        JLabel discountLabel = createFieldLabel("Khuyến mãi:");
-        discountLabel.setForeground(BRAND_RED);
-        discountRow.add(discountLabel, BorderLayout.WEST);
-        JPanel discountInput = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        discountInput.setOpaque(false);
-        spnKhuyenMai.setPreferredSize(new Dimension(75, 27));
-        discountInput.add(spnKhuyenMai);
-        discountInput.add(new JLabel("%"));
-        discountRow.add(discountInput, BorderLayout.EAST);
-        c.gridy++;
-        fields.add(discountRow, c);
+        cboKhuyenMai.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cboKhuyenMai.setBackground(Color.WHITE);
+        addFullWidthField(fields, c, "Khuyến mãi", cboKhuyenMai);
 
         addSummaryRow(fields, c, "Thuế VAT (10%):", lblThueVAT, Color.DARK_GRAY);
         JPanel totalPanel = new JPanel(new BorderLayout());
@@ -459,6 +453,51 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         if (cboSanPham.getItemCount() <= 1) {
             btnThem.setEnabled(false);
         }
+
+        loadPromotions();
+    }
+
+    private void loadPromotions() {
+        KhuyenMai previouslySelected = (KhuyenMai) cboKhuyenMai.getSelectedItem();
+        cboKhuyenMai.removeAllItems();
+        cboKhuyenMai.addItem(null);
+        cboKhuyenMai.setRenderer((list, value, index, selected, focus) -> {
+            String text = "-- Không áp dụng --";
+            if (value != null) {
+                String giamText = "Phần trăm".equalsIgnoreCase(value.getLoaiKhuyenMai()) || "%".equals(value.getLoaiKhuyenMai())
+                        ? (int) value.getGiaTriGiam() + "%"
+                        : MONEY_FORMAT.format(value.getGiaTriGiam()) + " đ";
+                text = value.getMaKhuyenMai() + " — " + value.getTenKhuyenMai() + " (" + giamText + ")";
+            }
+            JLabel label = new JLabel(text);
+            label.setOpaque(true);
+            label.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            label.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+            if (selected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
+            }
+            return label;
+        });
+
+        for (KhuyenMai km : khuyenMaiDao.getAllKhuyenMai()) {
+            if (km.getTrangThai() == null || !"Đã kết thúc".equalsIgnoreCase(km.getTrangThai())) {
+                cboKhuyenMai.addItem(km);
+            }
+        }
+
+        if (previouslySelected != null) {
+            for (int i = 1; i < cboKhuyenMai.getItemCount(); i++) {
+                KhuyenMai item = cboKhuyenMai.getItemAt(i);
+                if (item != null && item.getMaKhuyenMai().equals(previouslySelected.getMaKhuyenMai())) {
+                    cboKhuyenMai.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
     private void wireActions() {
@@ -468,7 +507,19 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         btnMoi.addActionListener(this);
         cboKhachHang.setSelectedIndex(0);
         cboPhuongThuc.addActionListener(event -> capNhatTienThoi());
-        spnKhuyenMai.addChangeListener(event -> capNhatBangVaTongTien());
+        cboKhuyenMai.addActionListener(event -> capNhatBangVaTongTien());
+        cboKhuyenMai.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                loadPromotions();
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {}
+        });
         txtTienKhachDua.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent event) {
@@ -523,6 +574,23 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         spnSoLuong.setValue(1);
     }
 
+    private double tinhTienGiam(double tongTienHang) {
+        KhuyenMai km = (KhuyenMai) cboKhuyenMai.getSelectedItem();
+        if (km == null || tongTienHang < km.getDonHangToiThieu()) {
+            return 0;
+        }
+        double tienGiam = 0;
+        if ("Phần trăm".equalsIgnoreCase(km.getLoaiKhuyenMai()) || "%".equals(km.getLoaiKhuyenMai())) {
+            tienGiam = Math.round(tongTienHang * km.getGiaTriGiam() / 100.0);
+            if (km.getGiaTriGiamToiDa() > 0 && tienGiam > km.getGiaTriGiamToiDa()) {
+                tienGiam = km.getGiaTriGiamToiDa();
+            }
+        } else {
+            tienGiam = km.getGiaTriGiam();
+        }
+        return Math.min(tienGiam, tongTienHang);
+    }
+
     private void capNhatBangVaTongTien() {
         model.setRowCount(0);
         int stt = 1;
@@ -545,8 +613,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             });
         }
 
-        double phanTramGiam = ((Number) spnKhuyenMai.getValue()).doubleValue();
-        double tienGiam = Math.round(tongTien * phanTramGiam / 100);
+        double tienGiam = tinhTienGiam(tongTien);
         double thue = Math.round((tongTien - tienGiam) * 0.10);
         double tongThanhToan = tongTien - tienGiam + thue;
         lblTongSoLuong.setText(String.valueOf(tongSoLuong));
@@ -574,8 +641,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         for (Map.Entry<String, Integer> item : soLuongDaChon.entrySet()) {
             tongTien += sanPhamTheoMa.get(item.getKey()).getGiaBan() * item.getValue();
         }
-        double phanTramGiam = ((Number) spnKhuyenMai.getValue()).doubleValue();
-        double tienGiam = Math.round(tongTien * phanTramGiam / 100);
+        double tienGiam = tinhTienGiam(tongTien);
         return tongTien - tienGiam + Math.round((tongTien - tienGiam) * 0.10);
     }
 
@@ -625,12 +691,18 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         }
 
         List<ChiTietDonHang> chiTiet = new ArrayList<>();
+        double tongTienHang = 0;
         for (Map.Entry<String, Integer> item : soLuongDaChon.entrySet()) {
             SanPham sanPham = sanPhamTheoMa.get(item.getKey());
             chiTiet.add(new ChiTietDonHang(null, sanPham, item.getValue(),
                     sanPham.getGiaBan(), 0, 0, null));
+            tongTienHang += sanPham.getGiaBan() * item.getValue();
         }
         KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
+        KhuyenMai selectedKM = (KhuyenMai) cboKhuyenMai.getSelectedItem();
+        String maKM = (selectedKM != null) ? selectedKM.getMaKhuyenMai() : null;
+        double tienGiam = tinhTienGiam(tongTienHang);
+
         try {
             String maHoaDon = hoaDonDao.taoHoaDon(
                     nhanVien.getMaNhanVien(),
@@ -638,7 +710,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     chiTiet,
                     (String) cboPhuongThuc.getSelectedItem(),
                     tienKhachDua.doubleValue(),
-                    ((Number) spnKhuyenMai.getValue()).doubleValue(),
+                    maKM,
+                    tienGiam,
                     10,
                     txtGhiChu.getText().trim());
             JOptionPane.showMessageDialog(this, "Tạo hóa đơn " + maHoaDon + " thành công.",
@@ -676,7 +749,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         cboSanPham.setSelectedIndex(0);
         cboPhuongThuc.setSelectedIndex(0);
         spnSoLuong.setValue(1);
-        spnKhuyenMai.setValue(0.0);
+        loadPromotions();
+        cboKhuyenMai.setSelectedIndex(0);
         capNhatBangVaTongTien();
     }
 }

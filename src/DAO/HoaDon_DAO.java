@@ -96,6 +96,22 @@ public class HoaDon_DAO {
                             List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
                             double tienKhachDua, double phanTramGiamGia,
                             double thueVAT, String ghiChu) throws SQLException {
+        return taoHoaDon(maNhanVien, maKhachHang, chiTiet, phuongThucThanhToan,
+                tienKhachDua, null, -1, phanTramGiamGia, thueVAT, ghiChu);
+    }
+
+    public String taoHoaDon(String maNhanVien, String maKhachHang,
+                            List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                            double tienKhachDua, String maKhuyenMai, double tienGiamGiaTrucTiep,
+                            double thueVAT, String ghiChu) throws SQLException {
+        return taoHoaDon(maNhanVien, maKhachHang, chiTiet, phuongThucThanhToan,
+                tienKhachDua, maKhuyenMai, tienGiamGiaTrucTiep, 0, thueVAT, ghiChu);
+    }
+
+    private String taoHoaDon(String maNhanVien, String maKhachHang,
+                             List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                             double tienKhachDua, String maKhuyenMai, double tienGiamGiaTrucTiep,
+                             double phanTramGiamGia, double thueVAT, String ghiChu) throws SQLException {
         if (chiTiet == null || chiTiet.isEmpty()) {
             throw new IllegalArgumentException("Hóa đơn phải có ít nhất một sản phẩm.");
         }
@@ -108,8 +124,8 @@ public class HoaDon_DAO {
         if (Double.isNaN(tienKhachDua) || Double.isInfinite(tienKhachDua)) {
             throw new IllegalArgumentException("Tiền khách đưa không hợp lệ.");
         }
-        if (Double.isNaN(phanTramGiamGia) || Double.isInfinite(phanTramGiamGia)
-                || phanTramGiamGia < 0 || phanTramGiamGia > 100) {
+        if (tienGiamGiaTrucTiep < 0 && (Double.isNaN(phanTramGiamGia) || Double.isInfinite(phanTramGiamGia)
+                || phanTramGiamGia < 0 || phanTramGiamGia > 100)) {
             throw new IllegalArgumentException("Khuyến mãi phải nằm trong khoảng 0 đến 100%.");
         }
         if (Double.isNaN(thueVAT) || Double.isInfinite(thueVAT)
@@ -192,7 +208,9 @@ public class HoaDon_DAO {
                     }
                 }
 
-                double tienGiamGia = Math.round(tongTienHang * phanTramGiamGia / 100);
+                double tienGiamGia = tienGiamGiaTrucTiep >= 0
+                        ? Math.min(tienGiamGiaTrucTiep, tongTienHang)
+                        : Math.round(tongTienHang * phanTramGiamGia / 100);
                 double tienVAT = Math.round((tongTienHang - tienGiamGia) * thueVAT / 100);
                 double tongThanhToan = tongTienHang - tienGiamGia + tienVAT;
                 double tienTraLai = tienKhachDua - tongThanhToan;
@@ -202,19 +220,29 @@ public class HoaDon_DAO {
 
                 String sqlDonHang = "INSERT INTO DonHang (maDonHang, maKhachHang, maNhanVien, "
                         + "ngayDatHang, ngayGiaoHang, diaChiGiaoHang, tongTienHang, tienGiamGia, "
-                        + "diemSuDung, tienDiem, phiVanChuyen, thueVAT, tongThanhToan, trangThai, ghiChu) "
+                        + "maKhuyenMai, diemSuDung, tienDiem, phiVanChuyen, thueVAT, tongThanhToan, trangThai, ghiChu) "
                         + "VALUES (?, ?, ?, GETDATE(), GETDATE(), N'Mua trực tiếp tại cửa hàng', "
-                        + "?, ?, 0, 0, 0, ?, ?, N'Đã hoàn thành', ?)";
+                        + "?, ?, ?, 0, 0, 0, ?, ?, N'Đã hoàn thành', ?)";
                 try (PreparedStatement stmt = con.prepareStatement(sqlDonHang)) {
                     stmt.setString(1, maDonHang);
                     stmt.setString(2, maKhachHang);
                     stmt.setString(3, maNhanVien);
                     stmt.setDouble(4, tongTienHang);
                     stmt.setDouble(5, tienGiamGia);
-                    stmt.setDouble(6, tienVAT);
-                    stmt.setDouble(7, tongThanhToan);
-                    stmt.setString(8, ghiChu);
+                    stmt.setString(6, (maKhuyenMai != null && !maKhuyenMai.trim().isEmpty()) ? maKhuyenMai : null);
+                    stmt.setDouble(7, tienVAT);
+                    stmt.setDouble(8, tongThanhToan);
+                    stmt.setString(9, ghiChu);
                     stmt.executeUpdate();
+                }
+
+                if (maKhuyenMai != null && !maKhuyenMai.trim().isEmpty()) {
+                    String sqlUpdateKM = "UPDATE KhuyenMai SET soLuongDaSuDung = ISNULL(soLuongDaSuDung, 0) + 1, "
+                            + "ngayCapNhat = GETDATE() WHERE maKhuyenMai = ?";
+                    try (PreparedStatement stmt = con.prepareStatement(sqlUpdateKM)) {
+                        stmt.setString(1, maKhuyenMai);
+                        stmt.executeUpdate();
+                    }
                 }
 
                 String sqlChiTiet = "INSERT INTO ChiTietDonHang "
