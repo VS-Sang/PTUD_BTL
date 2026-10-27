@@ -8,18 +8,25 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
+import java.util.Properties;
+
 import DAO.KhuyenMai_DAO;
 import entity.KhuyenMai;
 
-public class createPromtionPanel extends JPanel {
+public class CreatePromotionPanel extends JPanel {
 
     private MenuPanel menuPanel;
     private JTextField txtTenChuongTrinh;
     private JComboBox<String> cboLoaiKhuyenMai;
     private JTextField txtGiaTriGiam;
     private JTextField txtDieuKien;
-    private JTextField txtNgayBatDau;
-    private JTextField txtNgayKetThuc;
+    private JDatePickerImpl datePickerBatDau;
+    private JDatePickerImpl datePickerKetThuc;
+    private UtilDateModel modelNgayBatDau;
+    private UtilDateModel modelNgayKetThuc;
     private JTextArea txtMoTa;
 
     private JButton btnQuayLai;
@@ -36,7 +43,7 @@ public class createPromtionPanel extends JPanel {
 
     private Window parentWindow;
 
-    public createPromtionPanel(Window parentWindow) {
+    public CreatePromotionPanel(Window parentWindow) {
         this.parentWindow = parentWindow;
         setLayout(new BorderLayout());
         setBackground(new Color(238, 238, 238));
@@ -172,22 +179,24 @@ public class createPromtionPanel extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy = 4;
-        formBody.add(createFieldLabel("Ngày bắt đầu * (dd/mm/yyyy)"), gbc);
+        formBody.add(createFieldLabel("Ngày bắt đầu *"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 4;
-        formBody.add(createFieldLabel("Ngày kết thúc * (dd/mm/yyyy)"), gbc);
+        formBody.add(createFieldLabel("Ngày kết thúc *"), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
-        txtNgayBatDau = new JTextField();
-        setPlaceholder(txtNgayBatDau, PH_NGAY_BD);
-        formBody.add(txtNgayBatDau, gbc);
+        modelNgayBatDau = new UtilDateModel();
+        datePickerBatDau = taoDatePicker(modelNgayBatDau, new Date());
+        formBody.add(datePickerBatDau, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 5;
-        txtNgayKetThuc = new JTextField();
-        setPlaceholder(txtNgayKetThuc, PH_NGAY_KT);
-        formBody.add(txtNgayKetThuc, gbc);
+        java.util.Calendar calEnd = java.util.Calendar.getInstance();
+        calEnd.add(java.util.Calendar.DAY_OF_MONTH, 30);
+        modelNgayKetThuc = new UtilDateModel();
+        datePickerKetThuc = taoDatePicker(modelNgayKetThuc, calEnd.getTime());
+        formBody.add(datePickerKetThuc, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 6;
@@ -249,6 +258,39 @@ public class createPromtionPanel extends JPanel {
         return cardPanel;
     }
 
+    private JDatePickerImpl taoDatePicker(UtilDateModel model, Date defaultDate) {
+        if (defaultDate != null) {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(defaultDate);
+            model.setDate(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH));
+            model.setSelected(true);
+        }
+        Properties p = new Properties();
+        p.put("text.today", "Hôm nay");
+        p.put("text.month", "Tháng");
+        p.put("text.year", "Năm");
+        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new JFormattedTextField.AbstractFormatter() {
+            private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+
+            @Override
+            public Object stringToValue(String text) throws ParseException {
+                return dateFormatter.parseObject(text);
+            }
+
+            @Override
+            public String valueToString(Object value) throws ParseException {
+                if (value != null) {
+                    java.util.Calendar cal = (java.util.Calendar) value;
+                    return dateFormatter.format(cal.getTime());
+                }
+                return "";
+            }
+        });
+        datePicker.setBackground(Color.WHITE);
+        return datePicker;
+    }
+
     /**
      * Xử lý sự kiện tạo khuyến mãi: validate + lưu database + quay về trang quản lý.
      */
@@ -306,55 +348,26 @@ public class createPromtionPanel extends JPanel {
             donHangToiThieu = Double.parseDouble(dieuKienStr);
         }
 
-        // 4. Ngày bắt đầu: bắt buộc, đúng định dạng dd/mm/yyyy
-        String ngayBDStr = getFieldText(txtNgayBatDau, PH_NGAY_BD);
-        if (ngayBDStr.isEmpty()) {
-            showError("Ngày bắt đầu không được để trống!");
-            txtNgayBatDau.requestFocus();
-            return;
-        }
-        if (!ngayBDStr.matches("^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$")) {
-            showError("Ngày bắt đầu phải đúng định dạng dd/mm/yyyy.\nVD: 25/12/2026");
-            txtNgayBatDau.requestFocus();
+        // 4. Ngày bắt đầu
+        Date ngayBatDau = (Date) modelNgayBatDau.getValue();
+        if (ngayBatDau == null) {
+            showError("Vui lòng chọn ngày bắt đầu!");
+            datePickerBatDau.requestFocus();
             return;
         }
 
-        // 5. Ngày kết thúc: bắt buộc, đúng định dạng dd/mm/yyyy
-        String ngayKTStr = getFieldText(txtNgayKetThuc, PH_NGAY_KT);
-        if (ngayKTStr.isEmpty()) {
-            showError("Ngày kết thúc không được để trống!");
-            txtNgayKetThuc.requestFocus();
-            return;
-        }
-        if (!ngayKTStr.matches("^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$")) {
-            showError("Ngày kết thúc phải đúng định dạng dd/mm/yyyy.\nVD: 31/12/2026");
-            txtNgayKetThuc.requestFocus();
-            return;
-        }
-
-        // Parse ngày tháng
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        sdf.setLenient(false);
-        Date ngayBatDau, ngayKetThuc;
-        try {
-            ngayBatDau = sdf.parse(ngayBDStr);
-        } catch (ParseException ex) {
-            showError("Ngày bắt đầu không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.");
-            txtNgayBatDau.requestFocus();
-            return;
-        }
-        try {
-            ngayKetThuc = sdf.parse(ngayKTStr);
-        } catch (ParseException ex) {
-            showError("Ngày kết thúc không hợp lệ! Vui lòng nhập đúng định dạng dd/mm/yyyy.");
-            txtNgayKetThuc.requestFocus();
+        // 5. Ngày kết thúc
+        Date ngayKetThuc = (Date) modelNgayKetThuc.getValue();
+        if (ngayKetThuc == null) {
+            showError("Vui lòng chọn ngày kết thúc!");
+            datePickerKetThuc.requestFocus();
             return;
         }
 
         // Ngày kết thúc phải sau ngày bắt đầu
         if (!ngayKetThuc.after(ngayBatDau)) {
             showError("Ngày kết thúc phải sau ngày bắt đầu!");
-            txtNgayKetThuc.requestFocus();
+            datePickerKetThuc.requestFocus();
             return;
         }
 
@@ -512,7 +525,7 @@ public class createPromtionPanel extends JPanel {
             frame.setSize(1200, 700);
             frame.setLocationRelativeTo(null);
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setContentPane(new createPromtionPanel(frame));
+            frame.setContentPane(new CreatePromotionPanel(frame));
             frame.setVisible(true);
         });
     }

@@ -231,7 +231,7 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.IMPORT_GOODS, e -> {
             dongCuaSoHienTai();
-            new ImportGoodsPanel().setVisible(true);
+            new ImportGoodsPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.WORK_SCHEDULE, e -> {
             dongCuaSoHienTai();

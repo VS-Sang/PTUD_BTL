@@ -80,7 +80,7 @@ public class PromotionPanel extends JFrame {
             createFrame.setLocationRelativeTo(null);
             createFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             createFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            createPromtionPanel cpp = new createPromtionPanel(createFrame);
+            CreatePromotionPanel cpp = new CreatePromotionPanel(createFrame);
             createFrame.setContentPane(cpp);
             createFrame.setVisible(true);
             dispose();
