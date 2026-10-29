@@ -9,13 +9,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -25,6 +29,10 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
 
 import DAO.CaLamViec_DAO;
 import DAO.NhanVien_DAO;
@@ -36,7 +44,9 @@ import entity.PhanCongCaLam;
 public class AssignmentPanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
-    private JTextField txtMaPC, txtNgayLamViec, txtGhiChu, txtSearch;
+    private JTextField txtMaPC, txtGhiChu, txtSearch;
+    private JDatePickerImpl datePickerNgayLamViec;
+    private UtilDateModel modelNgayLamViec;
     private JComboBox<String> cboNhanVien, cboCaLamViec, cboFilterShift;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnQuanLyCa, btnTim;
     private DefaultTableModel model;
@@ -108,9 +118,10 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         cboCaLamViec = new JComboBox<>();
         pGrid.add(cboCaLamViec);
 
-        pGrid.add(new JLabel("Ngày làm (yyyy-MM-dd):"));
-        txtNgayLamViec = new JTextField(sdfDate.format(new Date()));
-        pGrid.add(txtNgayLamViec);
+        pGrid.add(new JLabel("Ngày làm việc (*):"));
+        modelNgayLamViec = new UtilDateModel();
+        datePickerNgayLamViec = taoDatePicker(modelNgayLamViec, new Date());
+        pGrid.add(datePickerNgayLamViec);
 
         pGrid.add(new JLabel("Ghi chú:"));
         txtGhiChu = new JTextField();
@@ -209,11 +220,54 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                     txtMaPC.setText(model.getValueAt(row, 0).toString());
                     chonItemTheoMa(cboNhanVien, model.getValueAt(row, 1).toString().split(" - ")[0]);
                     chonItemTheoMa(cboCaLamViec, model.getValueAt(row, 2).toString().split(" - ")[0]);
-                    txtNgayLamViec.setText(model.getValueAt(row, 3).toString());
+                    try {
+                        Date ngay = sdfDate.parse(model.getValueAt(row, 3).toString());
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(ngay);
+                        modelNgayLamViec.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                        modelNgayLamViec.setSelected(true);
+                    } catch (Exception ignored) {
+                    }
                     txtGhiChu.setText(model.getValueAt(row, 4) != null ? model.getValueAt(row, 4).toString() : "");
                 }
             }
         });
+    }
+
+    private JDatePickerImpl taoDatePicker(UtilDateModel model, Date defaultDate) {
+        if (defaultDate != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(defaultDate);
+            model.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+            model.setSelected(true);
+        }
+        Properties p = new Properties();
+        p.put("text.today", "Hôm nay");
+        p.put("text.month", "Tháng");
+        p.put("text.year", "Năm");
+        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new JFormattedTextField.AbstractFormatter() {
+            @Override
+            public Object stringToValue(String text) throws ParseException {
+                if (text == null || text.trim().isEmpty()) {
+                    return null;
+                }
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(sdfDate.parse(text.trim()));
+                return cal;
+            }
+
+            @Override
+            public String valueToString(Object value) throws ParseException {
+                if (value != null) {
+                    Calendar cal = (Calendar) value;
+                    return sdfDate.format(cal.getTime());
+                }
+                return "";
+            }
+        });
+        datePicker.setBackground(Color.WHITE);
+        return datePicker;
     }
 
     private void chonItemTheoMa(JComboBox<String> cbo, String ma) {
@@ -285,7 +339,10 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         txtMaPC.setText(pc_dao.phatSinhMaPhanCong());
         if (cboNhanVien.getItemCount() > 0) cboNhanVien.setSelectedIndex(0);
         if (cboCaLamViec.getItemCount() > 0) cboCaLamViec.setSelectedIndex(0);
-        txtNgayLamViec.setText(sdfDate.format(new Date()));
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        modelNgayLamViec.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        modelNgayLamViec.setSelected(true);
         txtGhiChu.setText("");
         table.clearSelection();
     }
@@ -298,13 +355,12 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboFilterShift)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnThem)) {
-            String ngayStr = txtNgayLamViec.getText().trim();
-            if (ngayStr.isEmpty() || cboNhanVien.getSelectedItem() == null || cboCaLamViec.getSelectedItem() == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Ngày làm việc!");
+            Date ngay = (Date) modelNgayLamViec.getValue();
+            if (ngay == null || cboNhanVien.getSelectedItem() == null || cboCaLamViec.getSelectedItem() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn đầy đủ Ngày làm việc!");
                 return;
             }
             try {
-                Date ngay = sdfDate.parse(ngayStr);
                 String ma = pc_dao.phatSinhMaPhanCong();
                 String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
                 String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
@@ -328,7 +384,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Thêm thất bại (Nhân viên đã có ca này trong ngày)!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Ngày làm việc phải có định dạng yyyy-MM-dd!");
+                JOptionPane.showMessageDialog(this, "Lỗi khi phân công ca làm việc: " + ex.getMessage());
             }
         } else if (o.equals(btnCapNhat)) {
             int row = table.getSelectedRow();
@@ -336,8 +392,12 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng phân công để cập nhật!");
                 return;
             }
+            Date ngay = (Date) modelNgayLamViec.getValue();
+            if (ngay == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn Ngày làm việc!");
+                return;
+            }
             try {
-                Date ngay = sdfDate.parse(txtNgayLamViec.getText().trim());
                 String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
                 String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
 
@@ -359,7 +419,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Cập nhật thất bại (Nhân viên đã có ca này trong ngày)!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Ngày làm việc phải có định dạng yyyy-MM-dd!");
+                JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật phân công: " + ex.getMessage());
             }
         } else if (o.equals(btnXoa)) {
             int row = table.getSelectedRow();
