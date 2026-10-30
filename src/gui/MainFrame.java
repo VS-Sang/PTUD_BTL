@@ -53,6 +53,10 @@ public class MainFrame extends JFrame {
     }
 
     public MainFrame(String userName, String userRole) {
+        this(userName, userRole, null);
+    }
+
+    public MainFrame(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1000, 680));
@@ -61,7 +65,7 @@ public class MainFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
 
-        MenuPanel menuPanel = new MenuPanel(userName, userRole);
+        MenuPanel menuPanel = new MenuPanel(userName, userRole, username);
         menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, event -> {
             dispose();
             new LoginFrame().setVisible(true);

@@ -80,6 +80,7 @@ public class MenuPanel extends JPanel {
     private final Map<Shortcut, JButton> shortcutButtons = new EnumMap<>(Shortcut.class);
     private String currentUserName = "Nguyễn Văn An";
     private String currentUserRole = "Quản lý";
+    private String currentUsername = "admin";
     private JMenuItem mnuDoanhThu;
     private JMenuItem mnuBanChay;
     private JMenuItem mnuTongHop;
@@ -89,9 +90,14 @@ public class MenuPanel extends JPanel {
     }
 
     public MenuPanel(String userName, String userRole) {
+        this(userName, userRole, null);
+    }
+
+    public MenuPanel(String userName, String userRole, String username) {
         super(new BorderLayout());
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
+        this.currentUsername = (username != null && !username.trim().isEmpty()) ? username : "admin";
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(HEADER_COLOR);
@@ -185,7 +191,7 @@ public class MenuPanel extends JPanel {
         // Hệ thống
         setMenuItemAction(MenuItem.HOME, e -> {
             dongCuaSoHienTai();
-            new MainFrame(currentUserName, currentUserRole).setVisible(true);
+            new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.LOGOUT, e -> {
             dongCuaSoHienTai();
@@ -193,13 +199,29 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.PERSONAL_INFO, e ->
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
-                        currentUserName, currentUserRole).setVisible(true));
+                        currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.CHANGE_PASSWORD, e ->
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
-                        currentUserName, currentUserRole).setVisible(true));
+                        currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
+            if (!laQuanTriVien()) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Quản lý tài khoản", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             dongCuaSoHienTai();
-            new AccountPanel().setVisible(true);
+            new AccountPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+        });
+        setMenuItemAction(MenuItem.AUTHORIZATION, e -> {
+            if (!laQuanTriVien()) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Phân quyền hệ thống", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            dongCuaSoHienTai();
+            new PermissionPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
 
         // Danh mục
@@ -212,8 +234,14 @@ public class MenuPanel extends JPanel {
             new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.EMPLOYEE, e -> {
+            if (!laQuanTriVien()) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Quản lý nhân sự", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             dongCuaSoHienTai();
-            new EmployeePanel().setVisible(true);
+            new EmployeePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.PRODUCT, e -> {
             dongCuaSoHienTai();
@@ -303,7 +331,7 @@ public class MenuPanel extends JPanel {
         if (btnHome != null) {
             btnHome.addActionListener(e -> {
                 dongCuaSoHienTai();
-                new MainFrame(currentUserName, currentUserRole).setVisible(true);
+                new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
             });
         }
 
@@ -347,6 +375,11 @@ public class MenuPanel extends JPanel {
         if (window != null) {
             window.dispose();
         }
+    }
+
+    private boolean laQuanTriVien() {
+        String role = currentUserRole == null ? "" : currentUserRole.trim().toLowerCase();
+        return "admin".equals(role) || role.contains("quản lý") || role.contains("quan ly");
     }
 
     private void addItem(JMenu menu, MenuItem key, String label) {
