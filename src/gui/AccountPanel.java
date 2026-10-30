@@ -190,7 +190,8 @@ public class AccountPanel extends JFrame {
         } else if (action == 1) {
             toggleStatus(accountId, tableModel.getValueAt(modelRow, 3).toString());
         } else if (action == 2) {
-            deleteAccount(accountId, tableModel.getValueAt(modelRow, 0).toString());
+            deleteAccount(accountId, tableModel.getValueAt(modelRow, 0).toString(),
+                    tableModel.getValueAt(modelRow, 2).toString());
         }
     }
 
@@ -217,9 +218,9 @@ public class AccountPanel extends JFrame {
         updateAccount("trangThai", nextStatus, accountId);
     }
 
-    private void deleteAccount(String accountId, String username) {
-        if ("admin".equalsIgnoreCase(username)) {
-            showError("Không thể xóa tài khoản admin mặc định.");
+    private void deleteAccount(String accountId, String username, String role) {
+        if ("Admin".equalsIgnoreCase(role)) {
+            showError("Không thể xóa tài khoản có vai trò Admin.");
             return;
         }
         int answer = JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + username + "?",
