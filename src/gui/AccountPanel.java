@@ -321,7 +321,8 @@ public class AccountPanel extends JFrame {
 
         private void loadEmployees() {
             String sql = "SELECT nv.maNhanVien, nv.hoTen FROM NhanVien nv "
-                    + "WHERE NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
+                    + "WHERE nv.trangThai = N'Đang làm việc' "
+                    + "AND NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
                     + "ORDER BY nv.hoTen";
             try (Connection connection = ConnectDB.getConnection();
                  PreparedStatement statement = connection.prepareStatement(sql);
