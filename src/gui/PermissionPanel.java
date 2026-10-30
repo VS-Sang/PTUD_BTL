@@ -239,7 +239,18 @@ public class PermissionPanel extends JFrame {
             connection.commit();
             JOptionPane.showMessageDialog(this, "Đã lưu phân quyền cho " + account.label + ".");
         } catch (SQLException exception) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackException) {
+                exception.addSuppressed(rollbackException);
+            }
             showError("Không thể lưu phân quyền:\n" + exception.getMessage());
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ignored) {
+                // The connection is closing; no further work can be done.
+            }
         }
     }
 
