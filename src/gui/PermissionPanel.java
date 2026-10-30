@@ -229,14 +229,24 @@ public class PermissionPanel extends JFrame {
             for (int row = 0; row < tableModel.getRowCount(); row++) {
                 statement.setString(1, account.id);
                 statement.setString(2, tableModel.getValueAt(row, 0).toString());
-                for (int column = 4; column <= 7; column++) {
-                    statement.setBoolean(column - 1, (Boolean) tableModel.getValueAt(row, column));
+                    boolean canView = (Boolean) tableModel.getValueAt(row, 4);
+                    boolean hasManagementRight = (Boolean) tableModel.getValueAt(row, 5)
+                            || (Boolean) tableModel.getValueAt(row, 6)
+                            || (Boolean) tableModel.getValueAt(row, 7);
+                    if (hasManagementRight && !canView) {
+                        canView = true;
+                        tableModel.setValueAt(true, row, 4);
+                    }
+                    for (int column = 4; column <= 7; column++) {
+                        statement.setBoolean(column - 1, column == 4 ? canView
+                                : (Boolean) tableModel.getValueAt(row, column));
                 }
                 statement.setString(7, account.id);
                 statement.setString(8, account.id);
                 statement.setString(9, tableModel.getValueAt(row, 0).toString());
                 for (int column = 4; column <= 7; column++) {
-                    statement.setBoolean(column + 6, (Boolean) tableModel.getValueAt(row, column));
+                    statement.setBoolean(column + 6, column == 4 ? canView
+                            : (Boolean) tableModel.getValueAt(row, column));
                 }
                 statement.setString(14, account.id);
                 statement.addBatch();
