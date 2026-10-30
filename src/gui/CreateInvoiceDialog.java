@@ -97,7 +97,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final JTextField txtMaHoaDon = new JTextField();
     private final JTextField txtNgayLap = new JTextField();
     private final JTextField txtNhanVien = new JTextField();
-    private final JTextField txtSoDienThoai = new JTextField();
     private final JTextField txtTienKhachDua = new JTextField();
     private final JTextArea txtGhiChu = new JTextArea(3, 20);
     private final JLabel lblTongSoLuong = new JLabel("0");
@@ -108,10 +107,10 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final Map<String, Integer> soLuongDaChon = new LinkedHashMap<>();
     private final Map<String, SanPham> sanPhamTheoMa = new LinkedHashMap<>();
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
-    private final JButton btnThem = createButton("+ Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
-    private final JButton btnLuu = createButton("▣  Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
-    private final JButton btnIn = createButton("▣  In", new Color(54, 103, 193), Color.WHITE);
-    private final JButton btnMoi = createButton("⟳  Hóa đơn mới", Color.WHITE, Color.DARK_GRAY);
+    private final JButton btnThem = createButton("Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
+    private final JButton btnLuu = createButton("Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
+    private final JButton btnIn = createButton("In", new Color(54, 103, 193), Color.WHITE);
+    private final JButton btnMoi = createButton("Hóa đơn mới", Color.WHITE, Color.DARK_GRAY);
 
     public CreateInvoiceDialog(InvoicePanel owner, String tenNhanVien, String vaiTro) {
         this.owner = owner;
@@ -126,7 +125,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtMaHoaDon.setEditable(false);
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
-        txtSoDienThoai.setEditable(false);
 
         add(new MenuPanel(this.tenNhanVien, vaiTro), BorderLayout.NORTH);
         add(createWorkspace(), BorderLayout.CENTER);
@@ -165,7 +163,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         header.setOpaque(false);
         header.setBorder(BorderFactory.createEmptyBorder(0, 4, 2, 4));
 
-        JLabel title = new JLabel("▣  Lập Hóa Đơn Bán Hàng");
+        JLabel title = new JLabel("Lập Hóa Đơn Bán Hàng");
         title.setForeground(BRAND_RED);
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         header.add(title, BorderLayout.WEST);
@@ -188,7 +186,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     }
 
     private JPanel createInvoiceDetails() {
-        JPanel section = createSection("ⓘ  Thông tin hóa đơn");
+        JPanel section = createSection("Thông tin hóa đơn");
         JPanel fields = new JPanel(new GridBagLayout());
         fields.setBackground(Color.WHITE);
         fields.setBorder(BorderFactory.createEmptyBorder(9, 12, 10, 12));
@@ -202,7 +200,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         addField(fields, c, 1, 0, "Ngày lập", txtNgayLap);
         addField(fields, c, 2, 0, "Nhân viên", txtNhanVien);
         addField(fields, c, 0, 2, "Khách hàng", cboKhachHang);
-        addField(fields, c, 1, 2, "SĐT", txtSoDienThoai);
 
         JLabel productLabel = createFieldLabel("Thêm sản phẩm");
         c.gridx = 0;
@@ -236,11 +233,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
         c.gridy = row + 1;
         if (column == 0 && row == 2) {
-            c.gridwidth = 1;
-            c.weightx = 1;
-        } else if (column == 1 && row == 2) {
-            c.gridwidth = 2;
-            c.weightx = 2;
+            c.gridwidth = 3;
+            c.weightx = 3;
         } else {
             c.gridwidth = 1;
         }
@@ -298,7 +292,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     }
 
     private JPanel createPaymentPanel() {
-        JPanel section = createSection("▦  Tính tiền");
+        JPanel section = createSection("Tính tiền");
         JPanel fields = new JPanel(new GridBagLayout());
         fields.setBackground(Color.WHITE);
         fields.setBorder(BorderFactory.createEmptyBorder(9, 12, 12, 12));
@@ -423,11 +417,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                 cboKhachHang.addItem(khachHang);
             }
         }
-        cboKhachHang.addActionListener(event -> {
-            KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
-            txtSoDienThoai.setText(khachHang == null ? "" : khachHang.getSoDienThoai());
-        });
-
         cboSanPham.addItem(null);
         cboSanPham.setRenderer((list, value, index, selected, focus) -> {
             JLabel label = new JLabel(value == null ? "-- Chọn sản phẩm --"
@@ -742,7 +731,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtMaHoaDon.setText("Tự động khi lưu");
         txtNgayLap.setText(DATE_FORMAT.format(new Date()));
         txtNhanVien.setText(tenNhanVien);
-        txtSoDienThoai.setText("");
         txtTienKhachDua.setText("0");
         txtGhiChu.setText("");
         cboKhachHang.setSelectedIndex(0);
