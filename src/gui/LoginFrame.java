@@ -327,6 +327,12 @@ public class LoginFrame extends JDialog {
     private void login() {
         String username = usernameField.getText().trim();
         char[] password = passwordField.getPassword();
+        if (username.isEmpty() || password.length == 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên đăng nhập và mật khẩu.",
+                    "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(password, '\0');
+            return;
+        }
         String passwordText = new String(password);
         Arrays.fill(password, '\0');
 
@@ -349,7 +355,12 @@ public class LoginFrame extends JDialog {
                 role = rs.getString(1);
                 fullName = rs.getString(2);
             }
-        } catch (Exception ignored) {
+        } catch (java.sql.SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra cấu hình kết nối.",
+                    "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
+            Arrays.fill(passwordText.toCharArray(), '\0');
+            return;
         }
 
         // 2. Mặc định hỗ trợ admin/admin hoặc nv/nv
@@ -376,7 +387,7 @@ public class LoginFrame extends JDialog {
         }
 
         dispose();
-        new MainFrame(fullName, role).setVisible(true);
+        new MainFrame(fullName, role, username).setVisible(true);
     }
 
     private static class PlaceholderTextField extends JTextField {

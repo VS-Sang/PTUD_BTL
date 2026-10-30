@@ -80,6 +80,7 @@ public class MenuPanel extends JPanel {
     private final Map<Shortcut, JButton> shortcutButtons = new EnumMap<>(Shortcut.class);
     private String currentUserName = "Nguyễn Văn An";
     private String currentUserRole = "Quản lý";
+    private String currentUsername = "admin";
     private JMenuItem mnuDoanhThu;
     private JMenuItem mnuBanChay;
     private JMenuItem mnuTongHop;
@@ -89,9 +90,14 @@ public class MenuPanel extends JPanel {
     }
 
     public MenuPanel(String userName, String userRole) {
+        this(userName, userRole, null);
+    }
+
+    public MenuPanel(String userName, String userRole, String username) {
         super(new BorderLayout());
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
+        this.currentUsername = (username != null && !username.trim().isEmpty()) ? username : "admin";
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(HEADER_COLOR);
@@ -193,10 +199,10 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.PERSONAL_INFO, e ->
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
-                        currentUserName, currentUserRole).setVisible(true));
+                        currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.CHANGE_PASSWORD, e ->
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
-                        currentUserName, currentUserRole).setVisible(true));
+                        currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
             dongCuaSoHienTai();
             new AccountPanel().setVisible(true);
