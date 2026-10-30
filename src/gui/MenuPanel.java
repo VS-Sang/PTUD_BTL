@@ -191,7 +191,7 @@ public class MenuPanel extends JPanel {
         // Hệ thống
         setMenuItemAction(MenuItem.HOME, e -> {
             dongCuaSoHienTai();
-            new MainFrame(currentUserName, currentUserRole).setVisible(true);
+            new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.LOGOUT, e -> {
             dongCuaSoHienTai();
@@ -205,7 +205,7 @@ public class MenuPanel extends JPanel {
                         currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
             dongCuaSoHienTai();
-            new AccountPanel().setVisible(true);
+            new AccountPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.AUTHORIZATION, e -> {
             if (!currentUserRole.equalsIgnoreCase("Admin")
@@ -217,7 +217,7 @@ public class MenuPanel extends JPanel {
                 return;
             }
             dongCuaSoHienTai();
-            new PermissionPanel().setVisible(true);
+            new PermissionPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
 
         // Danh mục
@@ -317,7 +317,7 @@ public class MenuPanel extends JPanel {
         if (btnHome != null) {
             btnHome.addActionListener(e -> {
                 dongCuaSoHienTai();
-                new MainFrame(currentUserName, currentUserRole).setVisible(true);
+                new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
             });
         }
 
