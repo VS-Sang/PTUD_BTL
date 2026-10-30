@@ -160,8 +160,11 @@ public class ProfileDialog extends JDialog {
     }
 
     private JLabel statusBadge(String status) {
-        JLabel badge = badge(valueOrDefault(status, "Chưa cập nhật"), new Color(232, 249, 234),
-                new Color(35, 135, 55), new Color(112, 193, 120));
+        boolean active = "Hoạt động".equalsIgnoreCase(valueOrDefault(status, ""));
+        JLabel badge = badge(valueOrDefault(status, "Chưa cập nhật"),
+                active ? new Color(232, 249, 234) : new Color(255, 242, 230),
+                active ? new Color(35, 135, 55) : new Color(180, 95, 20),
+                active ? new Color(112, 193, 120) : new Color(220, 160, 90));
         return badge;
     }
 
