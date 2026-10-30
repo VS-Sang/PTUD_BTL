@@ -106,7 +106,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         JPanel pHeader = new JPanel(new BorderLayout());
         pHeader.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("📄 Báo Cáo Tổng Hợp");
+        JLabel lblTitle = new JLabel(" Báo Cáo Tổng Hợp");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 17));
         lblTitle.setForeground(BRAND_RED);
         pHeader.add(lblTitle, BorderLayout.WEST);
@@ -120,7 +120,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         cboMonth.setBackground(Color.WHITE);
         cboMonth.addActionListener(this);
 
-        btnExport = new JButton("📥  Xuất Excel");
+        btnExport = new JButton("  Xuất Excel");
         btnExport.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExport.setBackground(BRAND_RED);
         btnExport.setForeground(Color.WHITE);
@@ -129,7 +129,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         btnExport.setPreferredSize(new Dimension(125, 32));
         btnExport.addActionListener(this);
 
-        btnPrint = new JButton("🖨  In");
+        btnPrint = new JButton(" In");
         btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnPrint.setBackground(new Color(49, 130, 206));
         btnPrint.setForeground(Color.WHITE);
