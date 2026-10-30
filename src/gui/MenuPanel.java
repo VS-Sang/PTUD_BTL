@@ -234,8 +234,14 @@ public class MenuPanel extends JPanel {
             new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.EMPLOYEE, e -> {
+            if (!laQuanTriVien()) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Quản lý nhân sự", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             dongCuaSoHienTai();
-            new EmployeePanel().setVisible(true);
+            new EmployeePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.PRODUCT, e -> {
             dongCuaSoHienTai();

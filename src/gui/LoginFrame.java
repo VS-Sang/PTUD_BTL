@@ -335,51 +335,76 @@ public class LoginFrame extends JDialog {
         }
         String passwordText = new String(password);
         Arrays.fill(password, '\0');
-
+        String md5Pass = toMD5(passwordText);
         String role = null;
         String fullName = null;
+        String accountId = null;
+        String status = null;
+        boolean authenticated = false;
+        try (java.sql.Connection connection = connectDB.ConnectDB.getConnection();
+                java.sql.PreparedStatement lookup = connection.prepareStatement(
+                        "SELECT tk.maTaiKhoan, tk.matKhau, tk.vaiTro, tk.trangThai, nv.hoTen "
+                                + "FROM TaiKhoan tk JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+                                + "WHERE tk.tenDangNhap = ?")) {
+            lookup.setString(1, username);
+            try (java.sql.ResultSet result = lookup.executeQuery()) {
+                if (result.next()) {
+                    accountId = result.getString("maTaiKhoan");
+                    String storedPassword = result.getString("matKhau");
+                    role = result.getString("vaiTro");
+                    status = result.getString("trangThai");
+                    fullName = result.getString("hoTen");
+                    authenticated = passwordText.equals(storedPassword)
+                            || md5Pass.equalsIgnoreCase(storedPassword);
+                }
+            }
 
-        String md5Pass = toMD5(passwordText);
-
-        // 1. Thử xác thực từ Database TaiKhoan
-        try (java.sql.Connection con = connectDB.ConnectDB.getConnection();
-                java.sql.PreparedStatement stmt = con.prepareStatement(
-                        "SELECT tk.vaiTro, nv.hoTen FROM TaiKhoan tk "
-                                + "JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
-                                + "WHERE tk.tenDangNhap = ? AND (tk.matKhau = ? OR tk.matKhau = ?) AND tk.trangThai = N'Hoạt động'")) {
-            stmt.setString(1, username);
-            stmt.setString(2, passwordText);
-            stmt.setString(3, md5Pass);
-            java.sql.ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                role = rs.getString(1);
-                fullName = rs.getString(2);
+            connection.setAutoCommit(false);
+            if (accountId == null || !authenticated || !"Hoạt động".equals(status)) {
+                if (accountId != null) {
+                    try (java.sql.PreparedStatement failure = connection.prepareStatement(
+                            "UPDATE TaiKhoan SET soLanDangNhapLoi = soLanDangNhapLoi + 1, "
+                                    + "trangThai = CASE WHEN soLanDangNhapLoi + 1 >= 5 "
+                                    + "THEN N'Bị khóa' ELSE trangThai END, ngayCapNhat = GETDATE() "
+                                    + "WHERE maTaiKhoan = ?");
+                         java.sql.PreparedStatement log = connection.prepareStatement(
+                                 "INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai) "
+                                         + "VALUES (?, N'Thất bại', ?)")) {
+                        failure.setString(1, accountId);
+                        failure.executeUpdate();
+                        log.setString(1, accountId);
+                        log.setString(2, !"Hoạt động".equals(status)
+                                ? "Tài khoản không hoạt động" : "Sai mật khẩu");
+                        log.executeUpdate();
+                    }
+                }
+                connection.commit();
+            } else {
+                try (java.sql.PreparedStatement success = connection.prepareStatement(
+                        "UPDATE TaiKhoan SET lanDangNhapCuoi = GETDATE(), soLanDangNhapLoi = 0, "
+                                + "ngayCapNhat = GETDATE() WHERE maTaiKhoan = ?");
+                     java.sql.PreparedStatement log = connection.prepareStatement(
+                             "INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua) VALUES (?, N'Thành công')")) {
+                    success.setString(1, accountId);
+                    success.executeUpdate();
+                    log.setString(1, accountId);
+                    log.executeUpdate();
+                }
+                connection.commit();
             }
         } catch (java.sql.SQLException exception) {
             JOptionPane.showMessageDialog(this,
-                    "Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra cấu hình kết nối.",
+                    "Không thể xử lý đăng nhập với cơ sở dữ liệu.",
                     "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
             passwordField.requestFocusInWindow();
             return;
         }
 
-        // 2. Mặc định hỗ trợ admin/admin hoặc nv/nv
-        if (fullName == null) {
-            if ("admin".equalsIgnoreCase(username) && ("admin".equals(passwordText) || "123456".equals(passwordText))) {
-                role = "Quản lý";
-                fullName = "Nguyễn Văn An";
-            } else if ("nv".equalsIgnoreCase(username)
-                    && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
-                role = "Nhân viên";
-                fullName = "Phạm Thị Dung";
-            }
-        }
-
-        if (role == null) {
+        if (!authenticated || !"Hoạt động".equals(status)) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Tên đăng nhập hoặc mật khẩu không chính xác.",
+                    "Tên đăng nhập, mật khẩu không chính xác hoặc tài khoản không hoạt động.",
                     "Đăng nhập thất bại",
                     JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
