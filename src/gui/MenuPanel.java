@@ -204,13 +204,17 @@ public class MenuPanel extends JPanel {
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
                         currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
+            if (!laQuanTriVien()) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Quản lý tài khoản", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             dongCuaSoHienTai();
             new AccountPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.AUTHORIZATION, e -> {
-            if (!currentUserRole.equalsIgnoreCase("Admin")
-                    && !currentUserRole.toLowerCase().contains("quản lý")
-                    && !currentUserRole.toLowerCase().contains("quan ly")) {
+            if (!laQuanTriVien()) {
                 JOptionPane.showMessageDialog(this,
                         "Chức năng này chỉ dành cho tài khoản quản lý.",
                         "Phân quyền hệ thống", JOptionPane.WARNING_MESSAGE);
@@ -361,6 +365,11 @@ public class MenuPanel extends JPanel {
         if (window != null) {
             window.dispose();
         }
+    }
+
+    private boolean laQuanTriVien() {
+        String role = currentUserRole == null ? "" : currentUserRole.trim().toLowerCase();
+        return "admin".equals(role) || role.contains("quản lý") || role.contains("quan ly");
     }
 
     private void addItem(JMenu menu, MenuItem key, String label) {
