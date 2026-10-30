@@ -17,15 +17,6 @@ public class NhanVien_DAO {
         String maNQL = rs.getString("maNguoiQuanLy");
         NhanVien nguoiQuanLy = (maNQL != null) ? new NhanVien(maNQL) : null;
 
-        String chucVu = rs.getString("chucVu");
-        if (!"Quản lý".equalsIgnoreCase(chucVu)) {
-            chucVu = "Nhân viên bán hàng";
-        }
-        String phongBan = rs.getString("phongBan");
-        if (!"Quản lý".equalsIgnoreCase(phongBan)) {
-            phongBan = "Bán hàng";
-        }
-
         return new NhanVien(
                 rs.getString("maNhanVien"),
                 rs.getString("hoTen"),
@@ -36,8 +27,8 @@ public class NhanVien_DAO {
                 rs.getString("email"),
                 rs.getString("diaChi"),
                 rs.getString("hinhAnh"),
-                chucVu,
-                phongBan,
+                rs.getString("chucVu"),
+                rs.getString("phongBan"),
                 rs.getDouble("luongCoBan"),
                 rs.getDouble("heSoLuong"),
                 rs.getDouble("phuCap"),
@@ -86,19 +77,16 @@ public class NhanVien_DAO {
 
     // Phát sinh mã nhân viên tiếp theo (VD: NV011)
     public String phatSinhMaNhanVien() {
-        String sql = "SELECT TOP 1 maNhanVien FROM NhanVien ORDER BY maNhanVien DESC";
+        String sql = "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maNhanVien, 3, 18))), 0) + 1 "
+                + "FROM NhanVien WHERE maNhanVien LIKE 'NV[0-9]%'";
         try (Connection con = ConnectDB.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
-                String lastId = rs.getString("maNhanVien"); // VD: NV010
-                if (lastId != null && lastId.startsWith("NV")) {
-                    int num = Integer.parseInt(lastId.substring(2)) + 1;
-                    return String.format("NV%03d", num);
-                }
+                return String.format("NV%03d", rs.getInt(1));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            return "NV001";
         }
         return "NV001";
     }
@@ -148,7 +136,11 @@ public class NhanVien_DAO {
 
     // Cập nhật thông tin nhân viên
     public boolean capNhatNhanVien(NhanVien nv) {
-        String sql = "UPDATE NhanVien SET hoTen = ?, gioiTinh = ?, ngaySinh = ?, soDienThoai = ?, email = ?, diaChi = ?, chucVu = ?, phongBan = ?, luongCoBan = ?, trangThai = ? WHERE maNhanVien = ?";
+        String sql = "UPDATE NhanVien SET hoTen = ?, gioiTinh = ?, ngaySinh = ?, soDienThoai = ?, "
+                + "email = ?, diaChi = ?, chucVu = ?, phongBan = ?, luongCoBan = ?, trangThai = ?, "
+                + "ngayNghiViec = CASE WHEN ? = N'Đã nghỉ việc' "
+                + "THEN ISNULL(ngayNghiViec, GETDATE()) ELSE NULL END, ngayCapNhat = GETDATE() "
+                + "WHERE maNhanVien = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, nv.getHoTen());
@@ -161,7 +153,8 @@ public class NhanVien_DAO {
             stmt.setString(8, nv.getPhongBan());
             stmt.setDouble(9, nv.getLuongCoBan());
             stmt.setString(10, nv.getTrangThai());
-            stmt.setString(11, nv.getMaNhanVien());
+            stmt.setString(11, nv.getTrangThai());
+            stmt.setString(12, nv.getMaNhanVien());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
