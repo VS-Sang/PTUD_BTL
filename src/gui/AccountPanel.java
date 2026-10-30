@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JPasswordField;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -268,7 +269,7 @@ public class AccountPanel extends JFrame {
         private final AccountData data;
         private final JComboBox<EmployeeOption> employeeBox = new JComboBox<>();
         private final JTextField usernameField = new JTextField();
-        private final JTextField passwordField = new JTextField();
+        private final JPasswordField passwordField = new JPasswordField();
         private final JComboBox<String> roleBox = new JComboBox<>(ROLES);
         private final JComboBox<String> statusBox = new JComboBox<>(STATUSES);
         private boolean saved;
@@ -331,10 +332,14 @@ public class AccountPanel extends JFrame {
 
         private void saveAccount() {
             String username = usernameField.getText().trim();
-            String password = passwordField.getText();
-            if (data == null && (employeeBox.getSelectedItem() == null || username.isEmpty() || password.length() < 6)) {
-                JOptionPane.showMessageDialog(this, "Chọn nhân viên, nhập tên đăng nhập và mật khẩu ít nhất 6 ký tự.",
+            char[] password = passwordField.getPassword();
+            if (data == null && (employeeBox.getSelectedItem() == null
+                    || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
+                JOptionPane.showMessageDialog(this,
+                        "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
+                                + "và mật khẩu ít nhất 6 ký tự.",
                         "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                java.util.Arrays.fill(password, '\0');
                 return;
             }
             try (Connection connection = ConnectDB.getConnection()) {
@@ -345,7 +350,7 @@ public class AccountPanel extends JFrame {
                     try (PreparedStatement statement = connection.prepareStatement(sql)) {
                         statement.setString(1, nextAccountId(connection));
                         statement.setString(2, username);
-                        statement.setString(3, LoginFrame.toMD5(password));
+                        statement.setString(3, LoginFrame.toMD5(new String(password)));
                         statement.setString(4, (String) roleBox.getSelectedItem());
                         statement.setString(5, employee.id);
                         statement.setString(6, (String) statusBox.getSelectedItem());
@@ -366,6 +371,8 @@ public class AccountPanel extends JFrame {
             } catch (SQLException exception) {
                 JOptionPane.showMessageDialog(this, "Không thể lưu tài khoản:\n" + exception.getMessage(),
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                java.util.Arrays.fill(password, '\0');
             }
         }
 
