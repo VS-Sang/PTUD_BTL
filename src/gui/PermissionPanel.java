@@ -221,8 +221,10 @@ public class PermissionPanel extends JFrame {
                 + "coQuyenXoa = ?, nguoiGan = ?, ngayGan = GETDATE() "
                 + "WHEN NOT MATCHED THEN INSERT (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, "
                 + "coQuyenSua, coQuyenXoa, nguoiGan) VALUES (?, ?, ?, ?, ?, ?, ?);";
-        try (Connection connection = ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        Connection connection = null;
+        try {
+            connection = ConnectDB.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
             connection.setAutoCommit(false);
             for (int row = 0; row < tableModel.getRowCount(); row++) {
                 statement.setString(1, account.id);
@@ -242,18 +244,24 @@ public class PermissionPanel extends JFrame {
             statement.executeBatch();
             connection.commit();
             JOptionPane.showMessageDialog(this, "Đã lưu phân quyền cho " + account.label + ".");
+            }
         } catch (SQLException exception) {
-            try {
+            if (connection != null) {
+              try {
                 connection.rollback();
-            } catch (SQLException rollbackException) {
+              } catch (SQLException rollbackException) {
                 exception.addSuppressed(rollbackException);
+              }
             }
             showError("Không thể lưu phân quyền:\n" + exception.getMessage());
         } finally {
-            try {
+            if (connection != null) {
+              try {
                 connection.setAutoCommit(true);
-            } catch (SQLException ignored) {
-                // The connection is closing; no further work can be done.
+                connection.close();
+              } catch (SQLException closeException) {
+                showError("Không thể đóng kết nối cơ sở dữ liệu:\n" + closeException.getMessage());
+              }
             }
         }
     }
