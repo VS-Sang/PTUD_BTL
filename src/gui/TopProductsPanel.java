@@ -112,7 +112,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         JPanel pHeader = new JPanel(new BorderLayout());
         pHeader.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("🕒 Thống kê Sản phẩm Bán Chạy");
+        JLabel lblTitle = new JLabel(" Thống kê Sản phẩm Bán Chạy");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTitle.setForeground(DARK_HEADER);
         pHeader.add(lblTitle, BorderLayout.WEST);
@@ -126,7 +126,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         cboMonth.setBackground(Color.WHITE);
         cboMonth.addActionListener(this);
 
-        btnExport = new JButton("📥  Xuất Excel");
+        btnExport = new JButton("  Xuất Excel");
         btnExport.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExport.setBackground(new Color(49, 112, 196));
         btnExport.setForeground(Color.WHITE);
@@ -172,7 +172,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 36));
 
-        // Format Cột 0: Hạng (Kèm biểu tượng huy chương 🥇 🥈 🥉)
+        // Format Cột 0: Hạng
         table.getColumnModel().getColumn(0).setPreferredWidth(65);
         table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
@@ -183,13 +183,13 @@ public class TopProductsPanel extends JFrame implements ActionListener {
                 setFont(new Font("Segoe UI Emoji", Font.BOLD, 13));
                 int rank = row + 1;
                 if (rank == 1) {
-                    setText("🥇 1");
+                    setText(" 1");
                     setForeground(new Color(212, 160, 23));
                 } else if (rank == 2) {
-                    setText("🥈 2");
+                    setText("2");
                     setForeground(new Color(125, 135, 145));
                 } else if (rank == 3) {
-                    setText("🥉 3");
+                    setText("3");
                     setForeground(new Color(175, 110, 60));
                 } else {
                     setText(String.valueOf(rank));
@@ -340,16 +340,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         JPanel textRow = new JPanel(new BorderLayout());
         textRow.setOpaque(false);
 
-        // Biểu tượng danh mục
-        String icon = "📦 ";
-        String lower = tenDanhMuc.toLowerCase();
-        if (lower.contains("thoại") || lower.contains("phone")) icon = "📱 ";
-        else if (lower.contains("laptop") || lower.contains("máy tính")) icon = "💻 ";
-        else if (lower.contains("tivi") || lower.contains("tv")) icon = "📺 ";
-        else if (lower.contains("dụng")) icon = "🏺 ";
-        else if (lower.contains("phụ kiện") || lower.contains("tai nghe") || lower.contains("loa")) icon = "🎧 ";
-
-        JLabel lblName = new JLabel(icon + tenDanhMuc);
+        JLabel lblName = new JLabel(tenDanhMuc);
         lblName.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblName.setForeground(new Color(40, 40, 40));
 

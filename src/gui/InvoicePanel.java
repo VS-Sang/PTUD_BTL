@@ -64,7 +64,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
         pSubHeader.setBackground(new Color(245, 245, 245));
         pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        JLabel lblSubTitle = new JLabel("🧾 Quản lý Hoá Đơn");
+        JLabel lblSubTitle = new JLabel("Quản lý Hoá Đơn");
         lblSubTitle.setForeground(new Color(150, 30, 30));
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
@@ -106,17 +106,11 @@ public class InvoicePanel extends JFrame implements ActionListener {
         pNorthCenter.add(pSearch, BorderLayout.CENTER);
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
 
-        String[] columns = {"", "Mã HĐ", "Ngày lập", "Khách hàng", "Thu ngân", "Phương thức", "Tổng thanh toán", "Trạng thái"};
-        model = new DefaultTableModel(columns, 0) {
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                return columnIndex == 0 ? Boolean.class : String.class;
-            }
-        };
+        String[] columns = {"Mã HĐ", "Ngày lập", "Khách hàng", "Thu ngân", "Phương thức", "Tổng thanh toán", "Trạng thái"};
+        model = new DefaultTableModel(columns, 0);
 
         table = new JTable(model);
         table.setRowHeight(36);
-        table.getColumnModel().getColumn(0).setMaxWidth(40);
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setBackground(new Color(180, 40, 40));
         table.getTableHeader().setForeground(Color.WHITE);
@@ -161,7 +155,6 @@ public class InvoicePanel extends JFrame implements ActionListener {
 
             if (matchKey && matchStatus) {
                 model.addRow(new Object[]{
-                        false,
                         hd.getMaHoaDon(),
                         hd.getNgayLapHoaDon() != null ? sdf.format(hd.getNgayLapHoaDon()) : "",
                         tenKH,

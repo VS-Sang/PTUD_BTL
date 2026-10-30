@@ -12,10 +12,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -44,15 +40,12 @@ public class CustomerPanel extends JFrame implements ActionListener {
     private final DecimalFormat df = new DecimalFormat("#,### VNĐ");
     private final CardLayout contentLayout = new CardLayout();
     private final JPanel contentCards = new JPanel(contentLayout);
-    private final DateTimeFormatter dateFormatter =
-            DateTimeFormatter.ofPattern("MM/dd/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private JPanel customerFormPanel;
     private JTextField txtMaKhachHang;
     private JTextField txtFormHoTen;
     private JTextField txtFormSoDienThoai;
     private JTextField txtFormEmail;
     private JTextArea txtFormDiaChi;
-    private JTextField txtFormNgaySinh;
     private JComboBox<String> cboFormGioiTinh;
 
     public CustomerPanel() {
@@ -76,7 +69,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
         pSubHeader.setBackground(new Color(245, 245, 245));
         pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        JLabel lblSubTitle = new JLabel("📖 Quản Lý Khách Hàng");
+        JLabel lblSubTitle = new JLabel(" Quản Lý Khách Hàng");
         lblSubTitle.setForeground(new Color(150, 30, 30));
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
@@ -109,21 +102,12 @@ public class CustomerPanel extends JFrame implements ActionListener {
 
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
 
-        String[] columns = {"", "Mã KH", "Họ tên", "Giới tính", "SĐT", "Email", "Địa chỉ", "Hạng KH", "Điểm thưởng", "Tổng chi tiêu"};
+        String[] columns = {"Mã KH", "Họ tên", "Giới tính", "SĐT", "Email", "Địa chỉ", "Hạng KH", "Điểm thưởng", "Tổng chi tiêu"};
 
-        model = new DefaultTableModel(columns, 0) {
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Boolean.class;
-                }
-                return String.class;
-            }
-        };
+        model = new DefaultTableModel(columns, 0);
 
         table = new JTable(model);
         table.setRowHeight(34);
-        table.getColumnModel().getColumn(0).setMaxWidth(40);
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setBackground(new Color(180, 40, 40));
         table.getTableHeader().setForeground(Color.WHITE);
@@ -156,7 +140,6 @@ public class CustomerPanel extends JFrame implements ActionListener {
                     || (kh.getSoDienThoai() != null && kh.getSoDienThoai().contains(tuKhoa));
             if (match) {
                 model.addRow(new Object[]{
-                        false,
                         kh.getMaKhachHang(),
                         kh.getHoTen(),
                         kh.getGioiTinh() != null ? kh.getGioiTinh() : "",
@@ -193,8 +176,6 @@ public class CustomerPanel extends JFrame implements ActionListener {
         txtFormDiaChi = new JTextArea(3, 20);
         txtFormDiaChi.setLineWrap(true);
         txtFormDiaChi.setWrapStyleWord(true);
-        txtFormNgaySinh = new JTextField();
-        txtFormNgaySinh.setToolTipText("Nhập theo định dạng mm/dd/yyyy");
         cboFormGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
 
         JPanel page = new JPanel(new BorderLayout(0, 12));
@@ -203,7 +184,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
 
         JPanel pageHeader = new JPanel(new BorderLayout());
         pageHeader.setOpaque(false);
-        JLabel title = new JLabel("👤 Khách hàng — Thêm / Cập nhật");
+        JLabel title = new JLabel("Khách hàng — Thêm / Cập nhật");
         title.setForeground(new Color(173, 48, 42));
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         JButton btnQuayLai = new JButton("← Quay lại");
@@ -216,7 +197,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
         card.setBorder(BorderFactory.createLineBorder(new Color(205, 205, 205)));
         card.setPreferredSize(new Dimension(1200, 515));
 
-        JLabel sectionTitle = new JLabel("  ●  Thông tin khách hàng");
+        JLabel sectionTitle = new JLabel(" Thông tin khách hàng");
         sectionTitle.setOpaque(true);
         sectionTitle.setBackground(new Color(225, 225, 225));
         sectionTitle.setForeground(new Color(173, 48, 42));
@@ -240,8 +221,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
         JScrollPane addressScroll = new JScrollPane(txtFormDiaChi);
         addressScroll.setPreferredSize(new Dimension(400, 70));
         addFormField(fields, c, "Địa chỉ", addressScroll, 0, 2, 2);
-        addFormField(fields, c, "Ngày sinh", txtFormNgaySinh, 0, 3, 1);
-        addFormField(fields, c, "Giới tính", cboFormGioiTinh, 1, 3, 1);
+        addFormField(fields, c, "Giới tính", cboFormGioiTinh, 0, 3, 1);
 
         JPanel formContent = new JPanel(new BorderLayout());
         formContent.setBackground(Color.WHITE);
@@ -251,9 +231,9 @@ public class CustomerPanel extends JFrame implements ActionListener {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actions.setBackground(Color.WHITE);
         actions.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)));
-        JButton btnLuu = taoNutForm("▣  Lưu", new Color(180, 55, 48), Color.WHITE);
-        JButton btnLamMoi = taoNutForm("⟳  Làm mới", new Color(232, 232, 232), Color.DARK_GRAY);
-        JButton btnHuy = taoNutForm("×  Hủy", new Color(232, 232, 232), Color.DARK_GRAY);
+        JButton btnLuu = taoNutForm("Lưu", new Color(180, 55, 48), Color.WHITE);
+        JButton btnLamMoi = taoNutForm(" Làm mới", new Color(232, 232, 232), Color.DARK_GRAY);
+        JButton btnHuy = taoNutForm("Hủy", new Color(232, 232, 232), Color.DARK_GRAY);
         actions.add(btnLuu);
         actions.add(btnLamMoi);
         actions.add(btnHuy);
@@ -320,7 +300,6 @@ public class CustomerPanel extends JFrame implements ActionListener {
         txtFormSoDienThoai.setText("");
         txtFormEmail.setText("");
         txtFormDiaChi.setText("");
-        txtFormNgaySinh.setText("");
         cboFormGioiTinh.setSelectedIndex(0);
         txtFormHoTen.requestFocusInWindow();
     }
@@ -336,7 +315,6 @@ public class CustomerPanel extends JFrame implements ActionListener {
         String soDienThoai = txtFormSoDienThoai.getText().trim();
         String email = txtFormEmail.getText().trim();
         String diaChi = txtFormDiaChi.getText().trim();
-        String ngaySinhText = txtFormNgaySinh.getText().trim();
         if (hoTen.isEmpty()) {
             hienThiLoiNhapLieu("Vui lòng nhập họ tên khách hàng.");
             txtFormHoTen.requestFocusInWindow();
@@ -358,26 +336,9 @@ public class CustomerPanel extends JFrame implements ActionListener {
             return;
         }
 
-        java.sql.Date ngaySinh = null;
-        if (!ngaySinhText.isEmpty()) {
-            try {
-                LocalDate parsed = LocalDate.parse(ngaySinhText, dateFormatter);
-                if (parsed.isAfter(LocalDate.now())) {
-                    hienThiLoiNhapLieu("Ngày sinh không được lớn hơn ngày hiện tại.");
-                    return;
-                }
-                ngaySinh = java.sql.Date.valueOf(parsed);
-            } catch (DateTimeParseException ex) {
-                hienThiLoiNhapLieu("Ngày sinh không hợp lệ. Vui lòng nhập theo định dạng mm/dd/yyyy.");
-                txtFormNgaySinh.requestFocusInWindow();
-                return;
-            }
-        }
-
         KhachHang khachHang = new KhachHang();
         khachHang.setHoTen(hoTen);
         khachHang.setGioiTinh((String) cboFormGioiTinh.getSelectedItem());
-        khachHang.setNgaySinh(ngaySinh);
         khachHang.setSoDienThoai(soDienThoai);
         khachHang.setEmail(email.isEmpty() ? null : email);
         khachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);

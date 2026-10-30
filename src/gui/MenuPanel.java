@@ -144,7 +144,7 @@ public class MenuPanel extends JPanel {
         JMenu processMenu = new JMenu("📋 Xử lý ▾");
         addItem(processMenu, MenuItem.INVOICING, "Lập hoá đơn bán hàng");
         addItem(processMenu, MenuItem.IMPORT_GOODS, "Nhập hàng vào kho");
-        addItem(processMenu, MenuItem.RETURN, "Xử lí trả hàng");
+        addItem(processMenu, MenuItem.RETURN, "Xử lý trả hàng");
         addItem(processMenu, MenuItem.ASSIGNMENT, "Phân công ca làm");
 
         JMenu findMenu = new JMenu("🔍 Tìm kiếm ▾");
@@ -260,6 +260,10 @@ public class MenuPanel extends JPanel {
         setMenuItemAction(MenuItem.IMPORT_GOODS, e -> {
             dongCuaSoHienTai();
             new ImportGoodsPanel(currentUserName, currentUserRole).setVisible(true);
+        });
+        setMenuItemAction(MenuItem.RETURN, e -> {
+            dongCuaSoHienTai();
+            new ReturnGoodsPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.WORK_SCHEDULE, e -> {
             dongCuaSoHienTai();
