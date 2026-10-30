@@ -8,7 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 
-public class LoginFrame extends JFrame {
+public class LoginFrame extends JDialog {
     private static final Color BRAND_RED = new Color(180, 55, 48);
     private static final Color DARK_RED = new Color(150, 42, 36);
     private static final Color TEXT_COLOR = new Color(75, 75, 75);
@@ -17,12 +17,12 @@ public class LoginFrame extends JFrame {
     private final JPasswordField passwordField = new PlaceholderPasswordField("Nhập mật khẩu...");
 
     public LoginFrame() {
+        super((Frame) null, "Đăng Nhập - Điện Máy Đỏ", true);
         setTitle("Đăng Nhập - Điện Máy Đỏ");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(620, 700));
-        setSize(760, 800);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setSize(620, 760);
+        setResizable(false);
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
 
         JPanel background = new JPanel(new BorderLayout());
@@ -53,11 +53,8 @@ public class LoginFrame extends JFrame {
         JPanel windowButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         windowButtons.setOpaque(false);
 
-        JButton minimizeButton = createWindowButton(false);
-        minimizeButton.addActionListener(event -> setState(JFrame.ICONIFIED));
         JButton closeButton = createWindowButton(true);
         closeButton.addActionListener(event -> dispose());
-        windowButtons.add(minimizeButton);
         windowButtons.add(closeButton);
         titleBar.add(windowButtons, BorderLayout.EAST);
 
