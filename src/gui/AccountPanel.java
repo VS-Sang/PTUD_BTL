@@ -383,13 +383,11 @@ public class AccountPanel extends JFrame {
 
         private String nextAccountId(Connection connection) throws SQLException {
             try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT TOP 1 maTaiKhoan FROM TaiKhoan ORDER BY maTaiKhoan DESC");
+                    "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maTaiKhoan, 3, 18))), 0) + 1 "
+                            + "FROM TaiKhoan WHERE maTaiKhoan LIKE 'TK[0-9]%'");
                  ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    String last = resultSet.getString(1);
-                    if (last.startsWith("TK")) {
-                        return String.format("TK%03d", Integer.parseInt(last.substring(2)) + 1);
-                    }
+                    return String.format("TK%03d", resultSet.getInt(1));
                 }
             }
             return "TK001";
