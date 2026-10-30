@@ -201,6 +201,18 @@ public class MenuPanel extends JPanel {
             dongCuaSoHienTai();
             new AccountPanel().setVisible(true);
         });
+        setMenuItemAction(MenuItem.AUTHORIZATION, e -> {
+            if (!currentUserRole.equalsIgnoreCase("Admin")
+                    && !currentUserRole.toLowerCase().contains("quản lý")
+                    && !currentUserRole.toLowerCase().contains("quan ly")) {
+                JOptionPane.showMessageDialog(this,
+                        "Chức năng này chỉ dành cho tài khoản quản lý.",
+                        "Phân quyền hệ thống", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            dongCuaSoHienTai();
+            new PermissionPanel().setVisible(true);
+        });
 
         // Danh mục
         setMenuItemAction(MenuItem.INVOICE, e -> {
