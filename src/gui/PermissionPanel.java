@@ -49,6 +49,10 @@ public class PermissionPanel extends JFrame {
     private final JTable permissionTable = new JTable(tableModel);
 
     public PermissionPanel() {
+        this(null, null, null);
+    }
+
+    public PermissionPanel(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ - Phân quyền hệ thống");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 650));
@@ -56,7 +60,7 @@ public class PermissionPanel extends JFrame {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        add(new MenuPanel(), BorderLayout.NORTH);
+        add(new MenuPanel(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAccounts();
     }

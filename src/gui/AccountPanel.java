@@ -59,6 +59,10 @@ public class AccountPanel extends JFrame {
     private final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
 
     public AccountPanel() {
+        this(null, null, null);
+    }
+
+    public AccountPanel(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ - Quản lý tài khoản");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1000, 650));
@@ -66,7 +70,7 @@ public class AccountPanel extends JFrame {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        add(new MenuPanel(), BorderLayout.NORTH);
+        add(new MenuPanel(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAccounts();
     }
