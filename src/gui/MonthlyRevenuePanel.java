@@ -83,7 +83,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
 
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
-        JLabel title = new JLabel("▰  Thống kê Doanh thu theo Tháng");
+        JLabel title = new JLabel(" Thống kê Doanh thu theo Tháng");
         title.setForeground(BRAND_RED);
         title.setFont(new Font("Segoe UI", Font.BOLD, 17));
         header.add(title, BorderLayout.WEST);
@@ -158,7 +158,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         JPanel card = new JPanel(new BorderLayout(0, 8));
         card.setBackground(Color.WHITE);
         card.setBorder(new EmptyBorder(12, 12, 10, 12));
-        JLabel heading = new JLabel("▰  Biểu đồ doanh thu theo tháng");
+        JLabel heading = new JLabel(" Biểu đồ doanh thu theo tháng");
         heading.setForeground(BRAND_RED);
         heading.setFont(new Font("Segoe UI", Font.BOLD, 14));
         card.add(heading, BorderLayout.NORTH);
@@ -171,7 +171,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         JPanel card = new JPanel(new BorderLayout(0, 9));
         card.setBackground(Color.WHITE);
         card.setBorder(new EmptyBorder(12, 12, 12, 12));
-        JLabel heading = new JLabel("▦  Bảng thống kê chi tiết");
+        JLabel heading = new JLabel(" Bảng thống kê chi tiết");
         heading.setForeground(BRAND_RED);
         heading.setFont(new Font("Segoe UI", Font.BOLD, 14));
         card.add(heading, BorderLayout.NORTH);

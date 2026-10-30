@@ -558,7 +558,70 @@ CREATE TABLE ChiTietPhieuXuat (
 GO
 
 -- ============================================================
--- BẢNG 20: LichSuDiemThuong (Loyalty Point History)
+-- BẢNG 20: PhieuTraHang (Return Receipt)
+-- Lưu phiếu xử lý trả hàng/đổi hàng từ hóa đơn gốc
+-- ============================================================
+CREATE TABLE PhieuTraHang (
+                             maPhieuTra      INT IDENTITY(1,1) NOT NULL,
+                             maHoaDon        NVARCHAR(20)    NOT NULL,
+                             maNhanVien      NVARCHAR(20)    NOT NULL,
+                             ngayTra         DATETIME        NOT NULL DEFAULT GETDATE(),
+                             loaiXuLy        NVARCHAR(30)    NOT NULL
+        CHECK (loaiXuLy IN (N'Trả hàng & hoàn tiền', N'Đổi hàng')),
+                             tongGiaTriHangTra DECIMAL(18, 2) NOT NULL DEFAULT 0
+        CHECK (tongGiaTriHangTra >= 0),
+                             tongGiaTriHangDoi DECIMAL(18, 2) NOT NULL DEFAULT 0
+        CHECK (tongGiaTriHangDoi >= 0),
+                             tienHoan        DECIMAL(18, 2)  NOT NULL DEFAULT 0
+        CHECK (tienHoan >= 0),
+                             chenhLechThuThem DECIMAL(18, 2) NOT NULL DEFAULT 0,
+                             ghiChu          NVARCHAR(500)   NULL,
+                             CONSTRAINT PK_PhieuTraHang PRIMARY KEY (maPhieuTra),
+                             CONSTRAINT FK_PhieuTraHang_HoaDon FOREIGN KEY (maHoaDon)
+                                 REFERENCES HoaDon(maHoaDon),
+                             CONSTRAINT FK_PhieuTraHang_NhanVien FOREIGN KEY (maNhanVien)
+                                 REFERENCES NhanVien(maNhanVien)
+);
+GO
+
+-- ============================================================
+-- BẢNG 21: ChiTietPhieuTraHang (Return Receipt Detail)
+-- ============================================================
+CREATE TABLE ChiTietPhieuTraHang (
+                                     maPhieuTra      INT             NOT NULL,
+                                     maSanPham       NVARCHAR(20)    NOT NULL,
+                                     soLuongTra      INT             NOT NULL CHECK (soLuongTra > 0),
+                                     giaTriHoanMoiDonVi DECIMAL(18, 4) NOT NULL DEFAULT 0
+        CHECK (giaTriHoanMoiDonVi >= 0),
+                                     thanhTien       DECIMAL(18, 2)  NOT NULL DEFAULT 0
+        CHECK (thanhTien >= 0),
+                                     CONSTRAINT PK_ChiTietPhieuTraHang PRIMARY KEY (maPhieuTra, maSanPham),
+                                     CONSTRAINT FK_CTPTH_PhieuTraHang FOREIGN KEY (maPhieuTra)
+                                         REFERENCES PhieuTraHang(maPhieuTra),
+                                     CONSTRAINT FK_CTPTH_SanPham FOREIGN KEY (maSanPham)
+                                         REFERENCES SanPham(maSanPham)
+);
+GO
+
+-- ============================================================
+-- BẢNG 22: ChiTietDoiHang (Exchange Receipt Detail)
+-- ============================================================
+CREATE TABLE ChiTietDoiHang (
+                                maPhieuTra      INT             NOT NULL,
+                                maSanPham       NVARCHAR(20)    NOT NULL,
+                                soLuongDoi      INT             NOT NULL CHECK (soLuongDoi > 0),
+                                donGiaDoi       DECIMAL(15, 2)  NOT NULL CHECK (donGiaDoi >= 0),
+                                thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
+                                CONSTRAINT PK_ChiTietDoiHang PRIMARY KEY (maPhieuTra, maSanPham),
+                                CONSTRAINT FK_CTDOI_PhieuTraHang FOREIGN KEY (maPhieuTra)
+                                    REFERENCES PhieuTraHang(maPhieuTra),
+                                CONSTRAINT FK_CTDOI_SanPham FOREIGN KEY (maSanPham)
+                                    REFERENCES SanPham(maSanPham)
+);
+GO
+
+-- ============================================================
+-- BẢNG 23: LichSuDiemThuong (Loyalty Point History)
 -- Lịch sử tích lũy và sử dụng điểm thưởng
 -- ============================================================
 CREATE TABLE LichSuDiemThuong (
@@ -586,7 +649,7 @@ CREATE TABLE LichSuDiemThuong (
 GO
 
 -- ============================================================
--- BẢNG 21: LichSuDangNhap (Login History)
+-- BẢNG 24: LichSuDangNhap (Login History)
 -- Ghi lại lịch sử đăng nhập hệ thống
 -- ============================================================
 CREATE TABLE LichSuDangNhap (
