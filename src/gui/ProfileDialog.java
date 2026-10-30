@@ -5,6 +5,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
@@ -31,6 +32,10 @@ public class ProfileDialog extends JDialog {
         this(owner, fullName, role, "admin", "admin@dienmaydo.vn", "0901234567", "Hoạt động");
     }
 
+    public ProfileDialog(Window owner, String fullName, String role, String username) {
+        this(owner, fullName, role, username, null, null, "Hoạt động");
+    }
+
     public ProfileDialog(Window owner, String fullName, String role, String username,
                          String email, String phone, String status) {
         super(owner, "Thông tin cá nhân", Dialog.ModalityType.APPLICATION_MODAL);
@@ -49,7 +54,7 @@ public class ProfileDialog extends JDialog {
         root.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150)));
         root.add(createTitleBar(), BorderLayout.NORTH);
         root.add(createInformation(fullName, role, username, email, phone, status), BorderLayout.CENTER);
-        root.add(createFooter(), BorderLayout.SOUTH);
+        root.add(createFooter(username), BorderLayout.SOUTH);
         return root;
     }
 
@@ -171,7 +176,7 @@ public class ProfileDialog extends JDialog {
         return label;
     }
 
-    private JPanel createFooter() {
+    private JPanel createFooter(String username) {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 10));
         footer.setBackground(new Color(247, 247, 247));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, LINE_GRAY));
@@ -181,7 +186,7 @@ public class ProfileDialog extends JDialog {
         changePassword.setBackground(DARK_RED);
         changePassword.setFont(new Font("Segoe UI", Font.BOLD, 12));
         changePassword.setFocusPainted(false);
-        changePassword.addActionListener(event -> new ChangePasswordDialog(this).setVisible(true));
+        changePassword.addActionListener(event -> new ChangePasswordDialog(this, username).setVisible(true));
 
         JButton close = new JButton("× Đóng");
         close.setFocusPainted(false);
@@ -215,9 +220,15 @@ public class ProfileDialog extends JDialog {
     }
 
     private static class ChangePasswordDialog extends JDialog {
-        ChangePasswordDialog(Window owner) {
+        private final String username;
+        private final javax.swing.JPasswordField currentPassword = new javax.swing.JPasswordField(14);
+        private final javax.swing.JPasswordField newPassword = new javax.swing.JPasswordField(14);
+        private final javax.swing.JPasswordField confirmPassword = new javax.swing.JPasswordField(14);
+
+        ChangePasswordDialog(Window owner, String username) {
             super(owner, "Đổi mật khẩu", Dialog.ModalityType.APPLICATION_MODAL);
-            setSize(340, 190);
+            this.username = username;
+            setSize(340, 230);
             setResizable(false);
             setLocationRelativeTo(owner);
             JPanel form = new JPanel(new GridBagLayout());
@@ -229,14 +240,19 @@ public class ProfileDialog extends JDialog {
             c.gridy = 0;
             form.add(new JLabel("Mật khẩu hiện tại:"), c);
             c.gridx = 1;
-            form.add(new javax.swing.JPasswordField(14), c);
+            form.add(currentPassword, c);
             c.gridx = 0;
             c.gridy++;
             form.add(new JLabel("Mật khẩu mới:"), c);
             c.gridx = 1;
-            form.add(new javax.swing.JPasswordField(14), c);
+            form.add(newPassword, c);
+            c.gridx = 0;
+            c.gridy++;
+            form.add(new JLabel("Xác nhận mật khẩu:"), c);
+            c.gridx = 1;
+            form.add(confirmPassword, c);
             JButton save = new JButton("Lưu");
-            save.addActionListener(event -> dispose());
+            save.addActionListener(event -> changePassword());
             JButton cancel = new JButton("Hủy");
             cancel.addActionListener(event -> dispose());
             JPanel buttons = new JPanel();
@@ -244,6 +260,52 @@ public class ProfileDialog extends JDialog {
             buttons.add(cancel);
             add(form, BorderLayout.CENTER);
             add(buttons, BorderLayout.SOUTH);
+        }
+
+        private void changePassword() {
+            char[] current = currentPassword.getPassword();
+            char[] next = newPassword.getPassword();
+            char[] confirmation = confirmPassword.getPassword();
+            try {
+                if (current.length == 0 || next.length < 6
+                        || !java.util.Arrays.equals(next, confirmation)) {
+                    JOptionPane.showMessageDialog(this,
+                            "Mật khẩu mới phải có ít nhất 6 ký tự và hai ô mật khẩu phải giống nhau.",
+                            "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String currentText = new String(current);
+                String nextText = new String(next);
+                if (currentText.equals(nextText)) {
+                    JOptionPane.showMessageDialog(this, "Mật khẩu mới phải khác mật khẩu hiện tại.",
+                            "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String sql = "UPDATE TaiKhoan SET matKhau = ?, ngayDoiMatKhau = GETDATE(), "
+                        + "ngayCapNhat = GETDATE() WHERE tenDangNhap = ? "
+                        + "AND (matKhau = ? OR matKhau = ?)";
+                try (java.sql.Connection connection = connectDB.ConnectDB.getConnection();
+                     java.sql.PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, LoginFrame.toMD5(nextText));
+                    statement.setString(2, username);
+                    statement.setString(3, currentText);
+                    statement.setString(4, LoginFrame.toMD5(currentText));
+                    if (statement.executeUpdate() == 0) {
+                        JOptionPane.showMessageDialog(this, "Mật khẩu hiện tại không chính xác.",
+                                "Đổi mật khẩu thất bại", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công.");
+                dispose();
+            } catch (java.sql.SQLException exception) {
+                JOptionPane.showMessageDialog(this, "Không thể đổi mật khẩu:\n" + exception.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                java.util.Arrays.fill(current, '\0');
+                java.util.Arrays.fill(next, '\0');
+                java.util.Arrays.fill(confirmation, '\0');
+            }
         }
     }
 }
