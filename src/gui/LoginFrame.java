@@ -359,7 +359,8 @@ public class LoginFrame extends JDialog {
             JOptionPane.showMessageDialog(this,
                     "Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra cấu hình kết nối.",
                     "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
-            Arrays.fill(passwordText.toCharArray(), '\0');
+            passwordField.setText("");
+            passwordField.requestFocusInWindow();
             return;
         }
 
