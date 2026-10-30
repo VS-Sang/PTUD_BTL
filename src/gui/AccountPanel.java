@@ -229,7 +229,10 @@ public class AccountPanel extends JFrame {
         try (Connection connection = ConnectDB.getConnection();
              PreparedStatement statement = connection.prepareStatement("DELETE FROM TaiKhoan WHERE maTaiKhoan = ?")) {
             statement.setString(1, accountId);
-            statement.executeUpdate();
+            if (statement.executeUpdate() == 0) {
+                showError("Không tìm thấy tài khoản để xóa.");
+                return;
+            }
             loadAccounts();
         } catch (SQLException exception) {
             showError("Không thể xóa tài khoản. Tài khoản có thể đang được dùng trong dữ liệu lịch sử.");
