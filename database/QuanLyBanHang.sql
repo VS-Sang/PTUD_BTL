@@ -837,7 +837,7 @@ GO
 -- 2. Tài khoản (BẢNG 2)
 INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai, lanDangNhapCuoi, soLanDangNhapLoi)
 VALUES
-    (N'TK001', N'admin',       N'e10adc3949ba59abbe56e057f20f883e', N'Admin',         N'NV001', N'Hoạt động',      '2026-10-19 08:00:00', 0), -- 123456 (MD5)
+    (N'TK001', N'admin',       N'21232f297a57a5a743894a0e4a801fc3', N'Admin',         N'NV001', N'Hoạt động',      '2026-10-19 08:00:00', 0), -- admin (MD5)
     (N'TK002', N'thungan01',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',       N'NV002', N'Hoạt động',      '2026-10-19 07:55:00', 0),
     (N'TK003', N'khonv01',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho',  N'NV003', N'Hoạt động',      '2026-10-18 17:30:00', 0),
     (N'TK004', N'nhanvien01',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV004', N'Hoạt động',      '2026-10-15 14:20:00', 0),

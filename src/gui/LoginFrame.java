@@ -8,7 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 
-public class LoginFrame extends JFrame {
+public class LoginFrame extends JDialog {
     private static final Color BRAND_RED = new Color(180, 55, 48);
     private static final Color DARK_RED = new Color(150, 42, 36);
     private static final Color TEXT_COLOR = new Color(75, 75, 75);
@@ -17,12 +17,12 @@ public class LoginFrame extends JFrame {
     private final JPasswordField passwordField = new PlaceholderPasswordField("Nhập mật khẩu...");
 
     public LoginFrame() {
+        super((Frame) null, "Đăng Nhập - Điện Máy Đỏ", true);
         setTitle("Đăng Nhập - Điện Máy Đỏ");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(620, 700));
-        setSize(760, 800);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setSize(620, 760);
+        setResizable(false);
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
 
         JPanel background = new JPanel(new BorderLayout());
@@ -53,11 +53,8 @@ public class LoginFrame extends JFrame {
         JPanel windowButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         windowButtons.setOpaque(false);
 
-        JButton minimizeButton = createWindowButton(false);
-        minimizeButton.addActionListener(event -> setState(JFrame.ICONIFIED));
         JButton closeButton = createWindowButton(true);
         closeButton.addActionListener(event -> dispose());
-        windowButtons.add(minimizeButton);
         windowButtons.add(closeButton);
         titleBar.add(windowButtons, BorderLayout.EAST);
 
@@ -330,47 +327,84 @@ public class LoginFrame extends JFrame {
     private void login() {
         String username = usernameField.getText().trim();
         char[] password = passwordField.getPassword();
+        if (username.isEmpty() || password.length == 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên đăng nhập và mật khẩu.",
+                    "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            Arrays.fill(password, '\0');
+            return;
+        }
         String passwordText = new String(password);
         Arrays.fill(password, '\0');
-
+        String md5Pass = toMD5(passwordText);
         String role = null;
         String fullName = null;
-
-        String md5Pass = toMD5(passwordText);
-
-        // 1. Thử xác thực từ Database TaiKhoan
-        try (java.sql.Connection con = connectDB.ConnectDB.getConnection();
-                java.sql.PreparedStatement stmt = con.prepareStatement(
-                        "SELECT tk.vaiTro, nv.hoTen FROM TaiKhoan tk "
-                                + "JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
-                                + "WHERE tk.tenDangNhap = ? AND (tk.matKhau = ? OR tk.matKhau = ?) AND tk.trangThai = N'Hoạt động'")) {
-            stmt.setString(1, username);
-            stmt.setString(2, passwordText);
-            stmt.setString(3, md5Pass);
-            java.sql.ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                role = rs.getString(1);
-                fullName = rs.getString(2);
+        String accountId = null;
+        String status = null;
+        boolean authenticated = false;
+        try (java.sql.Connection connection = connectDB.ConnectDB.getConnection();
+                java.sql.PreparedStatement lookup = connection.prepareStatement(
+                        "SELECT tk.maTaiKhoan, tk.matKhau, tk.vaiTro, tk.trangThai, nv.hoTen "
+                                + "FROM TaiKhoan tk JOIN NhanVien nv ON tk.maNhanVien = nv.maNhanVien "
+                                + "WHERE tk.tenDangNhap = ?")) {
+            lookup.setString(1, username);
+            try (java.sql.ResultSet result = lookup.executeQuery()) {
+                if (result.next()) {
+                    accountId = result.getString("maTaiKhoan");
+                    String storedPassword = result.getString("matKhau");
+                    role = result.getString("vaiTro");
+                    status = result.getString("trangThai");
+                    fullName = result.getString("hoTen");
+                    authenticated = passwordText.equals(storedPassword)
+                            || md5Pass.equalsIgnoreCase(storedPassword);
+                }
             }
-        } catch (Exception ignored) {
+
+            connection.setAutoCommit(false);
+            if (accountId == null || !authenticated || !"Hoạt động".equals(status)) {
+                if (accountId != null) {
+                    try (java.sql.PreparedStatement failure = connection.prepareStatement(
+                            "UPDATE TaiKhoan SET soLanDangNhapLoi = soLanDangNhapLoi + 1, "
+                                    + "trangThai = CASE WHEN soLanDangNhapLoi + 1 >= 5 "
+                                    + "THEN N'Bị khóa' ELSE trangThai END, ngayCapNhat = GETDATE() "
+                                    + "WHERE maTaiKhoan = ?");
+                         java.sql.PreparedStatement log = connection.prepareStatement(
+                                 "INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua, lyDoThatBai) "
+                                         + "VALUES (?, N'Thất bại', ?)")) {
+                        failure.setString(1, accountId);
+                        failure.executeUpdate();
+                        log.setString(1, accountId);
+                        log.setString(2, !"Hoạt động".equals(status)
+                                ? "Tài khoản không hoạt động" : "Sai mật khẩu");
+                        log.executeUpdate();
+                    }
+                }
+                connection.commit();
+            } else {
+                try (java.sql.PreparedStatement success = connection.prepareStatement(
+                        "UPDATE TaiKhoan SET lanDangNhapCuoi = GETDATE(), soLanDangNhapLoi = 0, "
+                                + "ngayCapNhat = GETDATE() WHERE maTaiKhoan = ?");
+                     java.sql.PreparedStatement log = connection.prepareStatement(
+                             "INSERT INTO LichSuDangNhap (maTaiKhoan, ketQua) VALUES (?, N'Thành công')")) {
+                    success.setString(1, accountId);
+                    success.executeUpdate();
+                    log.setString(1, accountId);
+                    log.executeUpdate();
+                }
+                connection.commit();
+            }
+        } catch (java.sql.SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể xử lý đăng nhập với cơ sở dữ liệu.",
+                    "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
+            passwordField.setText("");
+            passwordField.requestFocusInWindow();
+            return;
         }
 
-        // 2. Mặc định hỗ trợ admin/admin hoặc nv/nv
-        if (fullName == null) {
-            if ("admin".equalsIgnoreCase(username) && ("admin".equals(passwordText) || "123456".equals(passwordText))) {
-                role = "Quản lý";
-                fullName = "Nguyễn Văn An";
-            } else if ("nv".equalsIgnoreCase(username)
-                    && ("nv".equals(passwordText) || "123456".equals(passwordText))) {
-                role = "Nhân viên";
-                fullName = "Phạm Thị Dung";
-            }
-        }
-
-        if (role == null) {
+        if (!authenticated || !"Hoạt động".equals(status)) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Tên đăng nhập hoặc mật khẩu không chính xác.",
+                    "Tên đăng nhập, mật khẩu không chính xác hoặc tài khoản không hoạt động.",
                     "Đăng nhập thất bại",
                     JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
@@ -379,7 +413,7 @@ public class LoginFrame extends JFrame {
         }
 
         dispose();
-        new MainFrame(fullName, role).setVisible(true);
+        new MainFrame(fullName, role, username).setVisible(true);
     }
 
     private static class PlaceholderTextField extends JTextField {

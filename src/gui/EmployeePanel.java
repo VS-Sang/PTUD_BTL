@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -45,6 +46,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
     private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
 
     public EmployeePanel() {
+        this(null, null, null);
+    }
+
+    public EmployeePanel(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ — Quản lý Nhân Viên");
         setSize(1200, 680);
         setLocationRelativeTo(null);
@@ -52,7 +57,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel();
+        menuPanel = new MenuPanel(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -107,11 +112,13 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pGrid.add(txtEmail);
 
         pGrid.add(new JLabel("Phòng ban:"));
-        cboPhongBan = new JComboBox<>(new String[]{"Bán hàng", "Quản lý"});
+        cboPhongBan = new JComboBox<>(new String[]{"Bán hàng", "Kho", "Kế toán", "Quản lý"});
         pGrid.add(cboPhongBan);
 
         pGrid.add(new JLabel("Chức vụ:"));
-        cboChucVu = new JComboBox<>(new String[]{"Nhân viên bán hàng", "Quản lý"});
+        cboChucVu = new JComboBox<>(new String[]{
+                "Nhân viên", "Nhân viên bán hàng", "Thu ngân", "Nhân viên kho", "Quản lý"
+        });
         pGrid.add(cboChucVu);
 
         pGrid.add(new JLabel("Mức lương (VNĐ):"));
@@ -169,7 +176,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
         btnTim.setBackground(Color.WHITE);
         btnTim.setFocusPainted(false);
 
-        cboDepartment = new JComboBox<>(new String[]{"Tất cả chức vụ", "Nhân viên bán hàng", "Quản lý"});
+        cboDepartment = new JComboBox<>(new String[]{
+                "Tất cả chức vụ", "Nhân viên", "Nhân viên bán hàng", "Thu ngân",
+                "Nhân viên kho", "Quản lý"
+        });
         cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
 
         pSearch.add(txtSearch);
@@ -307,6 +317,37 @@ public class EmployeePanel extends JFrame implements ActionListener {
         txtHoTen.requestFocus();
     }
 
+    private Date parseNgaySinh() throws ParseException {
+        String text = txtNgaySinh.getText().trim();
+        sdfDate.setLenient(false);
+        Date ngaySinh = sdfDate.parse(text);
+        if (!ngaySinh.before(new Date())) {
+            throw new ParseException("Ngày sinh phải trước ngày hiện tại", 0);
+        }
+        return ngaySinh;
+    }
+
+    private double parseLuong() {
+        double luong = Double.parseDouble(txtMucLuong.getText().trim());
+        if (!Double.isFinite(luong) || luong < 0) {
+            throw new NumberFormatException("Mức lương không hợp lệ");
+        }
+        return luong;
+    }
+
+    private void validateEmployeeFields(String hoTen, String sdt) {
+        if (hoTen.length() < 2 || hoTen.length() > 100) {
+            throw new IllegalArgumentException("Họ tên phải từ 2 đến 100 ký tự.");
+        }
+        if (!sdt.matches("0\\d{9,10}")) {
+            throw new IllegalArgumentException("Số điện thoại phải có 10-11 chữ số và bắt đầu bằng 0.");
+        }
+        String email = txtEmail.getText().trim();
+        if (!email.isEmpty() && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException("Email không đúng định dạng.");
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
@@ -317,13 +358,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
         } else if (o.equals(btnThem)) {
             String hoTen = txtHoTen.getText().trim();
             String sdt = txtSDT.getText().trim();
-            if (hoTen.isEmpty() || sdt.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Họ tên và SĐT!");
-                return;
-            }
             try {
-                Date ngaySinh = sdfDate.parse(txtNgaySinh.getText().trim());
-                double luong = Double.parseDouble(txtMucLuong.getText().trim().isEmpty() ? "0" : txtMucLuong.getText().trim());
+                validateEmployeeFields(hoTen, sdt);
+                Date ngaySinh = parseNgaySinh();
+                double luong = parseLuong();
 
                 NhanVien nv = new NhanVien();
                 nv.setMaNhanVien(nv_dao.phatSinhMaNhanVien());
@@ -346,7 +384,8 @@ public class EmployeePanel extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Thêm thất bại! Vui lòng kiểm tra SĐT/Email không bị trùng.");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Định dạng Ngày sinh (yyyy-MM-dd) hoặc Mức lương không hợp lệ!");
+                JOptionPane.showMessageDialog(this, ex.getMessage(),
+                        "Dữ liệu nhân viên không hợp lệ", JOptionPane.WARNING_MESSAGE);
             }
         } else if (o.equals(btnCapNhat)) {
             int row = table.getSelectedRow();
@@ -356,13 +395,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
             }
             String hoTen = txtHoTen.getText().trim();
             String sdt = txtSDT.getText().trim();
-            if (hoTen.isEmpty() || sdt.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Họ tên và SĐT!");
-                return;
-            }
             try {
-                Date ngaySinh = sdfDate.parse(txtNgaySinh.getText().trim());
-                double luong = Double.parseDouble(txtMucLuong.getText().trim().isEmpty() ? "0" : txtMucLuong.getText().trim());
+                validateEmployeeFields(hoTen, sdt);
+                Date ngaySinh = parseNgaySinh();
+                double luong = parseLuong();
 
                 NhanVien nv = new NhanVien();
                 nv.setMaNhanVien(txtMaNV.getText().trim());
@@ -384,7 +420,8 @@ public class EmployeePanel extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Cập nhật thất bại! Vui lòng kiểm tra SĐT/Email không bị trùng.");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Định dạng Ngày sinh (yyyy-MM-dd) hoặc Mức lương không hợp lệ!");
+                JOptionPane.showMessageDialog(this, ex.getMessage(),
+                        "Dữ liệu nhân viên không hợp lệ", JOptionPane.WARNING_MESSAGE);
             }
         } else if (o.equals(btnXoa)) {
             int row = table.getSelectedRow();
