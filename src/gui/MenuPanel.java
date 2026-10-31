@@ -294,11 +294,9 @@ public class MenuPanel extends JPanel {
         mnuTongHop = menuItemMap.get(MenuItem.SUMMARY_REPORT);
 
         boolean isQuanLy = currentUserRole != null && (currentUserRole.equalsIgnoreCase("Quản lý") ||
-                currentUserRole.equalsIgnoreCase("Admin") ||
                 currentUserRole.equalsIgnoreCase("Quan Ly") ||
                 currentUserRole.toLowerCase().contains("quản lý") ||
-                currentUserRole.toLowerCase().contains("quan ly") ||
-                currentUserRole.toLowerCase().contains("admin"));
+                currentUserRole.toLowerCase().contains("quan ly"));
 
         if (isQuanLy) {
             setMenuItemAction(MenuItem.MONTHLY_REVENUE, e -> {
@@ -379,7 +377,7 @@ public class MenuPanel extends JPanel {
 
     private boolean laQuanTriVien() {
         String role = currentUserRole == null ? "" : currentUserRole.trim().toLowerCase();
-        return "admin".equals(role) || role.contains("quản lý") || role.contains("quan ly");
+        return role.contains("quản lý") || role.contains("quan ly");
     }
 
     private void addItem(JMenu menu, MenuItem key, String label) {

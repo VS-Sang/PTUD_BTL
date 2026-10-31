@@ -62,7 +62,7 @@ CREATE TABLE TaiKhoan (
                           matKhau         NVARCHAR(255)   NOT NULL,
     -- Nên lưu dạng hash (SHA-256, BCrypt...)
                           vaiTro          NVARCHAR(30)    NOT NULL DEFAULT N'Nhân viên'
-        CHECK (vaiTro IN (N'Admin', N'Quản lý', N'Nhân viên', N'Thu ngân', N'Nhân viên kho')),
+        CHECK (vaiTro IN (N'Quản lý', N'Nhân viên')),
                           maNhanVien      NVARCHAR(20)    NOT NULL UNIQUE,
     -- Mỗi nhân viên chỉ có 1 tài khoản
                           trangThai       NVARCHAR(20)    NOT NULL DEFAULT N'Hoạt động'
@@ -837,13 +837,13 @@ GO
 -- 2. Tài khoản (BẢNG 2)
 INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai, lanDangNhapCuoi, soLanDangNhapLoi)
 VALUES
-    (N'TK001', N'admin',       N'21232f297a57a5a743894a0e4a801fc3', N'Admin',         N'NV001', N'Hoạt động',      '2026-10-19 08:00:00', 0), -- admin (MD5)
-    (N'TK002', N'thungan01',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',       N'NV002', N'Hoạt động',      '2026-10-19 07:55:00', 0),
-    (N'TK003', N'khonv01',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho',  N'NV003', N'Hoạt động',      '2026-10-18 17:30:00', 0),
+    (N'TK001', N'admin',       N'21232f297a57a5a743894a0e4a801fc3', N'Quản lý',        N'NV001', N'Hoạt động',      '2026-10-19 08:00:00', 0), -- tài khoản quản lý (MD5)
+    (N'TK002', N'thungan01',   N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV002', N'Hoạt động',      '2026-10-19 07:55:00', 0),
+    (N'TK003', N'khonv01',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV003', N'Hoạt động',      '2026-10-18 17:30:00', 0),
     (N'TK004', N'nhanvien01',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV004', N'Hoạt động',      '2026-10-15 14:20:00', 0),
     (N'TK005', N'quanly02',    N'e10adc3949ba59abbe56e057f20f883e', N'Quản lý',        N'NV005', N'Hoạt động',      '2026-10-19 08:10:00', 0),
-    (N'TK006', N'thungan02',   N'e10adc3949ba59abbe56e057f20f883e', N'Thu ngân',       N'NV006', N'Hoạt động',      '2026-10-18 21:45:00', 0),
-    (N'TK007', N'khonv02',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên kho',  N'NV007', N'Hoạt động',      '2026-10-18 16:00:00', 0),
+    (N'TK006', N'thungan02',   N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV006', N'Hoạt động',      '2026-10-18 21:45:00', 0),
+    (N'TK007', N'khonv02',     N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV007', N'Hoạt động',      '2026-10-18 16:00:00', 0),
     (N'TK008', N'nhanvien02',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV008', N'Hoạt động',      '2026-10-19 08:05:00', 0),
     (N'TK009', N'nhanvien03',  N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV009', N'Chưa kích hoạt', NULL,                  0),
     (N'TK010', N'ketoan_cu',   N'e10adc3949ba59abbe56e057f20f883e', N'Nhân viên',      N'NV010', N'Bị khóa',        '2024-12-30 17:00:00', 5);
@@ -867,7 +867,7 @@ VALUES
 GO
 
 -- 4. Phân quyền (BẢNG 4)
--- Phân quyền cho Admin (toàn quyền)
+-- Phân quyền cho Quản lý (toàn quyền)
 INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
 SELECT N'TK001', maQuyen, 1, 1, 1, 1, N'TK001' FROM QuyenTruyCap;
 GO
@@ -882,7 +882,7 @@ VALUES
     (N'TK005', N'Q011', 1, 1, 0, 0, N'TK001');
 GO
 
--- Phân quyền cho Thu ngân (TK002, TK006)
+-- Phân quyền cho Nhân viên bán hàng (TK002, TK006)
 INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
 VALUES
     (N'TK002', N'Q005', 1, 1, 1, 0, N'TK001'),  -- Khách hàng: xem, thêm, sửa
