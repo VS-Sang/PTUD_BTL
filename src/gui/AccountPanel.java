@@ -1,6 +1,7 @@
 package gui;
 
 import connectDB.ConnectDB;
+import DAO.AuditTrail_DAO;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -57,12 +58,14 @@ public class AccountPanel extends JFrame {
     };
     private final JTable accountTable = new JTable(tableModel);
     private final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+    private final String currentUsername;
 
     public AccountPanel() {
         this(null, null, null);
     }
 
     public AccountPanel(String userName, String userRole, String username) {
+        currentUsername = username;
         setTitle("Điện Máy Đỏ - Quản lý tài khoản");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1000, 650));
@@ -196,7 +199,7 @@ public class AccountPanel extends JFrame {
     }
 
     private void openCreateDialog() {
-        AccountDialog dialog = new AccountDialog(this, null, null);
+        AccountDialog dialog = new AccountDialog(this, null, currentUsername);
         dialog.setVisible(true);
         if (dialog.saved) loadAccounts();
     }
@@ -204,7 +207,7 @@ public class AccountPanel extends JFrame {
     private void openEditDialog(String accountId, int modelRow) {
         AccountData data = new AccountData(accountId, tableModel.getValueAt(modelRow, 0).toString(),
                 tableModel.getValueAt(modelRow, 2).toString(), tableModel.getValueAt(modelRow, 3).toString());
-        AccountDialog dialog = new AccountDialog(this, data, null);
+        AccountDialog dialog = new AccountDialog(this, data, currentUsername);
         dialog.setVisible(true);
         if (dialog.saved) loadAccounts();
     }
@@ -232,6 +235,13 @@ public class AccountPanel extends JFrame {
             if (statement.executeUpdate() == 0) {
                 showError("Không tìm thấy tài khoản để xóa.");
                 return;
+            }
+            try {
+                AuditTrail_DAO.ghiTheoTenDangNhap(currentUsername, "XÓA", "Tài khoản",
+                        "Xóa tài khoản " + username + " (" + accountId + ")");
+            } catch (SQLException auditException) {
+                showError("Đã xóa tài khoản nhưng không ghi được Audit Trail:\n"
+                        + auditException.getMessage());
             }
             loadAccounts();
         } catch (SQLException exception) {
@@ -280,11 +290,13 @@ public class AccountPanel extends JFrame {
         private final JPasswordField passwordField = new JPasswordField();
         private final JComboBox<String> roleBox = new JComboBox<>(ROLES);
         private final JComboBox<String> statusBox = new JComboBox<>(STATUSES);
+        private final String actorUsername;
         private boolean saved;
 
-        AccountDialog(JFrame owner, AccountData data, String ignored) {
+        AccountDialog(JFrame owner, AccountData data, String actorUsername) {
             super(owner, data == null ? "Tạo tài khoản" : "Cập nhật tài khoản", true);
             this.data = data;
+            this.actorUsername = actorUsername;
             setSize(440, 300);
             setResizable(false);
             setLocationRelativeTo(owner);
@@ -365,6 +377,15 @@ public class AccountPanel extends JFrame {
                         statement.setString(6, (String) statusBox.getSelectedItem());
                         statement.executeUpdate();
                     }
+                    try {
+                        AuditTrail_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
+                                "Tạo tài khoản " + username + " cho nhân viên " + employee.id);
+                    } catch (SQLException auditException) {
+                        JOptionPane.showMessageDialog(this,
+                                "Tài khoản đã được tạo nhưng không ghi được Audit Trail:\n"
+                                        + auditException.getMessage(), "Cảnh báo",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
                 } else {
                     String sql = "UPDATE TaiKhoan SET vaiTro = ?, trangThai = ?, ngayCapNhat = GETDATE() "
                             + "WHERE maTaiKhoan = ?";
@@ -373,6 +394,15 @@ public class AccountPanel extends JFrame {
                         statement.setString(2, (String) statusBox.getSelectedItem());
                         statement.setString(3, data.id);
                         statement.executeUpdate();
+                    }
+                    try {
+                        AuditTrail_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
+                                "Cập nhật vai trò/trạng thái tài khoản " + data.id);
+                    } catch (SQLException auditException) {
+                        JOptionPane.showMessageDialog(this,
+                                "Tài khoản đã được cập nhật nhưng không ghi được Audit Trail:\n"
+                                        + auditException.getMessage(), "Cảnh báo",
+                                JOptionPane.WARNING_MESSAGE);
                     }
                 }
                 saved = true;

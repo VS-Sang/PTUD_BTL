@@ -669,6 +669,26 @@ CREATE TABLE LichSuDangNhap (
 );
 GO
 
+-- ============================================================
+-- BẢNG 25: AuditTrail (Nhật ký thao tác quản trị)
+-- Ghi nhận thao tác quản lý tài khoản, phân quyền và hồ sơ
+-- ============================================================
+CREATE TABLE AuditTrail (
+                            maAudit         BIGINT IDENTITY(1,1) NOT NULL,
+                            maTaiKhoan      NVARCHAR(20)    NULL,
+                            thoiGian        DATETIME        NOT NULL DEFAULT GETDATE(),
+                            hanhDong        NVARCHAR(50)    NOT NULL,
+                            doiTuong        NVARCHAR(100)   NOT NULL,
+                            chiTiet         NVARCHAR(1000)  NULL,
+                            diaChiIP        NVARCHAR(50)    NULL,
+                            tenMay          NVARCHAR(100)   NULL,
+
+                            CONSTRAINT PK_AuditTrail PRIMARY KEY (maAudit),
+                            CONSTRAINT FK_AuditTrail_TaiKhoan FOREIGN KEY (maTaiKhoan)
+                                REFERENCES TaiKhoan(maTaiKhoan)
+);
+GO
+
 
 -- ============================================================
 -- TẠO INDEXES để tối ưu hiệu suất truy vấn
@@ -683,6 +703,8 @@ CREATE INDEX IX_NhanVien_PhongBan ON NhanVien(phongBan);
 -- TaiKhoan
 CREATE INDEX IX_TaiKhoan_VaiTro ON TaiKhoan(vaiTro);
 CREATE INDEX IX_TaiKhoan_TrangThai ON TaiKhoan(trangThai);
+CREATE INDEX IX_AuditTrail_ThoiGian ON AuditTrail(thoiGian);
+CREATE INDEX IX_AuditTrail_TaiKhoan ON AuditTrail(maTaiKhoan);
 
 -- SanPham
 CREATE INDEX IX_SanPham_TenSanPham ON SanPham(tenSanPham);
@@ -863,7 +885,8 @@ VALUES
     (N'Q009', N'Quản lý ca làm',       N'Tạo ca và phân công nhân viên',          N'Nhân viên'),
     (N'Q010', N'Quản lý tài khoản',    N'Tạo, khóa, phân quyền tài khoản',       N'Hệ thống'),
     (N'Q011', N'Xem báo cáo',          N'Xem các báo cáo thống kê',              N'Báo cáo'),
-    (N'Q012', N'Quản lý NCC',          N'Thêm, sửa, xóa nhà cung cấp',          N'Kho');
+    (N'Q012', N'Quản lý NCC',          N'Thêm, sửa, xóa nhà cung cấp',          N'Kho'),
+    (N'Q013', N'Xem Audit Trail',     N'Tra cứu nhật ký thao tác quản trị',      N'Hệ thống');
 GO
 
 -- 4. Phân quyền (BẢNG 4)
