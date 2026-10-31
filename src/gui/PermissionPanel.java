@@ -1,6 +1,7 @@
 package gui;
 
 import connectDB.ConnectDB;
+import DAO.AuditTrail_DAO;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -47,12 +48,14 @@ public class PermissionPanel extends JFrame {
         }
     };
     private final JTable permissionTable = new JTable(tableModel);
+    private final String currentUsername;
 
     public PermissionPanel() {
         this(null, null, null);
     }
 
     public PermissionPanel(String userName, String userRole, String username) {
+        currentUsername = username;
         setTitle("Điện Máy Đỏ - Phân quyền hệ thống");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 650));
@@ -252,6 +255,8 @@ public class PermissionPanel extends JFrame {
                 statement.addBatch();
             }
             statement.executeBatch();
+            AuditTrail_DAO.ghiTheoTenDangNhap(currentUsername, "CẬP NHẬT", "Phân quyền",
+                    "Cập nhật quyền cho tài khoản " + account.label);
             connection.commit();
             JOptionPane.showMessageDialog(this, "Đã lưu phân quyền cho " + account.label + ".");
             }

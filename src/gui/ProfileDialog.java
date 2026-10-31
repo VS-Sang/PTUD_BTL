@@ -1,5 +1,8 @@
 package gui;
 
+import DAO.AuditTrail_DAO;
+import connectDB.ConnectDB;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -21,6 +24,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ProfileDialog extends JDialog {
     private static final Color BRAND_RED = new Color(214, 31, 47);
@@ -39,12 +46,55 @@ public class ProfileDialog extends JDialog {
     public ProfileDialog(Window owner, String fullName, String role, String username,
                          String email, String phone, String status) {
         super(owner, "Thông tin cá nhân", Dialog.ModalityType.APPLICATION_MODAL);
+        ProfileData profile = loadProfile(username, fullName, role, email, phone, status);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         setSize(458, 312);
         setLocationRelativeTo(owner);
         setUndecorated(true);
-        setContentPane(createContent(fullName, role, username, email, phone, status));
+        setContentPane(createContent(profile.fullName, profile.role, username,
+                profile.email, profile.phone, profile.status));
+    }
+
+    private ProfileData loadProfile(String username, String fallbackName, String fallbackRole,
+                                    String fallbackEmail, String fallbackPhone, String fallbackStatus) {
+        if (username == null || username.trim().isEmpty()) {
+            return new ProfileData(fallbackName, fallbackRole, fallbackEmail, fallbackPhone, fallbackStatus);
+        }
+        String sql = "SELECT nv.hoTen, tk.vaiTro, nv.email, nv.soDienThoai, tk.trangThai "
+                + "FROM TaiKhoan tk JOIN NhanVien nv ON nv.maNhanVien = tk.maNhanVien "
+                + "WHERE tk.tenDangNhap = ?";
+        try (Connection connection = ConnectDB.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new ProfileData(resultSet.getString(1), resultSet.getString(2),
+                            resultSet.getString(3), resultSet.getString(4), resultSet.getString(5));
+                }
+            }
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tải thông tin cá nhân:\n" + exception.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+        return new ProfileData(fallbackName, fallbackRole, fallbackEmail, fallbackPhone, fallbackStatus);
+    }
+
+    private static class ProfileData {
+        final String fullName;
+        final String role;
+        final String email;
+        final String phone;
+        final String status;
+
+        ProfileData(String fullName, String role, String email, String phone, String status) {
+            this.fullName = fullName;
+            this.role = role;
+            this.email = email;
+            this.phone = phone;
+            this.status = status;
+        }
     }
 
     private JPanel createContent(String fullName, String role, String username,
@@ -297,6 +347,15 @@ public class ProfileDialog extends JDialog {
                         JOptionPane.showMessageDialog(this, "Mật khẩu hiện tại không chính xác.",
                                 "Đổi mật khẩu thất bại", JOptionPane.ERROR_MESSAGE);
                         return;
+                    }
+                    try {
+                        AuditTrail_DAO.ghiTheoTenDangNhap(username, "ĐỔI MẬT KHẨU",
+                                "Tài khoản", "Đổi mật khẩu thành công");
+                    } catch (SQLException auditException) {
+                        JOptionPane.showMessageDialog(this,
+                                "Đổi mật khẩu thành công nhưng không ghi được Audit Trail:\n"
+                                        + auditException.getMessage(),
+                                "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                     }
                 }
                 JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công.");
