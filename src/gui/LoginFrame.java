@@ -1,5 +1,7 @@
 package gui;
 
+import DAO.AuditTrail_DAO;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -376,6 +378,8 @@ public class LoginFrame extends JDialog {
                         log.setString(2, !"Hoạt động".equals(status)
                                 ? "Tài khoản không hoạt động" : "Sai mật khẩu");
                         log.executeUpdate();
+                        AuditTrail_DAO.ghi(connection, accountId, "ĐĂNG NHẬP THẤT BẠI",
+                                "Tài khoản", "Sai thông tin hoặc tài khoản không hoạt động");
                     }
                 }
                 connection.commit();
@@ -389,6 +393,8 @@ public class LoginFrame extends JDialog {
                     success.executeUpdate();
                     log.setString(1, accountId);
                     log.executeUpdate();
+                    AuditTrail_DAO.ghi(connection, accountId, "ĐĂNG NHẬP",
+                            "Phiên đăng nhập", "Đăng nhập thành công");
                 }
                 connection.commit();
             }

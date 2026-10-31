@@ -66,10 +66,6 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         MenuPanel menuPanel = new MenuPanel(userName, userRole, username);
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, event -> {
-            dispose();
-            new LoginFrame().setVisible(true);
-        });
         add(menuPanel, BorderLayout.NORTH);
 
         invoiceTableModel = new DefaultTableModel(
