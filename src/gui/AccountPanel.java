@@ -38,12 +38,12 @@ import java.util.List;
 
 public class AccountPanel extends JFrame {
     private static final Color BRAND_RED = new Color(180, 40, 40);
-    private static final String[] ROLES = {"Admin", "Quản lý", "Nhân viên", "Thu ngân", "Nhân viên kho"};
+    private static final String[] ROLES = {"Quản lý", "Nhân viên"};
     private static final String[] STATUSES = {"Hoạt động", "Bị khóa", "Chưa kích hoạt"};
 
     private final JTextField searchField = new JTextField(22);
-    private final JComboBox<String> roleFilter = new JComboBox<>(new String[]{"Tất cả vai trò", "Admin",
-            "Quản lý", "Nhân viên", "Thu ngân", "Nhân viên kho"});
+    private final JComboBox<String> roleFilter = new JComboBox<>(new String[]{"Tất cả vai trò",
+            "Quản lý", "Nhân viên"});
     private final JComboBox<String> statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái",
             "Hoạt động", "Bị khóa", "Chưa kích hoạt"});
     private final DefaultTableModel tableModel = new DefaultTableModel(new Object[]{
@@ -219,8 +219,8 @@ public class AccountPanel extends JFrame {
     }
 
     private void deleteAccount(String accountId, String username, String role) {
-        if ("Admin".equalsIgnoreCase(role)) {
-            showError("Không thể xóa tài khoản có vai trò Admin.");
+        if ("Quản lý".equalsIgnoreCase(role)) {
+            showError("Không thể xóa tài khoản có vai trò Quản lý.");
             return;
         }
         int answer = JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + username + "?",
@@ -418,7 +418,7 @@ public class AccountPanel extends JFrame {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
                                                         boolean focus, int row, int column) {
             super.getTableCellRendererComponent(table, value, selected, focus, row, column);
-            setForeground("Admin".equals(value) || "Quản lý".equals(value)
+            setForeground("Quản lý".equals(value)
                     ? BRAND_RED : new Color(30, 100, 190));
             return this;
         }
