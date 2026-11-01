@@ -281,11 +281,11 @@ public class MenuPanel extends JPanel {
         });
         setMenuItemAction(MenuItem.WORK_SCHEDULE, e -> {
             dongCuaSoHienTai();
-            new WorkSchedulePanel().setVisible(true);
+            new WorkSchedulePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.ASSIGNMENT, e -> {
             dongCuaSoHienTai();
-            new AssignmentPanel().setVisible(true);
+            new AssignmentPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
 
         // Tìm kiếm

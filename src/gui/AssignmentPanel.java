@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -27,7 +28,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.jdatepicker.impl.JDatePanelImpl;
@@ -44,10 +47,13 @@ import entity.PhanCongCaLam;
 public class AssignmentPanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
+    private String currentUserName;
+    private String currentUserRole;
+    private String currentUsername;
     private JTextField txtMaPC, txtGhiChu, txtSearch;
     private JDatePickerImpl datePickerNgayLamViec;
     private UtilDateModel modelNgayLamViec;
-    private JComboBox<String> cboNhanVien, cboCaLamViec, cboFilterShift;
+    private JComboBox<String> cboNhanVien, cboCaLamViec, cboTrangThai, cboFilterShift, cboFilterStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnQuanLyCa, btnTim;
     private DefaultTableModel model;
     private JTable table;
@@ -59,14 +65,26 @@ public class AssignmentPanel extends JFrame implements ActionListener {
     private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
     public AssignmentPanel() {
+        this(null, null, null);
+    }
+
+    public AssignmentPanel(String userName, String userRole) {
+        this(userName, userRole, null);
+    }
+
+    public AssignmentPanel(String userName, String userRole, String username) {
+        this.currentUserName = userName;
+        this.currentUserRole = userRole;
+        this.currentUsername = username;
+
         setTitle("Điện Máy Đỏ — Phân Công Ca Làm Việc");
         setSize(1200, 680);
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel();
+        menuPanel = new MenuPanel(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -123,12 +141,15 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         datePickerNgayLamViec = taoDatePicker(modelNgayLamViec, new Date());
         pGrid.add(datePickerNgayLamViec);
 
+        pGrid.add(new JLabel("Trạng thái:"));
+        cboTrangThai = new JComboBox<>(new String[]{
+                "Đã lên lịch", "Đã điểm danh", "Vắng mặt", "Nghỉ phép", "Đã hủy"
+        });
+        pGrid.add(cboTrangThai);
+
         pGrid.add(new JLabel("Ghi chú:"));
         txtGhiChu = new JTextField();
         pGrid.add(txtGhiChu);
-
-        pGrid.add(new JLabel(""));
-        pGrid.add(new JLabel(""));
 
         pFormCard.add(pGrid, BorderLayout.CENTER);
 
@@ -171,16 +192,20 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         btnTim.setFocusPainted(false);
 
         cboFilterShift = new JComboBox<>();
+        cboFilterStatus = new JComboBox<>(new String[]{
+                "Tất cả trạng thái", "Đã lên lịch", "Đã điểm danh", "Vắng mặt", "Nghỉ phép", "Đã hủy"
+        });
 
         pSearch.add(txtSearch);
         pSearch.add(btnTim);
         pSearch.add(cboFilterShift);
+        pSearch.add(cboFilterStatus);
         pTop.add(pSearch, BorderLayout.SOUTH);
 
         pMain.add(pTop, BorderLayout.NORTH);
 
         // 3. BẢNG DANH SÁCH PHÂN CÔNG
-        String[] columns = {"Mã PC", "Nhân viên", "Ca làm việc", "Ngày làm việc", "Ghi chú"};
+        String[] columns = {"Mã PC", "Nhân viên", "Ca làm việc", "Ngày làm việc", "Trạng thái", "Ghi chú"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -193,6 +218,27 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         table.getTableHeader().setBackground(new Color(180, 40, 40));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+
+        // Đổi màu chữ cột Trạng thái
+        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                String val = value != null ? value.toString() : "";
+                if ("Đã điểm danh".equals(val)) {
+                    setForeground(new Color(46, 125, 50));
+                } else if ("Đã lên lịch".equals(val)) {
+                    setForeground(new Color(24, 119, 242));
+                } else if ("Nghỉ phép".equals(val)) {
+                    setForeground(new Color(230, 81, 0));
+                } else {
+                    setForeground(new Color(205, 32, 38));
+                }
+                return this;
+            }
+        });
 
         pMain.add(new JScrollPane(table), BorderLayout.CENTER);
         add(pMain, BorderLayout.CENTER);
@@ -211,6 +257,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         btnTim.addActionListener(this);
         txtSearch.addActionListener(this);
         cboFilterShift.addActionListener(this);
+        cboFilterStatus.addActionListener(this);
 
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -218,8 +265,8 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                 int row = table.getSelectedRow();
                 if (row >= 0) {
                     txtMaPC.setText(model.getValueAt(row, 0).toString());
-                    chonItemTheoMa(cboNhanVien, model.getValueAt(row, 1).toString().split(" - ")[0]);
-                    chonItemTheoMa(cboCaLamViec, model.getValueAt(row, 2).toString().split(" - ")[0]);
+                    chonItemTheoMa(cboNhanVien, model.getValueAt(row, 1).toString());
+                    chonItemTheoMa(cboCaLamViec, model.getValueAt(row, 2).toString());
                     try {
                         Date ngay = sdfDate.parse(model.getValueAt(row, 3).toString());
                         Calendar cal = Calendar.getInstance();
@@ -228,7 +275,8 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                         modelNgayLamViec.setSelected(true);
                     } catch (Exception ignored) {
                     }
-                    txtGhiChu.setText(model.getValueAt(row, 4) != null ? model.getValueAt(row, 4).toString() : "");
+                    cboTrangThai.setSelectedItem(model.getValueAt(row, 4).toString());
+                    txtGhiChu.setText(model.getValueAt(row, 5) != null ? model.getValueAt(row, 5).toString() : "");
                 }
             }
         });
@@ -270,13 +318,16 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         return datePicker;
     }
 
-    private void chonItemTheoMa(JComboBox<String> cbo, String ma) {
+    private void chonItemTheoMa(JComboBox<String> cbo, String fullLabel) {
+        String ma = fullLabel.split(" - ")[0];
         for (int i = 0; i < cbo.getItemCount(); i++) {
             if (cbo.getItemAt(i).startsWith(ma + " - ")) {
                 cbo.setSelectedIndex(i);
                 return;
             }
         }
+        cbo.addItem(fullLabel);
+        cbo.setSelectedItem(fullLabel);
     }
 
     private void napDuLieuComboBox() {
@@ -288,6 +339,9 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         }
 
         cboCaLamViec.removeAllItems();
+        String currentShiftFilter = cboFilterShift.getSelectedItem() != null
+                ? cboFilterShift.getSelectedItem().toString()
+                : "Tất cả ca làm";
         cboFilterShift.removeAllItems();
         cboFilterShift.addItem("Tất cả ca làm");
         for (CaLamViec ca : ca_dao.getAllCaLamViec()) {
@@ -300,12 +354,14 @@ public class AssignmentPanel extends JFrame implements ActionListener {
             }
             cboFilterShift.addItem(ca.getMaCa() + " - " + ca.getTenCa());
         }
+        cboFilterShift.setSelectedItem(currentShiftFilter);
     }
 
     public void docDuLieuDatabaseVaoTable() {
         model.setRowCount(0);
         String tuKhoa = txtSearch.getText().trim().toLowerCase();
         String filterShift = cboFilterShift.getSelectedItem() != null ? cboFilterShift.getSelectedItem().toString() : "Tất cả ca làm";
+        String filterStatus = cboFilterStatus.getSelectedItem() != null ? cboFilterStatus.getSelectedItem().toString() : "Tất cả trạng thái";
 
         ArrayList<PhanCongCaLam> ds = pc_dao.getAllPhanCongCaLam();
         for (PhanCongCaLam pc : ds) {
@@ -315,6 +371,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                     : "";
             String caText = pc.getCaLamViec().getMaCa() + " - " + pc.getCaLamViec().getTenCa() + gio;
             String ngayText = pc.getNgayLamViec() != null ? sdfDate.format(pc.getNgayLamViec()) : "";
+            String trangThaiText = pc.getTrangThai() != null ? pc.getTrangThai() : "Đã lên lịch";
 
             boolean matchKey = tuKhoa.isEmpty()
                     || pc.getMaPhanCong().toLowerCase().contains(tuKhoa)
@@ -322,13 +379,16 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                     || ngayText.contains(tuKhoa);
             boolean matchShift = "Tất cả ca làm".equals(filterShift)
                     || caText.startsWith(filterShift);
+            boolean matchStatus = "Tất cả trạng thái".equals(filterStatus)
+                    || filterStatus.equalsIgnoreCase(trangThaiText);
 
-            if (matchKey && matchShift) {
+            if (matchKey && matchShift && matchStatus) {
                 model.addRow(new Object[]{
                         pc.getMaPhanCong(),
                         nvText,
                         caText,
                         ngayText,
+                        trangThaiText,
                         pc.getGhiChu() != null ? pc.getGhiChu() : ""
                 });
             }
@@ -336,6 +396,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
     }
 
     private void xoaRong() {
+        napDuLieuComboBox();
         txtMaPC.setText(pc_dao.phatSinhMaPhanCong());
         if (cboNhanVien.getItemCount() > 0) cboNhanVien.setSelectedIndex(0);
         if (cboCaLamViec.getItemCount() > 0) cboCaLamViec.setSelectedIndex(0);
@@ -343,6 +404,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         cal.setTime(new Date());
         modelNgayLamViec.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
         modelNgayLamViec.setSelected(true);
+        cboTrangThai.setSelectedIndex(0);
         txtGhiChu.setText("");
         table.clearSelection();
     }
@@ -352,7 +414,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         Object o = e.getSource();
         if (o.equals(btnLamMoi)) {
             xoaRong();
-        } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboFilterShift)) {
+        } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboFilterShift) || o.equals(cboFilterStatus)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnThem)) {
             Date ngay = (Date) modelNgayLamViec.getValue();
@@ -364,16 +426,18 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                 String ma = pc_dao.phatSinhMaPhanCong();
                 String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
                 String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
+                String trangThai = cboTrangThai.getSelectedItem().toString();
+                String maNguoiPC = pc_dao.getMaNhanVienTheoTenDangNhap(currentUsername);
 
                 PhanCongCaLam pc = new PhanCongCaLam(
                         ma,
                         new NhanVien(maNV),
                         new CaLamViec(maCa),
                         ngay,
-                        "Đã lên lịch",
+                        trangThai,
                         null, null, 0,
                         txtGhiChu.getText().trim(),
-                        new NhanVien("NV001"),
+                        new NhanVien(maNguoiPC),
                         new Date(), new Date()
                 );
                 if (pc_dao.themPhanCongCaLam(pc)) {
@@ -400,16 +464,18 @@ public class AssignmentPanel extends JFrame implements ActionListener {
             try {
                 String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
                 String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
+                String trangThai = cboTrangThai.getSelectedItem().toString();
+                String maNguoiPC = pc_dao.getMaNhanVienTheoTenDangNhap(currentUsername);
 
                 PhanCongCaLam pc = new PhanCongCaLam(
                         txtMaPC.getText().trim(),
                         new NhanVien(maNV),
                         new CaLamViec(maCa),
                         ngay,
-                        "Đã lên lịch",
+                        trangThai,
                         null, null, 0,
                         txtGhiChu.getText().trim(),
-                        new NhanVien("NV001"),
+                        new NhanVien(maNguoiPC),
                         new Date(), new Date()
                 );
                 if (pc_dao.capNhatPhanCongCaLam(pc)) {
@@ -439,7 +505,8 @@ public class AssignmentPanel extends JFrame implements ActionListener {
                 }
             }
         } else if (o.equals(btnQuanLyCa)) {
-            new WorkSchedulePanel().setVisible(true);
+            dispose();
+            new WorkSchedulePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         }
     }
 
