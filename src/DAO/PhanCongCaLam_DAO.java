@@ -89,21 +89,40 @@ public class PhanCongCaLam_DAO {
 
     // Phát sinh mã phân công ca làm tiếp theo (VD: PC013)
     public String phatSinhMaPhanCong() {
-        String sql = "SELECT TOP 1 maPhanCong FROM PhanCongCaLam ORDER BY maPhanCong DESC";
+        String sql = "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maPhanCong, 3, 18))), 0) + 1 "
+                + "FROM PhanCongCaLam WHERE maPhanCong LIKE 'PC[0-9]%'";
         try (Connection con = ConnectDB.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
-                String lastId = rs.getString("maPhanCong");
-                if (lastId != null && lastId.startsWith("PC")) {
-                    int num = Integer.parseInt(lastId.substring(2)) + 1;
-                    return String.format("PC%03d", num);
-                }
+                return String.format("PC%03d", rs.getInt(1));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "PC001";
+    }
+
+    // Lấy mã nhân viên theo tên đăng nhập để gán người phân công
+    public String getMaNhanVienTheoTenDangNhap(String tenDangNhap) {
+        if (tenDangNhap == null || tenDangNhap.trim().isEmpty()) {
+            return "NV001";
+        }
+        String sql = "SELECT maNhanVien FROM TaiKhoan WHERE tenDangNhap = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, tenDangNhap.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String maNV = rs.getString("maNhanVien");
+                    if (maNV != null && !maNV.trim().isEmpty()) {
+                        return maNV.trim();
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return "NV001";
     }
 
     // Thêm phân công ca làm mới
@@ -130,7 +149,7 @@ public class PhanCongCaLam_DAO {
 
     // Cập nhật phân công ca làm
     public boolean capNhatPhanCongCaLam(PhanCongCaLam pc) {
-        String sql = "UPDATE PhanCongCaLam SET maNhanVien = ?, maCa = ?, ngayLamViec = ?, trangThai = ?, ghiChu = ? WHERE maPhanCong = ?";
+        String sql = "UPDATE PhanCongCaLam SET maNhanVien = ?, maCa = ?, ngayLamViec = ?, trangThai = ?, ghiChu = ?, ngayCapNhat = GETDATE() WHERE maPhanCong = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, pc.getNhanVien() != null ? pc.getNhanVien().getMaNhanVien() : null);

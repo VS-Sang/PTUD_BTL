@@ -97,13 +97,9 @@ public class NhanVien_DAO {
                 + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
-            String cmnd = nv.getSoCMND();
-            if (cmnd == null || cmnd.trim().isEmpty()) {
-                // Tạo số CCCD/CMND mặc định từ SĐT nếu form không nhập
-                cmnd = "079" + nv.getSoDienThoai().replaceAll("\\D", "");
-                if (cmnd.length() > 12) {
-                    cmnd = cmnd.substring(0, 12);
-                }
+            String cmnd = nv.getSoCMND() != null ? nv.getSoCMND().trim() : "";
+            if (cmnd.isEmpty()) {
+                return false;
             }
             Date ngaySinh = nv.getNgaySinh() != null
                     ? new Date(nv.getNgaySinh().getTime())
@@ -136,25 +132,30 @@ public class NhanVien_DAO {
 
     // Cập nhật thông tin nhân viên
     public boolean capNhatNhanVien(NhanVien nv) {
-        String sql = "UPDATE NhanVien SET hoTen = ?, gioiTinh = ?, ngaySinh = ?, soDienThoai = ?, "
+        String sql = "UPDATE NhanVien SET hoTen = ?, gioiTinh = ?, ngaySinh = ?, soCMND = ?, soDienThoai = ?, "
                 + "email = ?, diaChi = ?, chucVu = ?, phongBan = ?, luongCoBan = ?, trangThai = ?, "
                 + "ngayNghiViec = CASE WHEN ? = N'Đã nghỉ việc' "
                 + "THEN ISNULL(ngayNghiViec, GETDATE()) ELSE NULL END, ngayCapNhat = GETDATE() "
                 + "WHERE maNhanVien = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
+            String cmnd = nv.getSoCMND() != null ? nv.getSoCMND().trim() : "";
+            if (cmnd.isEmpty()) {
+                return false;
+            }
             stmt.setString(1, nv.getHoTen());
             stmt.setString(2, nv.getGioiTinh());
             stmt.setDate(3, nv.getNgaySinh() != null ? new Date(nv.getNgaySinh().getTime()) : Date.valueOf("1995-01-01"));
-            stmt.setString(4, nv.getSoDienThoai());
-            stmt.setString(5, nv.getEmail() != null && !nv.getEmail().trim().isEmpty() ? nv.getEmail().trim() : null);
-            stmt.setString(6, nv.getDiaChi());
-            stmt.setString(7, nv.getChucVu());
-            stmt.setString(8, nv.getPhongBan());
-            stmt.setDouble(9, nv.getLuongCoBan());
-            stmt.setString(10, nv.getTrangThai());
+            stmt.setString(4, cmnd);
+            stmt.setString(5, nv.getSoDienThoai());
+            stmt.setString(6, nv.getEmail() != null && !nv.getEmail().trim().isEmpty() ? nv.getEmail().trim() : null);
+            stmt.setString(7, nv.getDiaChi());
+            stmt.setString(8, nv.getChucVu());
+            stmt.setString(9, nv.getPhongBan());
+            stmt.setDouble(10, nv.getLuongCoBan());
             stmt.setString(11, nv.getTrangThai());
-            stmt.setString(12, nv.getMaNhanVien());
+            stmt.setString(12, nv.getTrangThai());
+            stmt.setString(13, nv.getMaNhanVien());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -174,16 +175,17 @@ public class NhanVien_DAO {
         }
     }
 
-    // Tìm kiếm nhân viên theo từ khóa (mã, tên, SĐT)
+    // Tìm kiếm nhân viên theo từ khóa (mã, tên, CMND/CCCD, SĐT)
     public ArrayList<NhanVien> timKiemNhanVien(String tuKhoa) {
         ArrayList<NhanVien> dsNhanVien = new ArrayList<>();
-        String sql = "SELECT * FROM NhanVien WHERE maNhanVien LIKE ? OR hoTen LIKE ? OR soDienThoai LIKE ? ORDER BY maNhanVien";
+        String sql = "SELECT * FROM NhanVien WHERE maNhanVien LIKE ? OR hoTen LIKE ? OR soCMND LIKE ? OR soDienThoai LIKE ? ORDER BY maNhanVien";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             String key = "%" + tuKhoa + "%";
             stmt.setString(1, key);
             stmt.setString(2, key);
             stmt.setString(3, key);
+            stmt.setString(4, key);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     dsNhanVien.add(docNhanVienTuResultSet(rs));

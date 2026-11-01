@@ -35,6 +35,9 @@ import entity.CaLamViec;
 public class WorkSchedulePanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
+    private String currentUserName;
+    private String currentUserRole;
+    private String currentUsername;
     private JTextField txtMaCa, txtTenCa, txtGioBatDau, txtGioKetThuc, txtMoTa, txtSearch;
     private JComboBox<String> cboTrangThai, cboFilterStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnPhanCong, btnTim;
@@ -45,6 +48,19 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
     private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
     public WorkSchedulePanel() {
+        this(null, null, null);
+    }
+
+    public WorkSchedulePanel(String userName, String userRole) {
+        this(userName, userRole, null);
+    }
+
+    public WorkSchedulePanel(String userName, String userRole, String username) {
+        this.currentUserName = userName;
+        this.currentUserRole = userRole;
+        this.currentUsername = username;
+        sdfTime.setLenient(false);
+
         setTitle("Điện Máy Đỏ — Quản lý Ca Làm Việc");
         setSize(1200, 680);
         setLocationRelativeTo(null);
@@ -52,7 +68,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel();
+        menuPanel = new MenuPanel(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -304,10 +320,15 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn một ca trên bảng để cập nhật!");
                 return;
             }
+            String ten = txtTenCa.getText().trim();
+            if (ten.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập tên ca làm việc!");
+                return;
+            }
             try {
                 Date gioVao = sdfTime.parse(txtGioBatDau.getText().trim());
                 Date gioRa = sdfTime.parse(txtGioKetThuc.getText().trim());
-                CaLamViec ca = new CaLamViec(txtMaCa.getText().trim(), txtTenCa.getText().trim(),
+                CaLamViec ca = new CaLamViec(txtMaCa.getText().trim(), ten,
                         gioVao, gioRa, txtMoTa.getText().trim(),
                         cboTrangThai.getSelectedItem().toString(), new Date());
                 if (ca_dao.capNhatCaLamViec(ca)) {
@@ -337,7 +358,8 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
                 }
             }
         } else if (o.equals(btnPhanCong)) {
-            new AssignmentPanel().setVisible(true);
+            dispose();
+            new AssignmentPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         }
     }
 
