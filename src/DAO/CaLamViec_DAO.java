@@ -79,16 +79,13 @@ public class CaLamViec_DAO {
 
     // Phát sinh mã ca làm việc tiếp theo (VD: CA005)
     public String phatSinhMaCa() {
-        String sql = "SELECT TOP 1 maCa FROM CaLamViec ORDER BY maCa DESC";
+        String sql = "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maCa, 3, 18))), 0) + 1 "
+                + "FROM CaLamViec WHERE maCa LIKE 'CA[0-9]%'";
         try (Connection con = ConnectDB.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
-                String lastId = rs.getString("maCa");
-                if (lastId != null && lastId.startsWith("CA")) {
-                    int num = Integer.parseInt(lastId.substring(2)) + 1;
-                    return String.format("CA%03d", num);
-                }
+                return String.format("CA%03d", rs.getInt(1));
             }
         } catch (Exception e) {
             e.printStackTrace();

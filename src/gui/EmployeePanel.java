@@ -36,7 +36,7 @@ import entity.NhanVien;
 public class EmployeePanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
-    private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtSDT, txtEmail, txtMucLuong, txtDiaChi, txtSearch;
+    private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtCMND, txtSDT, txtEmail, txtMucLuong, txtDiaChi, txtSearch;
     private JComboBox<String> cboGioiTinh, cboPhongBan, cboChucVu, cboTrangThai, cboDepartment, cboStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnTim;
     private DefaultTableModel model;
@@ -103,6 +103,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
         txtNgaySinh = new JTextField("1995-01-01");
         pGrid.add(txtNgaySinh);
 
+        pGrid.add(new JLabel("CCCD/CMND (*):"));
+        txtCMND = new JTextField();
+        pGrid.add(txtCMND);
+
         pGrid.add(new JLabel("SĐT (*):"));
         txtSDT = new JTextField();
         pGrid.add(txtSDT);
@@ -117,7 +121,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
 
         pGrid.add(new JLabel("Chức vụ:"));
         cboChucVu = new JComboBox<>(new String[]{
-                "Nhân viên", "Nhân viên bán hàng", "Thu ngân", "Nhân viên kho", "Quản lý"
+                "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
         });
         pGrid.add(cboChucVu);
 
@@ -132,9 +136,6 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pGrid.add(new JLabel("Địa chỉ:"));
         txtDiaChi = new JTextField();
         pGrid.add(txtDiaChi);
-
-        pGrid.add(new JLabel(""));
-        pGrid.add(new JLabel(""));
 
         pFormCard.add(pGrid, BorderLayout.CENTER);
 
@@ -171,14 +172,13 @@ public class EmployeePanel extends JFrame implements ActionListener {
         // 2. THANH TÌM KIẾM VÀ BỘ LỌC
         JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         txtSearch = new JTextField(25);
-        txtSearch.setToolTipText("Tìm tên, mã NV, SĐT...");
+        txtSearch.setToolTipText("Tìm tên, mã NV, CCCD/CMND, SĐT...");
         btnTim = new JButton("🔍 Tìm");
         btnTim.setBackground(Color.WHITE);
         btnTim.setFocusPainted(false);
 
         cboDepartment = new JComboBox<>(new String[]{
-                "Tất cả chức vụ", "Nhân viên", "Nhân viên bán hàng", "Thu ngân",
-                "Nhân viên kho", "Quản lý"
+                "Tất cả chức vụ", "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
         });
         cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
 
@@ -191,7 +191,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pMain.add(pTop, BorderLayout.NORTH);
 
         // 3. BẢNG DANH SÁCH NHÂN VIÊN
-        String[] columns = {"Mã NV", "Họ tên", "Giới tính", "Ngày sinh", "SĐT", "Email", "Phòng ban", "Chức vụ", "Mức lương", "Địa chỉ", "Trạng thái"};
+        String[] columns = {"Mã NV", "Họ tên", "Giới tính", "Ngày sinh", "CCCD/CMND", "SĐT", "Email", "Phòng ban", "Chức vụ", "Mức lương", "Địa chỉ", "Trạng thái"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -207,7 +207,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         // Đổi màu chữ cột Trạng thái
-        table.getColumnModel().getColumn(10).setCellRenderer(new DefaultTableCellRenderer() {
+        table.getColumnModel().getColumn(11).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
@@ -251,13 +251,14 @@ public class EmployeePanel extends JFrame implements ActionListener {
                     txtHoTen.setText(model.getValueAt(row, 1).toString());
                     cboGioiTinh.setSelectedItem(model.getValueAt(row, 2).toString());
                     txtNgaySinh.setText(model.getValueAt(row, 3).toString());
-                    txtSDT.setText(model.getValueAt(row, 4).toString());
-                    txtEmail.setText(model.getValueAt(row, 5) != null ? model.getValueAt(row, 5).toString() : "");
-                    cboPhongBan.setSelectedItem(model.getValueAt(row, 6).toString());
-                    cboChucVu.setSelectedItem(model.getValueAt(row, 7).toString());
-                    txtMucLuong.setText(model.getValueAt(row, 8).toString());
-                    txtDiaChi.setText(model.getValueAt(row, 9) != null ? model.getValueAt(row, 9).toString() : "");
-                    cboTrangThai.setSelectedItem(model.getValueAt(row, 10).toString());
+                    txtCMND.setText(model.getValueAt(row, 4) != null ? model.getValueAt(row, 4).toString() : "");
+                    txtSDT.setText(model.getValueAt(row, 5).toString());
+                    txtEmail.setText(model.getValueAt(row, 6) != null ? model.getValueAt(row, 6).toString() : "");
+                    cboPhongBan.setSelectedItem(model.getValueAt(row, 7).toString());
+                    cboChucVu.setSelectedItem(model.getValueAt(row, 8).toString());
+                    txtMucLuong.setText(model.getValueAt(row, 9).toString());
+                    txtDiaChi.setText(model.getValueAt(row, 10) != null ? model.getValueAt(row, 10).toString() : "");
+                    cboTrangThai.setSelectedItem(model.getValueAt(row, 11).toString());
                     cboTrangThai.setEnabled(true);
                 }
             }
@@ -275,6 +276,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
             boolean matchKey = tuKhoa.isEmpty()
                     || nv.getMaNhanVien().toLowerCase().contains(tuKhoa)
                     || nv.getHoTen().toLowerCase().contains(tuKhoa)
+                    || (nv.getSoCMND() != null && nv.getSoCMND().contains(tuKhoa))
                     || (nv.getSoDienThoai() != null && nv.getSoDienThoai().contains(tuKhoa));
             boolean matchRole = "Tất cả chức vụ".equals(chucVuLoc)
                     || chucVuLoc.equalsIgnoreCase(nv.getChucVu())
@@ -288,6 +290,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
                         nv.getHoTen(),
                         nv.getGioiTinh(),
                         nv.getNgaySinh() != null ? sdfDate.format(nv.getNgaySinh()) : "",
+                        nv.getSoCMND() != null ? nv.getSoCMND() : "",
                         nv.getSoDienThoai(),
                         nv.getEmail() != null ? nv.getEmail() : "",
                         nv.getPhongBan(),
@@ -305,6 +308,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         txtHoTen.setText("");
         cboGioiTinh.setSelectedIndex(0);
         txtNgaySinh.setText("1995-01-01");
+        txtCMND.setText("");
         txtSDT.setText("");
         txtEmail.setText("");
         cboPhongBan.setSelectedIndex(0);
@@ -335,9 +339,12 @@ public class EmployeePanel extends JFrame implements ActionListener {
         return luong;
     }
 
-    private void validateEmployeeFields(String hoTen, String sdt) {
+    private void validateEmployeeFields(String hoTen, String cmnd, String sdt) {
         if (hoTen.length() < 2 || hoTen.length() > 100) {
             throw new IllegalArgumentException("Họ tên phải từ 2 đến 100 ký tự.");
+        }
+        if (!cmnd.matches("\\d{9}|\\d{12}")) {
+            throw new IllegalArgumentException("Số CCCD/CMND phải gồm 9 hoặc 12 chữ số.");
         }
         if (!sdt.matches("0\\d{9,10}")) {
             throw new IllegalArgumentException("Số điện thoại phải có 10-11 chữ số và bắt đầu bằng 0.");
@@ -357,9 +364,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnThem)) {
             String hoTen = txtHoTen.getText().trim();
+            String cmnd = txtCMND.getText().trim();
             String sdt = txtSDT.getText().trim();
             try {
-                validateEmployeeFields(hoTen, sdt);
+                validateEmployeeFields(hoTen, cmnd, sdt);
                 Date ngaySinh = parseNgaySinh();
                 double luong = parseLuong();
 
@@ -368,6 +376,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
                 nv.setHoTen(hoTen);
                 nv.setGioiTinh(cboGioiTinh.getSelectedItem().toString());
                 nv.setNgaySinh(ngaySinh);
+                nv.setSoCMND(cmnd);
                 nv.setSoDienThoai(sdt);
                 nv.setEmail(txtEmail.getText().trim());
                 nv.setPhongBan(cboPhongBan.getSelectedItem().toString());
@@ -381,7 +390,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Thêm nhân viên mới thành công!");
                     xoaRong();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Thêm thất bại! Vui lòng kiểm tra SĐT/Email không bị trùng.");
+                    JOptionPane.showMessageDialog(this, "Thêm thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
@@ -394,9 +403,10 @@ public class EmployeePanel extends JFrame implements ActionListener {
                 return;
             }
             String hoTen = txtHoTen.getText().trim();
+            String cmnd = txtCMND.getText().trim();
             String sdt = txtSDT.getText().trim();
             try {
-                validateEmployeeFields(hoTen, sdt);
+                validateEmployeeFields(hoTen, cmnd, sdt);
                 Date ngaySinh = parseNgaySinh();
                 double luong = parseLuong();
 
@@ -405,6 +415,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
                 nv.setHoTen(hoTen);
                 nv.setGioiTinh(cboGioiTinh.getSelectedItem().toString());
                 nv.setNgaySinh(ngaySinh);
+                nv.setSoCMND(cmnd);
                 nv.setSoDienThoai(sdt);
                 nv.setEmail(txtEmail.getText().trim());
                 nv.setPhongBan(cboPhongBan.getSelectedItem().toString());
@@ -417,7 +428,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
                     docDuLieuDatabaseVaoTable();
                     JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại! Vui lòng kiểm tra SĐT/Email không bị trùng.");
+                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
