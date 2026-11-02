@@ -23,7 +23,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -56,7 +55,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
     private String currentUserRole;
 
     private JComboBox<String> cboMonth;
-    private JButton btnExport;
+    private JButton btnExport, btnPrint;
 
     private JLabel lblTableTitle;
     private DefaultTableModel tableModel;
@@ -135,8 +134,14 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         btnExport.setPreferredSize(new Dimension(125, 32));
         btnExport.addActionListener(this);
 
+        btnPrint = new JButton("Xuất PDF");
+        btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnPrint.setPreferredSize(new Dimension(105, 32));
+        btnPrint.addActionListener(this);
+
         pActions.add(cboMonth);
         pActions.add(btnExport);
+        pActions.add(btnPrint);
         pHeader.add(pActions, BorderLayout.EAST);
 
         return pHeader;
@@ -389,9 +394,17 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         if (source.equals(cboMonth)) {
             taiDuLieu();
         } else if (source.equals(btnExport)) {
-            JOptionPane.showMessageDialog(this,
-                    "Xuất danh sách sản phẩm bán chạy ra Excel thành công!",
-                    "Xuất dữ liệu", JOptionPane.INFORMATION_MESSAGE);
+            String period = cboMonth.getSelectedItem() == null
+                    ? "tat-ca" : cboMonth.getSelectedItem().toString()
+                            .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            ReportExportUtils.exportTable(this, table, "Xuất thống kê sản phẩm bán chạy",
+                    "san-pham-ban-chay-" + period + ".csv");
+        } else if (source.equals(btnPrint)) {
+            String period = cboMonth.getSelectedItem() == null
+                    ? "tat-ca" : cboMonth.getSelectedItem().toString()
+                            .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
+                    "san-pham-ban-chay-" + period + ".pdf");
         }
     }
 

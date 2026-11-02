@@ -129,6 +129,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final Map<String, Integer> soLuongDaChon = new LinkedHashMap<>();
     private final Map<String, SanPham> sanPhamTheoMa = new LinkedHashMap<>();
     private boolean invoiceSaved;
+    private boolean khachHangDaChot;
+    private String maKhachHangDaChot;
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
     private final JButton btnThem = createButton("Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
     private final JButton btnLuu = createButton("Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
@@ -308,6 +310,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     String maSanPham = model.getValueAt(row, 1).toString();
                     soLuongDaChon.remove(maSanPham);
                     capNhatBangVaTongTien();
+                    capNhatTrangThaiKhachHang();
                     table.repaint();
                 }
             }
@@ -593,6 +596,12 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             return;
         }
         soLuongDaChon.put(sanPham.getMaSanPham(), (int) tongSoLuong);
+        if (!khachHangDaChot) {
+            KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
+            maKhachHangDaChot = khachHang == null ? null : khachHang.getMaKhachHang();
+            khachHangDaChot = true;
+        }
+        capNhatTrangThaiKhachHang();
         capNhatBangVaTongTien();
         table.repaint();
         cboSanPham.setSelectedIndex(0);
@@ -689,9 +698,23 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     }
 
     private void luuHoaDon() {
+        if (invoiceSaved) {
+            JOptionPane.showMessageDialog(this, "Hóa đơn này đã được lưu. Vui lòng tạo hóa đơn mới.",
+                    "Hóa đơn đã lưu", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         if (soLuongDaChon.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng thêm ít nhất một sản phẩm.",
                     "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
+        String maKhachHangHienTai = khachHang == null ? null : khachHang.getMaKhachHang();
+        if (khachHangDaChot && !java.util.Objects.equals(maKhachHangDaChot, maKhachHangHienTai)) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể đổi khách hàng khi hóa đơn đã có sản phẩm. "
+                            + "Vui lòng tạo hóa đơn mới nếu muốn chọn khách hàng khác.",
+                    "Khách hàng không khớp", JOptionPane.WARNING_MESSAGE);
             return;
         }
         BigDecimal tienKhachDua;
@@ -729,7 +752,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     sanPham.getGiaBan(), 0, 0, null));
             tongTienHang += sanPham.getGiaBan() * item.getValue();
         }
-        KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
         KhuyenMai selectedKM = (KhuyenMai) cboKhuyenMai.getSelectedItem();
         String maKM = (selectedKM != null) ? selectedKM.getMaKhuyenMai() : null;
         double tienGiam = tinhTienGiam(tongTienHang);
@@ -1027,11 +1049,23 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         btnThem.setEnabled(enabled);
         cboSanPham.setEnabled(enabled);
         spnSoLuong.setEnabled(enabled);
-        cboKhachHang.setEnabled(enabled);
+        capNhatTrangThaiKhachHang(enabled);
         cboPhuongThuc.setEnabled(enabled);
         cboKhuyenMai.setEnabled(enabled);
         txtTienKhachDua.setEnabled(enabled);
         txtGhiChu.setEnabled(enabled);
+    }
+
+    private void capNhatTrangThaiKhachHang() {
+        capNhatTrangThaiKhachHang(!invoiceSaved);
+    }
+
+    private void capNhatTrangThaiKhachHang(boolean invoiceInputsEnabled) {
+        boolean enabled = invoiceInputsEnabled && !khachHangDaChot;
+        cboKhachHang.setEnabled(enabled);
+        cboKhachHang.setToolTipText(khachHangDaChot
+                ? "Khách hàng đã được cố định cho hóa đơn này. Tạo hóa đơn mới để chọn khách khác."
+                : "Chọn khách hàng trước khi thêm sản phẩm.");
     }
 
     private NhanVien timNhanVienDangDangNhap() {
@@ -1047,6 +1081,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private void resetInvoice() {
         soLuongDaChon.clear();
         invoiceSaved = false;
+        khachHangDaChot = false;
+        maKhachHangDaChot = null;
         btnLuu.setEnabled(true);
         setInvoiceInputsEnabled(true);
         model.setRowCount(0);
