@@ -21,7 +21,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -129,7 +128,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         btnExport.setPreferredSize(new Dimension(125, 32));
         btnExport.addActionListener(this);
 
-        btnPrint = new JButton(" In");
+        btnPrint = new JButton("Xuất PDF");
         btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnPrint.setBackground(new Color(49, 130, 206));
         btnPrint.setForeground(Color.WHITE);
@@ -380,11 +379,17 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         if (source.equals(cboMonth)) {
             taiDuLieuBaoCao();
         } else if (source.equals(btnExport)) {
-            JOptionPane.showMessageDialog(this,
-                    "Xuất file báo cáo tổng hợp ra Excel thành công!",
-                    "Xuất dữ liệu", JOptionPane.INFORMATION_MESSAGE);
+            String period = cboMonth.getSelectedItem() == null
+                    ? "bao-cao" : cboMonth.getSelectedItem().toString()
+                            .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            ReportExportUtils.exportTable(this, table, "Xuất báo cáo tổng hợp",
+                    "bao-cao-tong-hop-" + period + ".csv");
         } else if (source.equals(btnPrint)) {
-            JOptionPane.showMessageDialog(this, "In báo cáo thành công!");
+            String period = cboMonth.getSelectedItem() == null
+                    ? "bao-cao" : cboMonth.getSelectedItem().toString()
+                            .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
+                    "bao-cao-tong-hop-" + period + ".pdf");
         }
     }
 

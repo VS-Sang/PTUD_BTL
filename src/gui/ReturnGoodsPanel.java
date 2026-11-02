@@ -11,16 +11,21 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -29,7 +34,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -37,10 +41,13 @@ import javax.swing.border.LineBorder;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import DAO.PhieuTraHang_DAO;
 import DAO.PhieuTraHang_DAO.DongHangTra;
+import DAO.PhieuTraHang_DAO.HoaDonTuyChon;
 import DAO.PhieuTraHang_DAO.HoaDonTraHang;
 import DAO.PhieuTraHang_DAO.KetQuaTraHang;
 import DAO.PhieuTraHang_DAO.SanPhamDoi;
@@ -58,7 +65,7 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
     private final PhieuTraHang_DAO phieuTraHangDao = new PhieuTraHang_DAO();
     private final List<SanPhamDoi> sanPhamDoi = new ArrayList<>();
 
-    private JTextField txtMaHoaDon;
+    private JComboBox<HoaDonTuyChon> cboHoaDon;
     private JComboBox<String> cboLoaiXuLy;
     private JButton btnTim;
     private JButton btnLuuPhieu;
@@ -123,7 +130,7 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
 
         add(content, BorderLayout.CENTER);
         cboLoaiXuLy.addActionListener(e -> capNhatCheDoXuLy());
-        txtMaHoaDon.addActionListener(e -> timHoaDon());
+        napDanhSachHoaDon();
     }
 
     private JPanel createTitleBar() {
@@ -177,13 +184,24 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         gbc.gridy = 1;
         JPanel invoiceInput = new JPanel(new BorderLayout(6, 0));
         invoiceInput.setOpaque(false);
-        txtMaHoaDon = new JTextField();
-        txtMaHoaDon.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtMaHoaDon.setPreferredSize(new Dimension(0, 34));
-        txtMaHoaDon.setToolTipText("Nhập mã hóa đơn gốc");
-        txtMaHoaDon.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(170, 170, 170), 1),
-                new EmptyBorder(5, 8, 5, 8)));
+        cboHoaDon = new JComboBox<>();
+        cboHoaDon.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cboHoaDon.setPreferredSize(new Dimension(0, 34));
+        cboHoaDon.setToolTipText("Chọn hóa đơn đã thanh toán");
+        cboHoaDon.setRenderer((list, value, index, selected, focus) -> {
+            JLabel label = new JLabel(value == null
+                    ? "-- Chọn hóa đơn đã thanh toán --" : value.toString());
+            label.setOpaque(true);
+            label.setBorder(new EmptyBorder(2, 6, 2, 6));
+            if (selected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
+            }
+            return label;
+        });
         btnTim = new JButton("Tìm");
         btnTim.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnTim.setForeground(Color.WHITE);
@@ -194,7 +212,7 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
                 new EmptyBorder(6, 10, 6, 10)));
         btnTim.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTim.addActionListener(this);
-        invoiceInput.add(txtMaHoaDon, BorderLayout.CENTER);
+        invoiceInput.add(cboHoaDon, BorderLayout.CENTER);
         invoiceInput.add(btnTim, BorderLayout.EAST);
         gbc.gridx = 0;
         gbc.weightx = 0.52;
@@ -246,6 +264,8 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         tableHangTra.setRowHeight(28);
         tableHangTra.setFillsViewportHeight(true);
         tableHangTra.getTableHeader().setReorderingAllowed(false);
+        tableHangTra.getColumnModel().getColumn(5).setCellRenderer(new SoLuongTraCellRenderer());
+        tableHangTra.getColumnModel().getColumn(5).setCellEditor(new SoLuongTraCellEditor());
         DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(
@@ -281,6 +301,79 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         pChiTiet.add(details, BorderLayout.CENTER);
         pChiTiet.setVisible(false);
         return pChiTiet;
+    }
+
+    private int getSoLuongToiDaTra(int modelRow) {
+        return ((Number) modelHangTra.getValueAt(modelRow, 4)).intValue();
+    }
+
+    private final class SoLuongTraCellRenderer extends JSpinner implements TableCellRenderer {
+        private SoLuongTraCellRenderer() {
+            setToolTipText("Dùng mũi tên lên/xuống để nhập số lượng trả");
+            JFormattedTextField field = ((JSpinner.DefaultEditor) getEditor()).getTextField();
+            field.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        public java.awt.Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            int max = getSoLuongToiDaTra(modelRow);
+            int initial = value instanceof Number ? ((Number) value).intValue() : 0;
+            setModel(new SpinnerNumberModel(Math.max(0, Math.min(initial, max)), 0, max, 1));
+            setFont(table.getFont());
+            Color background = isSelected ? table.getSelectionBackground() : table.getBackground();
+            Color foreground = isSelected ? table.getSelectionForeground() : table.getForeground();
+            setBackground(background);
+            setForeground(foreground);
+            JFormattedTextField field = ((JSpinner.DefaultEditor) getEditor()).getTextField();
+            field.setBackground(background);
+            field.setForeground(foreground);
+            setEnabled(max > 0);
+            return this;
+        }
+    }
+
+    private final class SoLuongTraCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JSpinner spinner = new JSpinner();
+
+        private SoLuongTraCellEditor() {
+            JFormattedTextField field = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+            field.setHorizontalAlignment(SwingConstants.CENTER);
+            spinner.setToolTipText("Dùng mũi tên lên/xuống để nhập số lượng trả");
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return spinner.getValue();
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            try {
+                spinner.commitEdit();
+            } catch (ParseException e) {
+                return false;
+            }
+            return super.stopCellEditing();
+        }
+
+        @Override
+        public java.awt.Component getTableCellEditorComponent(
+                JTable table, Object value, boolean isSelected, int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            int max = getSoLuongToiDaTra(modelRow);
+            int initial = value instanceof Number ? ((Number) value).intValue() : 0;
+            spinner.setModel(new SpinnerNumberModel(Math.max(0, Math.min(initial, max)), 0, max, 1));
+            return spinner;
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject event) {
+            return !(event instanceof MouseEvent)
+                    || ((MouseEvent) event).getClickCount() >= 1;
+        }
     }
 
     private JPanel createExchangeCard() {
@@ -391,16 +484,16 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         modelHangTra.setRowCount(0);
         modelHangDoi.setRowCount(0);
         pChiTiet.setVisible(false);
-        String maHoaDon = txtMaHoaDon.getText().trim();
-        if (maHoaDon.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã hóa đơn gốc.",
+        HoaDonTuyChon hoaDonDuocChon = (HoaDonTuyChon) cboHoaDon.getSelectedItem();
+        if (hoaDonDuocChon == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn gốc.",
                     "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-            txtMaHoaDon.requestFocusInWindow();
+            cboHoaDon.requestFocusInWindow();
             return;
         }
 
         try {
-            hoaDonDangXuLy = phieuTraHangDao.timHoaDon(maHoaDon);
+            hoaDonDangXuLy = phieuTraHangDao.timHoaDon(hoaDonDuocChon.getMaHoaDon());
             lblThongTinHoaDon.setText("Hóa đơn: " + hoaDonDangXuLy.getMaHoaDon()
                     + "    |    Khách hàng: " + hoaDonDangXuLy.getTenKhachHang()
                     + "    |    Tổng thanh toán: "
@@ -434,6 +527,20 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         capNhatTongTien();
         revalidate();
         repaint();
+    }
+
+    private void napDanhSachHoaDon() {
+        cboHoaDon.removeAllItems();
+        try {
+            for (HoaDonTuyChon hoaDon : phieuTraHangDao.getHoaDonDaThanhToan()) {
+                cboHoaDon.addItem(hoaDon);
+            }
+            cboHoaDon.setSelectedIndex(-1);
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tải danh sách hóa đơn:\n" + exception.getMessage(),
+                    "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void napSanPhamDoi() {
@@ -680,7 +787,8 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
 
     private void xoaForm() {
         hoaDonDangXuLy = null;
-        txtMaHoaDon.setText("");
+        napDanhSachHoaDon();
+        cboHoaDon.setSelectedIndex(-1);
         txtGhiChu.setText("");
         modelHangTra.setRowCount(0);
         modelHangDoi.setRowCount(0);
@@ -688,7 +796,7 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         pChiTiet.setVisible(false);
         pHangDoi.setVisible(false);
         capNhatTongTien();
-        txtMaHoaDon.requestFocusInWindow();
+        cboHoaDon.requestFocusInWindow();
     }
 
     private String tien(double amount) {
