@@ -276,20 +276,6 @@ public class LoginFrame extends JDialog {
         row.fill = GridBagConstraints.HORIZONTAL;
         form.add(passwordInput, row);
 
-        JLabel hint = new JLabel(
-                "<html>ⓘ Quản lý: <b>admin / admin</b>"
-                        + " &nbsp;|&nbsp; Nhân viên: <b>nv / nv</b></html>");
-        hint.setForeground(DARK_RED);
-        hint.setBackground(new Color(255, 248, 248));
-        hint.setOpaque(true);
-        hint.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(240, 205, 205)),
-                new EmptyBorder(10, 12, 10, 12)));
-        hint.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        row.gridy++;
-        row.insets = new Insets(0, 0, 22, 0);
-        form.add(hint, row);
-
         JPanel actions = new JPanel(new BorderLayout(12, 0));
         actions.setOpaque(false);
         actions.setPreferredSize(new Dimension(0, 52));
@@ -420,8 +406,12 @@ public class LoginFrame extends JDialog {
                 connection.commit();
             }
         } catch (java.sql.SQLException exception) {
+            String detail = exception.getMessage();
+            if (detail == null || detail.trim().isEmpty()) {
+                detail = exception.getClass().getSimpleName();
+            }
             JOptionPane.showMessageDialog(this,
-                    "Không thể xử lý đăng nhập với cơ sở dữ liệu.",
+                    "Không thể xử lý đăng nhập với cơ sở dữ liệu:\n" + detail,
                     "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
             passwordField.requestFocusInWindow();
