@@ -8,6 +8,7 @@ import entity.PhieuNhapKho;
 import entity.SanPham;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,13 @@ public class PhieuNhapKho_DAO {
         if (pn == null || chiTietList == null || chiTietList.isEmpty()) {
             throw new IllegalArgumentException("Thông tin phiếu nhập không hợp lệ.");
         }
+        if (pn.getNhaCungCap() == null || pn.getNhaCungCap().getMaNhaCungCap() == null
+                || pn.getNgayNhap() == null) {
+            throw new IllegalArgumentException("Phiếu nhập phải có nhà cung cấp và ngày nhập.");
+        }
+        boolean denNgayNhap = !new java.sql.Date(pn.getNgayNhap().getTime())
+                .toLocalDate().isAfter(LocalDate.now());
+        pn.setTrangThai(denNgayNhap ? "Đã nhập" : "Đang nhập");
 
         String sqlPN = "INSERT INTO PhieuNhapKho (maPhieuNhap, maNhaCungCap, maNhanVien, ngayNhap, "
                 + "tongSoLuong, tongTienNhap, trangThai, ghiChu, ngayTao, ngayCapNhat) "
@@ -42,21 +50,18 @@ public class PhieuNhapKho_DAO {
                 + "thanhTien, ngaySanXuat, hanSuDung, ghiChu) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        // Check if database trigger trg_ChiTietPhieuNhap_Insert is enabled
-        boolean triggerActive = false;
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement psCheck = con.prepareStatement(
-                     "SELECT is_disabled FROM sys.triggers WHERE name = 'trg_ChiTietPhieuNhap_Insert'")) {
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    triggerActive = !rs.getBoolean("is_disabled");
-                }
-            }
-        } catch (Exception ignored) {}
-
         try (Connection con = ConnectDB.getConnection()) {
             con.setAutoCommit(false);
             try {
+                boolean triggerActive;
+                try (PreparedStatement psCheck = con.prepareStatement(
+                        "SELECT is_disabled FROM sys.triggers "
+                                + "WHERE name = 'trg_ChiTietPhieuNhap_Insert'")) {
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        triggerActive = rs.next() && !rs.getBoolean("is_disabled");
+                    }
+                }
+
                 // 1. Insert PhieuNhapKho
                 try (PreparedStatement ps = con.prepareStatement(sqlPN)) {
                     ps.setString(1, pn.getMaPhieuNhap());
@@ -94,9 +99,10 @@ public class PhieuNhapKho_DAO {
                     ps.executeBatch();
                 }
 
-                // 3. Cập nhật tồn kho nếu trigger không kích hoạt
-                if (!triggerActive) {
-                    String sqlUpdateStock = "UPDATE SanPham SET soLuongTon = soLuongTon + ?, ngayCapNhat = GETDATE() WHERE maSanPham = ?";
+                // Trigger handles eligible receipts; this is the fallback when it is absent or disabled.
+                if (!triggerActive && denNgayNhap) {
+                    String sqlUpdateStock = "UPDATE SanPham SET soLuongTon = soLuongTon + ?, "
+                            + "ngayCapNhat = GETDATE() WHERE maSanPham = ?";
                     try (PreparedStatement ps = con.prepareStatement(sqlUpdateStock)) {
                         for (ChiTietPhieuNhap ct : chiTietList) {
                             ps.setInt(1, ct.getSoLuongNhap());
@@ -109,9 +115,95 @@ public class PhieuNhapKho_DAO {
 
                 con.commit();
                 return true;
-            } catch (SQLException e) {
-                con.rollback();
-                throw e;
+            } catch (SQLException exception) {
+                try {
+                    con.rollback();
+                } catch (SQLException rollbackException) {
+                    exception.addSuppressed(rollbackException);
+                }
+                throw exception;
+            }
+        }
+    }
+
+    public List<SanPham> getSanPhamNhapKho() throws SQLException {
+        List<SanPham> sanPhamList = new ArrayList<>();
+        String sql = "SELECT sp.*, dm.tenDanhMuc FROM SanPham sp "
+                + "JOIN DanhMuc dm ON dm.maDanhMuc = sp.maDanhMuc "
+                + "WHERE sp.trangThai IN (N'Đang kinh doanh', N'Hết hàng') "
+                + "ORDER BY sp.maSanPham";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    sanPhamList.add(new SanPham(
+                            rs.getString("maSanPham"),
+                            rs.getString("tenSanPham"),
+                            new entity.DanhMuc(rs.getString("maDanhMuc")),
+                            rs.getString("moTa"),
+                            rs.getString("thuongHieu"),
+                            rs.getString("xuatXu"),
+                            rs.getString("donViTinh"),
+                            rs.getDouble("giaNhap"),
+                            rs.getDouble("giaBan"),
+                            rs.getInt("soLuongTon"),
+                            rs.getInt("soLuongToiThieu"),
+                            rs.getString("maSKU"),
+                            rs.getString("maVach"),
+                            rs.getDouble("trongLuong"),
+                            rs.getString("kichThuoc"),
+                            rs.getString("hinhAnh"),
+                            rs.getString("trangThai"),
+                            rs.getTimestamp("ngayTao"),
+                            rs.getTimestamp("ngayCapNhat")));
+                }
+            }
+        }
+        return sanPhamList;
+    }
+
+    public int capNhatPhieuNhapDenHan() throws SQLException {
+        String sql = "DECLARE @PhieuDenHan TABLE (maPhieuNhap NVARCHAR(20) PRIMARY KEY); "
+                + "UPDATE PhieuNhapKho SET trangThai = N'Đã nhập', ngayCapNhat = GETDATE() "
+                + "OUTPUT inserted.maPhieuNhap INTO @PhieuDenHan "
+                + "WHERE trangThai = N'Đang nhập' "
+                + "AND CAST(ngayNhap AS DATE) <= CAST(GETDATE() AS DATE); "
+                + "UPDATE sp SET sp.soLuongTon = sp.soLuongTon + nhap.soLuongNhap, "
+                + "sp.ngayCapNhat = GETDATE() FROM SanPham sp "
+                + "JOIN (SELECT ct.maSanPham, SUM(ct.soLuongNhap) AS soLuongNhap "
+                + "FROM ChiTietPhieuNhap ct JOIN @PhieuDenHan denHan "
+                + "ON denHan.maPhieuNhap = ct.maPhieuNhap "
+                + "GROUP BY ct.maSanPham) nhap ON nhap.maSanPham = sp.maSanPham";
+
+        try (Connection con = ConnectDB.getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                int affectedProducts;
+                try (Statement stmt = con.createStatement()) {
+                    boolean hasResult = stmt.execute(sql);
+                    affectedProducts = 0;
+                    while (hasResult || stmt.getUpdateCount() != -1) {
+                        if (hasResult) {
+                            try (ResultSet rs = stmt.getResultSet()) {
+                                while (rs.next()) {
+                                    affectedProducts = rs.getInt(1);
+                                }
+                            }
+                        } else if (stmt.getUpdateCount() >= 0) {
+                            affectedProducts = stmt.getUpdateCount();
+                        }
+                        hasResult = stmt.getMoreResults();
+                    }
+                }
+                con.commit();
+                return affectedProducts;
+            } catch (SQLException exception) {
+                try {
+                    con.rollback();
+                } catch (SQLException rollbackException) {
+                    exception.addSuppressed(rollbackException);
+                }
+                throw exception;
             }
         }
     }

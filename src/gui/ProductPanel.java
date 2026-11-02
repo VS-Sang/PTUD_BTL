@@ -6,6 +6,10 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -22,6 +26,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -34,10 +39,13 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.SanPham_DAO;
+import DAO.PhieuNhapKho_DAO;
 import entity.DanhMuc;
 import entity.SanPham;
 
@@ -216,6 +224,12 @@ public class ProductPanel extends JFrame implements ActionListener {
         add(pCenterContainer, BorderLayout.CENTER);
 
         // Đọc dữ liệu từ Database
+        try {
+            new PhieuNhapKho_DAO().capNhatPhieuNhapDenHan();
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể cập nhật các phiếu nhập đã đến ngày:\n"
+                    + exception.getMessage(), "Lỗi cập nhật tồn kho", JOptionPane.ERROR_MESSAGE);
+        }
         docDuLieuDatabaseVaoTable();
 
         txtSearch.addActionListener(this);
@@ -360,8 +374,8 @@ public class ProductPanel extends JFrame implements ActionListener {
         }
 
         JDialog dialog = new JDialog(this, "Thêm mới sản phẩm", true);
-        JPanel form = new JPanel(new GridLayout(0, 2, 8, 8));
-        form.setBorder(BorderFactory.createEmptyBorder(12, 12, 4, 12));
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
         JTextField nameField = new JTextField(20);
         JComboBox<DanhMuc> categoryField = new JComboBox<>();
         for (DanhMuc danhMuc : danhMucList) {
@@ -374,29 +388,55 @@ public class ProductPanel extends JFrame implements ActionListener {
         JTextField unitField = new JTextField("Cái");
         JComboBox<String> statusField = new JComboBox<>(
                 new String[]{"Đang kinh doanh", "Ngừng kinh doanh", "Hết hàng"});
-        JTextArea descriptionField = new JTextArea(3, 20);
-        form.add(new JLabel("Tên sản phẩm:"));
-        form.add(nameField);
-        form.add(new JLabel("Danh mục:"));
-        form.add(categoryField);
-        form.add(new JLabel("Thương hiệu:"));
-        form.add(brandField);
-        form.add(new JLabel("Giá nhập:"));
-        form.add(importPriceField);
-        form.add(new JLabel("Giá bán:"));
-        form.add(salePriceField);
-        form.add(new JLabel("Tồn kho:"));
-        form.add(stockField);
-        form.add(new JLabel("Đơn vị:"));
-        form.add(unitField);
-        form.add(new JLabel("Trạng thái:"));
-        form.add(statusField);
-        form.add(new JLabel("Mô tả:"));
-        form.add(new JScrollPane(descriptionField));
+        JTextArea descriptionField = new JTextArea(4, 20);
+        descriptionField.setLineWrap(true);
+        descriptionField.setWrapStyleWord(true);
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton addButton = new JButton("Thêm");
+        styleProductInput(nameField);
+        styleProductInput(categoryField);
+        styleProductInput(brandField);
+        styleProductInput(importPriceField);
+        styleProductInput(salePriceField);
+        styleProductInput(stockField);
+        styleProductInput(unitField);
+        styleProductInput(statusField);
+        descriptionField.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        descriptionField.setBorder(new EmptyBorder(10, 12, 10, 12));
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(Color.WHITE);
+        form.setBorder(new EmptyBorder(10, 26, 20, 26));
+        GridBagConstraints fields = new GridBagConstraints();
+        fields.insets = new Insets(8, 0, 8, 12);
+        fields.fill = GridBagConstraints.HORIZONTAL;
+        fields.weightx = 1;
+        addProductField(form, fields, 0, 0, 2, "Tên sản phẩm", nameField, 0);
+        addProductField(form, fields, 1, 0, 1, "Danh mục", categoryField, 0);
+        addProductField(form, fields, 1, 1, 1, "Thương hiệu", brandField, 0);
+        addProductField(form, fields, 2, 0, 1, "Giá nhập", importPriceField, 0);
+        addProductField(form, fields, 2, 1, 1, "Giá bán", salePriceField, 0);
+        addProductField(form, fields, 3, 0, 1, "Tồn kho", stockField, 0);
+        addProductField(form, fields, 3, 1, 1, "Đơn vị", unitField, 0);
+        addProductField(form, fields, 4, 0, 2, "Trạng thái", statusField, 0);
+        addProductField(form, fields, 5, 0, 2, "Mô tả",
+                new JScrollPane(descriptionField), 1);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        buttons.setBackground(Color.WHITE);
+        buttons.setBorder(new EmptyBorder(12, 20, 20, 26));
+        JButton addButton = new JButton("Thêm mới  +");
+        addButton.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        addButton.setForeground(Color.WHITE);
+        addButton.setBackground(new Color(190, 40, 40));
+        addButton.setFocusPainted(false);
+        addButton.setBorder(new EmptyBorder(11, 22, 11, 22));
+        addButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         JButton cancelButton = new JButton("Hủy");
+        cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        cancelButton.setForeground(new Color(55, 55, 55));
+        cancelButton.setBackground(new Color(240, 240, 240));
+        cancelButton.setFocusPainted(false);
+        cancelButton.setBorder(new EmptyBorder(11, 24, 11, 24));
         buttons.add(addButton);
         buttons.add(cancelButton);
         addButton.addActionListener(event -> {
@@ -442,12 +482,63 @@ public class ProductPanel extends JFrame implements ActionListener {
             }
         });
         cancelButton.addActionListener(event -> dialog.dispose());
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        header.setBorder(new EmptyBorder(22, 26, 0, 20));
+        JLabel title = new JLabel("Thêm mới sản phẩm");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 23));
+        title.setForeground(new Color(35, 45, 60));
+        JButton closeButton = new JButton("×");
+        closeButton.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+        closeButton.setForeground(new Color(105, 110, 120));
+        closeButton.setBackground(Color.WHITE);
+        closeButton.setBorderPainted(false);
+        closeButton.setFocusPainted(false);
+        closeButton.addActionListener(event -> dialog.dispose());
+        header.add(title, BorderLayout.CENTER);
+        header.add(closeButton, BorderLayout.EAST);
         dialog.setLayout(new BorderLayout());
+        dialog.getContentPane().setBackground(Color.WHITE);
+        dialog.add(header, BorderLayout.NORTH);
         dialog.add(form, BorderLayout.CENTER);
         dialog.add(buttons, BorderLayout.SOUTH);
-        dialog.pack();
+        Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setSize(Math.min(780, screen.width - 60), Math.min(780, screen.height - 60));
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    private void addProductField(JPanel form, GridBagConstraints constraints,
+                                 int row, int column, int span, String labelText,
+                                 Component input, double verticalWeight) {
+        JPanel field = new JPanel(new BorderLayout(0, 8));
+        field.setBackground(Color.WHITE);
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        label.setForeground(new Color(45, 50, 60));
+        field.add(label, BorderLayout.NORTH);
+        if (input instanceof JScrollPane) {
+            ((JScrollPane) input).setBorder(new LineBorder(new Color(175, 180, 187), 1));
+            ((JScrollPane) input).setPreferredSize(new Dimension(100, 145));
+        }
+        field.add(input, BorderLayout.CENTER);
+        constraints.gridx = column;
+        constraints.gridy = row;
+        constraints.gridwidth = span;
+        constraints.weighty = verticalWeight;
+        constraints.fill = verticalWeight > 0
+                ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(8, column == 1 ? 12 : 0, 8, 12);
+        form.add(field, constraints);
+    }
+
+    private void styleProductInput(JComponent input) {
+        input.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        input.setBackground(Color.WHITE);
+        input.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(175, 180, 187), 1),
+                new EmptyBorder(8, 12, 8, 12)));
+        input.setPreferredSize(new Dimension(100, 48));
     }
 
     public static void main(String[] args) {

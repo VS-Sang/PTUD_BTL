@@ -2,31 +2,24 @@ package gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 
 import DAO.NhaCungCap_DAO;
 import DAO.NhanVien_DAO;
 import DAO.PhieuNhapKho_DAO;
-import DAO.SanPham_DAO;
 import entity.ChiTietPhieuNhap;
-import org.jdatepicker.impl.JDatePanelImpl;
-import org.jdatepicker.impl.JDatePickerImpl;
-import org.jdatepicker.impl.UtilDateModel;
-import java.text.ParseException;
-import java.util.Properties;
-
 import entity.NhaCungCap;
 import entity.NhanVien;
 import entity.PhieuNhapKho;
@@ -45,13 +38,12 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
 
     private MenuPanel menuPanel;
     private JTextField txtMaPhieuNhap;
-    private JDatePickerImpl datePickerNgayNhap;
-    private UtilDateModel modelNgayNhap;
+    private JTextField txtNgayNhap;
     private JTextField txtNguoiLap;
-    private JComboBox<Object> cboNhaCungCap;
+    private JComboBox<NhaCungCap> cboNhaCungCap;
     private JComboBox<String> cboKhoNhap;
 
-    private JComboBox<Object> cboSanPham;
+    private JComboBox<SanPham> cboSanPham;
     private JSpinner spnSoLuong;
     private JButton btnThem;
 
@@ -65,9 +57,10 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     private JButton btnIn;
     private JButton btnLamMoi;
     private boolean phieuDaLuu;
+    private NhaCungCap nhaCungCapDaChon;
+    private boolean dangCapNhatNhaCungCap;
 
     private final NhaCungCap_DAO nhaCungCapDao = new NhaCungCap_DAO();
-    private final SanPham_DAO sanPhamDao = new SanPham_DAO();
     private final PhieuNhapKho_DAO phieuNhapKhoDao = new PhieuNhapKho_DAO();
     private final NhanVien_DAO nhanVienDao = new NhanVien_DAO();
 
@@ -118,6 +111,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         add(pMain, BorderLayout.CENTER);
 
         loadDataCombobox();
+        cboNhaCungCap.addActionListener(event -> thayDoiNhaCungCap());
         lamMoiForm();
     }
 
@@ -151,7 +145,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         btnLuuPhieu.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLuuPhieu.addActionListener(this);
 
-        btnIn = new JButton("In");
+        btnIn = new JButton("Xuất PDF");
         btnIn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnIn.setForeground(Color.WHITE);
         btnIn.setBackground(new Color(54, 103, 193));
@@ -245,9 +239,14 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         body.add(txtMaPhieuNhap, gbc);
 
         gbc.gridx = 1;
-        modelNgayNhap = new UtilDateModel();
-        datePickerNgayNhap = taoDatePicker(modelNgayNhap, new Date());
-        body.add(datePickerNgayNhap, gbc);
+        txtNgayNhap = new JTextField(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        txtNgayNhap.setEditable(false);
+        txtNgayNhap.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        txtNgayNhap.setBackground(new Color(245, 245, 245));
+        txtNgayNhap.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_GRAY, 1),
+                new EmptyBorder(5, 8, 5, 8)));
+        body.add(txtNgayNhap, gbc);
 
         gbc.gridx = 2;
         txtNguoiLap = new JTextField(currentUserName);
@@ -295,39 +294,6 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
 
         card.add(body, BorderLayout.CENTER);
         return card;
-    }
-
-    private JDatePickerImpl taoDatePicker(UtilDateModel model, Date defaultDate) {
-        if (defaultDate != null) {
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            cal.setTime(defaultDate);
-            model.setDate(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH));
-            model.setSelected(true);
-        }
-        Properties p = new Properties();
-        p.put("text.today", "Hôm nay");
-        p.put("text.month", "Tháng");
-        p.put("text.year", "Năm");
-        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
-        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new JFormattedTextField.AbstractFormatter() {
-            private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-
-            @Override
-            public Object stringToValue(String text) throws ParseException {
-                return dateFormatter.parseObject(text);
-            }
-
-            @Override
-            public String valueToString(Object value) throws ParseException {
-                if (value != null) {
-                    java.util.Calendar cal = (java.util.Calendar) value;
-                    return dateFormatter.format(cal.getTime());
-                }
-                return "";
-            }
-        });
-        datePicker.setBackground(Color.WHITE);
-        return datePicker;
     }
 
     private JPanel createCardDanhSachHang() {
@@ -511,22 +477,107 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     private void loadDataCombobox() {
-        // Load NCC
-        listNhaCungCap.clear();
-        cboNhaCungCap.removeAllItems();
-        cboNhaCungCap.addItem("-- Chọn NCC --");
-        listNhaCungCap.addAll(nhaCungCapDao.getAllNhaCungCap());
-        for (NhaCungCap ncc : listNhaCungCap) {
-            cboNhaCungCap.addItem(ncc.getTenNhaCungCap());
+        try {
+            phieuNhapKhoDao.capNhatPhieuNhapDenHan();
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể cập nhật các phiếu nhập đã đến ngày:\n" + exception.getMessage(),
+                    "Lỗi cập nhật tồn kho", JOptionPane.ERROR_MESSAGE);
         }
 
-        // Load SanPham
+        listNhaCungCap.clear();
+        cboNhaCungCap.removeAllItems();
+        cboNhaCungCap.addItem(null);
+        listNhaCungCap.addAll(nhaCungCapDao.getAllNhaCungCap());
+        for (NhaCungCap nhaCungCap : listNhaCungCap) {
+            cboNhaCungCap.addItem(nhaCungCap);
+        }
+        cboSanPham.removeAllItems();
+        cboSanPham.addItem(null);
+        cboNhaCungCap.setRenderer((list, value, index, selected, focus) -> {
+            JLabel label = new JLabel(value == null ? "-- Chọn nhà cung cấp --" : value.getTenNhaCungCap());
+            label.setOpaque(true);
+            label.setBorder(new EmptyBorder(3, 5, 3, 5));
+            if (selected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
+            }
+            return label;
+        });
+        cboSanPham.setRenderer((list, value, index, selected, focus) -> {
+            String text = value == null
+                    ? (cboNhaCungCap.getSelectedItem() == null
+                            ? "-- Chọn nhà cung cấp trước --"
+                            : listSanPham.isEmpty()
+                                    ? "-- Chưa có sản phẩm trong danh mục --"
+                                    : "-- Chọn sản phẩm --")
+                    : value.getMaSanPham() + " - " + value.getTenSanPham()
+                            + " (Giá nhập: " + MONEY_FORMAT.format(value.getGiaNhap()) + "đ)";
+            JLabel label = new JLabel(text);
+            label.setOpaque(true);
+            label.setBorder(new EmptyBorder(3, 5, 3, 5));
+            if (selected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
+            }
+            return label;
+        });
+        cboSanPham.setEnabled(false);
+    }
+
+    private void thayDoiNhaCungCap() {
+        if (dangCapNhatNhaCungCap) {
+            return;
+        }
+        NhaCungCap nhaCungCapMoi = (NhaCungCap) cboNhaCungCap.getSelectedItem();
+        boolean cungNhaCungCap = nhaCungCapDaChon == null
+                ? nhaCungCapMoi == null
+                : nhaCungCapMoi != null && nhaCungCapDaChon.getMaNhaCungCap()
+                        .equals(nhaCungCapMoi.getMaNhaCungCap());
+        if (cungNhaCungCap) {
+            return;
+        }
+
+        if (tableModel.getRowCount() > 0) {
+            int choice = JOptionPane.showConfirmDialog(this,
+                    "Đổi nhà cung cấp sẽ xóa các sản phẩm đã thêm vào phiếu. Bạn có muốn tiếp tục?",
+                    "Đổi nhà cung cấp", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (choice != JOptionPane.YES_OPTION) {
+                dangCapNhatNhaCungCap = true;
+                cboNhaCungCap.setSelectedItem(nhaCungCapDaChon);
+                dangCapNhatNhaCungCap = false;
+                return;
+            }
+            tableModel.setRowCount(0);
+            capNhatTongGiaTri();
+        }
+
+        nhaCungCapDaChon = nhaCungCapMoi;
         listSanPham.clear();
         cboSanPham.removeAllItems();
-        cboSanPham.addItem("-- Chọn sản phẩm nhập --");
-        listSanPham.addAll(sanPhamDao.getAllSanPham());
-        for (SanPham sp : listSanPham) {
-            cboSanPham.addItem(sp.getMaSanPham() + " - " + sp.getTenSanPham() + " (Giá nhập: " + MONEY_FORMAT.format(sp.getGiaNhap()) + "đ)");
+        cboSanPham.addItem(null);
+        cboSanPham.setEnabled(nhaCungCapMoi != null);
+        btnThem.setEnabled(false);
+        if (nhaCungCapMoi == null) {
+            return;
+        }
+
+        try {
+            listSanPham.addAll(phieuNhapKhoDao.getSanPhamNhapKho());
+            for (SanPham sanPham : listSanPham) {
+                cboSanPham.addItem(sanPham);
+            }
+            btnThem.setEnabled(!listSanPham.isEmpty());
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tải sản phẩm của nhà cung cấp:\n" + exception.getMessage(),
+                    "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -535,14 +586,20 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         btnLuuPhieu.setEnabled(true);
         btnIn.setEnabled(false);
         setPhieuInputsEnabled(true);
+        nhaCungCapDaChon = null;
+        dangCapNhatNhaCungCap = true;
         txtMaPhieuNhap.setText(phieuNhapKhoDao.sinhMaPhieuNhap());
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        modelNgayNhap.setDate(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH));
-        modelNgayNhap.setSelected(true);
+        txtNgayNhap.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
         txtNguoiLap.setText(currentUserName);
         if (cboNhaCungCap.getItemCount() > 0) {
             cboNhaCungCap.setSelectedIndex(0);
         }
+        dangCapNhatNhaCungCap = false;
+        listSanPham.clear();
+        cboSanPham.removeAllItems();
+        cboSanPham.addItem(null);
+        cboSanPham.setEnabled(false);
+        btnThem.setEnabled(false);
         if (cboKhoNhap.getItemCount() > 0) {
             cboKhoNhap.setSelectedIndex(0);
         }
@@ -556,14 +613,13 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     private void themSanPhamVaoBang() {
-        int spIndex = cboSanPham.getSelectedIndex();
-        if (spIndex <= 0 || spIndex - 1 >= listSanPham.size()) {
+        SanPham sp = (SanPham) cboSanPham.getSelectedItem();
+        if (sp == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần nhập!", "Chưa chọn sản phẩm", JOptionPane.WARNING_MESSAGE);
             cboSanPham.requestFocus();
             return;
         }
 
-        SanPham sp = listSanPham.get(spIndex - 1);
         int soLuong = (int) spnSoLuong.getValue();
         if (soLuong <= 0) {
             JOptionPane.showMessageDialog(this, "Số lượng nhập phải lớn hơn 0!", "Số lượng không hợp lệ", JOptionPane.WARNING_MESSAGE);
@@ -582,7 +638,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
                 tableModel.setValueAt(slMoi, i, 3);
                 tableModel.setValueAt(MONEY_FORMAT.format(ttMoi) + "đ", i, 4);
                 capNhatTongGiaTri();
-                cboSanPham.setSelectedIndex(0);
+                cboSanPham.setSelectedItem(null);
                 spnSoLuong.setValue(10);
                 return;
             }
@@ -633,7 +689,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
             return;
         }
 
-        NhaCungCap ncc = listNhaCungCap.get(cboNhaCungCap.getSelectedIndex() - 1);
+        NhaCungCap ncc = (NhaCungCap) cboNhaCungCap.getSelectedItem();
 
         // Find logged-in NhanVien
         NhanVien nv = null;
@@ -651,8 +707,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         }
 
         String maPhieu = txtMaPhieuNhap.getText().trim();
-        Date ngayNhap = (Date) modelNgayNhap.getValue();
-        if (ngayNhap == null) ngayNhap = new Date();
+        Date ngayNhap = new Date();
 
         int tongSoLuong = 0;
         double tongTienNhap = 0;
@@ -690,7 +745,10 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this,
                         "Lưu phiếu nhập kho " + maPhieu + " thành công!\n"
                                 + "Tổng số lượng: " + tongSoLuong + "\n"
-                                + "Tổng tiền nhập: " + MONEY_FORMAT.format(tongTienNhap) + "đ",
+                                + "Tổng tiền nhập: " + MONEY_FORMAT.format(tongTienNhap) + "đ"
+                                + (ngayNhap.after(new Date())
+                                        ? "\nPhiếu đang chờ đến ngày nhập; tồn kho chưa được cộng."
+                                        : ""),
                         "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 phieuDaLuu = true;
                 btnLuuPhieu.setEnabled(false);
@@ -706,7 +764,6 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     private void setPhieuInputsEnabled(boolean enabled) {
-        datePickerNgayNhap.setEnabled(enabled);
         cboNhaCungCap.setEnabled(enabled);
         cboKhoNhap.setEnabled(enabled);
         cboSanPham.setEnabled(enabled);
@@ -724,48 +781,64 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         }
 
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Lưu phiếu nhập dạng tệp văn bản");
-        chooser.setSelectedFile(new java.io.File("phieu-nhap-"
-                + txtMaPhieuNhap.getText().trim() + ".txt"));
+        chooser.setDialogTitle("Xuất phiếu nhập PDF");
+        chooser.setFileFilter(new FileNameExtensionFilter("Tệp PDF (*.pdf)", "pdf"));
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setSelectedFile(new File("phieu-nhap-"
+                + txtMaPhieuNhap.getText().trim() + ".pdf"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        java.io.File file = chooser.getSelectedFile();
-        if (!file.getName().toLowerCase().endsWith(".txt")) {
-            file = new java.io.File(file.getParentFile(), file.getName() + ".txt");
+        File file = chooser.getSelectedFile();
+        if (!file.getName().toLowerCase().endsWith(".pdf")) {
+            file = new File(file.getParentFile(), file.getName() + ".pdf");
         }
-        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
-            writer.write("PHIEU NHAP KHO");
-            writer.newLine();
-            writer.write("Ma phieu: " + txtMaPhieuNhap.getText().trim());
-            writer.newLine();
-            writer.write("Ngay nhap: " + (modelNgayNhap.getValue() == null
-                    ? "" : new SimpleDateFormat("dd/MM/yyyy").format(modelNgayNhap.getValue())));
-            writer.newLine();
-            writer.write("Nha cung cap: " + String.valueOf(cboNhaCungCap.getSelectedItem()));
-            writer.newLine();
-            writer.write("Nguoi lap: " + txtNguoiLap.getText().trim());
-            writer.newLine();
-            writer.write("------------------------------------------------------------");
-            writer.newLine();
+        if (file.exists()
+                && JOptionPane.showConfirmDialog(this,
+                        "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
+                        "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION)
+                        != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            List<String[]> rows = new ArrayList<>();
+            int tongSoLuong = 0;
             for (int row = 0; row < tableModel.getRowCount(); row++) {
-                writer.write(tableModel.getValueAt(row, 0) + " | "
-                        + tableModel.getValueAt(row, 1) + " | Don gia: "
-                        + tableModel.getValueAt(row, 2) + " | SL: "
-                        + tableModel.getValueAt(row, 3) + " | Thanh tien: "
-                        + tableModel.getValueAt(row, 4));
-                writer.newLine();
+                int soLuong = (int) tableModel.getValueAt(row, 3);
+                tongSoLuong += soLuong;
+                rows.add(new String[]{
+                        String.valueOf(tableModel.getValueAt(row, 0)),
+                        String.valueOf(tableModel.getValueAt(row, 1)),
+                        String.valueOf(soLuong),
+                        String.valueOf(tableModel.getValueAt(row, 2)),
+                        String.valueOf(tableModel.getValueAt(row, 4))
+                });
             }
-            writer.write(lblTongGiaTri.getText());
-            writer.newLine();
-            writer.write("Ghi chu: " + txtGhiChu.getText().trim());
-            writer.newLine();
-            JOptionPane.showMessageDialog(this, "Đã xuất phiếu nhập ra tệp:\n"
-                    + file.getAbsolutePath(), "In phiếu nhập", JOptionPane.INFORMATION_MESSAGE);
+            String ngayNhap = txtNgayNhap.getText().trim();
+            NhaCungCap nhaCungCap = (NhaCungCap) cboNhaCungCap.getSelectedItem();
+            List<String[]> metadata = Arrays.asList(
+                    new String[]{"Ngày nhập", ngayNhap,
+                            "Nhà cung cấp", nhaCungCap == null
+                                    ? "" : nhaCungCap.getTenNhaCungCap()},
+                    new String[]{"Người lập", txtNguoiLap.getText().trim(),
+                            "Kho nhập", String.valueOf(cboKhoNhap.getSelectedItem())});
+            List<String[]> totals = Arrays.asList(
+                    new String[]{"Tổng số lượng", String.valueOf(tongSoLuong)},
+                    new String[]{"Tổng giá trị nhập", lblTongGiaTri.getText()
+                            .replace("Tổng giá trị nhập: ", ""), "true"});
+            PdfDocumentExporter.write(file, "PHIẾU NHẬP KHO",
+                    txtMaPhieuNhap.getText().trim(), metadata, "CHI TIẾT HÀNG NHẬP",
+                    Arrays.asList("MÃ SP", "TÊN SẢN PHẨM", "SL NHẬP",
+                            "ĐƠN GIÁ", "THÀNH TIỀN"),
+                    rows, new double[]{0.12, 0.36, 0.12, 0.18, 0.22},
+                    totals, "Ghi chú: " + txtGhiChu.getText().trim());
+            JOptionPane.showMessageDialog(this, "Đã xuất phiếu nhập PDF:\n"
+                    + file.getAbsolutePath(), "Xuất phiếu nhập",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
             JOptionPane.showMessageDialog(this, "Không thể xuất phiếu nhập:\n"
-                    + exception.getMessage(), "Lỗi ghi tệp", JOptionPane.ERROR_MESSAGE);
+                    + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
     }
 

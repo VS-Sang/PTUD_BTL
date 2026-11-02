@@ -14,7 +14,8 @@ public class NhaCungCap_DAO {
 
     public ArrayList<NhaCungCap> getAllNhaCungCap() {
         ArrayList<NhaCungCap> list = new ArrayList<>();
-        String sql = "SELECT * FROM NhaCungCap ORDER BY maNhaCungCap";
+        String sql = "SELECT * FROM NhaCungCap "
+                + "WHERE trangThai = N'Hoạt động' ORDER BY maNhaCungCap";
         try (Connection con = ConnectDB.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
