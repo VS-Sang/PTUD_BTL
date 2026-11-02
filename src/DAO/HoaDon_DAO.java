@@ -108,6 +108,177 @@ public class HoaDon_DAO {
                 tienKhachDua, maKhuyenMai, tienGiamGiaTrucTiep, 0, thueVAT, ghiChu);
     }
 
+    public void capNhatThuNganHoaDon(String maHoaDon, String maNhanVien) throws SQLException {
+        if (maHoaDon == null || maHoaDon.trim().isEmpty()
+                || maNhanVien == null || maNhanVien.trim().isEmpty()) {
+            throw new IllegalArgumentException("Hóa đơn và nhân viên phải được chọn.");
+        }
+
+        try (Connection con = ConnectDB.getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                String maDonHang;
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "SELECT maDonHang FROM HoaDon WITH (UPDLOCK, HOLDLOCK) WHERE maHoaDon = ?")) {
+                    stmt.setString(1, maHoaDon);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new SQLException("Không tìm thấy hóa đơn cần cập nhật.");
+                        }
+                        maDonHang = rs.getString("maDonHang");
+                    }
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "UPDATE HoaDon SET maNhanVien = ?, ngayCapNhat = GETDATE() WHERE maHoaDon = ?")) {
+                    stmt.setString(1, maNhanVien);
+                    stmt.setString(2, maHoaDon);
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Không thể cập nhật nhân viên trên hóa đơn.");
+                    }
+                }
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "UPDATE DonHang SET maNhanVien = ?, ngayCapNhat = GETDATE() WHERE maDonHang = ?")) {
+                    stmt.setString(1, maNhanVien);
+                    stmt.setString(2, maDonHang);
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Không thể đồng bộ nhân viên trên đơn hàng.");
+                    }
+                }
+                con.commit();
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    con.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
+        }
+    }
+
+    public void xoaHoaDon(String maHoaDon) throws SQLException {
+        if (maHoaDon == null || maHoaDon.trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã hóa đơn không hợp lệ.");
+        }
+
+        try (Connection con = ConnectDB.getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                String maDonHang;
+                String maKhachHang;
+                String maKhuyenMai;
+                double tongThanhToan;
+                String sqlThongTin = "SELECT hd.maDonHang, hd.maKhachHang, hd.tongThanhToan, "
+                        + "dh.maKhuyenMai FROM HoaDon hd WITH (UPDLOCK, HOLDLOCK) "
+                        + "JOIN DonHang dh WITH (UPDLOCK, HOLDLOCK) ON dh.maDonHang = hd.maDonHang "
+                        + "WHERE hd.maHoaDon = ?";
+                try (PreparedStatement stmt = con.prepareStatement(sqlThongTin)) {
+                    stmt.setString(1, maHoaDon);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new SQLException("Không tìm thấy hóa đơn cần xóa.");
+                        }
+                        maDonHang = rs.getString("maDonHang");
+                        maKhachHang = rs.getString("maKhachHang");
+                        tongThanhToan = rs.getDouble("tongThanhToan");
+                        maKhuyenMai = rs.getString("maKhuyenMai");
+                    }
+                }
+
+                if (coBanGhi(con, "SELECT 1 FROM PhieuTraHang WHERE maHoaDon = ?", maHoaDon)) {
+                    throw new SQLException("Không thể xóa hóa đơn đã phát sinh phiếu trả hàng.");
+                }
+                if (coBanGhi(con,
+                        "SELECT 1 FROM LichSuDiemThuong WHERE maHoaDon = ? OR maDonHang = ?",
+                        maHoaDon, maDonHang)) {
+                    throw new SQLException("Không thể xóa hóa đơn đã có lịch sử điểm thưởng.");
+                }
+                if (coBanGhi(con, "SELECT 1 FROM PhieuXuatKho WHERE maDonHang = ?", maDonHang)) {
+                    throw new SQLException("Không thể xóa hóa đơn đã liên kết với phiếu xuất kho.");
+                }
+
+                String sqlHoanKho = "UPDATE sp SET sp.soLuongTon = sp.soLuongTon + ct.soLuong, "
+                        + "sp.trangThai = CASE WHEN sp.trangThai = N'Hết hàng' "
+                        + "THEN N'Đang kinh doanh' ELSE sp.trangThai END, "
+                        + "sp.ngayCapNhat = GETDATE() FROM SanPham sp "
+                        + "JOIN ChiTietDonHang ct ON ct.maSanPham = sp.maSanPham "
+                        + "WHERE ct.maDonHang = ?";
+                try (PreparedStatement stmt = con.prepareStatement(sqlHoanKho)) {
+                    stmt.setString(1, maDonHang);
+                    stmt.executeUpdate();
+                }
+
+                if (maKhachHang != null) {
+                    String sqlCapNhatKhachHang = "UPDATE KhachHang SET "
+                            + "tongChiTieu = CASE WHEN tongChiTieu >= ? THEN tongChiTieu - ? ELSE 0 END, "
+                            + "soLanMuaHang = CASE WHEN soLanMuaHang > 0 THEN soLanMuaHang - 1 ELSE 0 END, "
+                            + "lanMuaGanNhat = (SELECT MAX(ngayLapHoaDon) FROM HoaDon "
+                            + "WHERE maKhachHang = ? AND maHoaDon <> ?), ngayCapNhat = GETDATE() "
+                            + "WHERE maKhachHang = ?";
+                    try (PreparedStatement stmt = con.prepareStatement(sqlCapNhatKhachHang)) {
+                        stmt.setDouble(1, tongThanhToan);
+                        stmt.setDouble(2, tongThanhToan);
+                        stmt.setString(3, maKhachHang);
+                        stmt.setString(4, maHoaDon);
+                        stmt.setString(5, maKhachHang);
+                        stmt.executeUpdate();
+                    }
+                }
+
+                if (maKhuyenMai != null) {
+                    try (PreparedStatement stmt = con.prepareStatement(
+                            "UPDATE KhuyenMai SET soLuongDaSuDung = "
+                                    + "CASE WHEN soLuongDaSuDung > 0 THEN soLuongDaSuDung - 1 ELSE 0 END, "
+                                    + "ngayCapNhat = GETDATE() WHERE maKhuyenMai = ?")) {
+                        stmt.setString(1, maKhuyenMai);
+                        stmt.executeUpdate();
+                    }
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "DELETE FROM ChiTietDonHang WHERE maDonHang = ?")) {
+                    stmt.setString(1, maDonHang);
+                    stmt.executeUpdate();
+                }
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "DELETE FROM HoaDon WHERE maHoaDon = ?")) {
+                    stmt.setString(1, maHoaDon);
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Không thể xóa hóa đơn.");
+                    }
+                }
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "DELETE FROM DonHang WHERE maDonHang = ?")) {
+                    stmt.setString(1, maDonHang);
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Không thể xóa đơn hàng liên kết.");
+                    }
+                }
+
+                con.commit();
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    con.rollback();
+                } catch (SQLException rollbackError) {
+                    e.addSuppressed(rollbackError);
+                }
+                throw e;
+            }
+        }
+    }
+
+    private boolean coBanGhi(Connection con, String sql, String... parameters) throws SQLException {
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            for (int i = 0; i < parameters.length; i++) {
+                stmt.setString(i + 1, parameters[i]);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     private String taoHoaDon(String maNhanVien, String maKhachHang,
                              List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
                              double tienKhachDua, String maKhuyenMai, double tienGiamGiaTrucTiep,
