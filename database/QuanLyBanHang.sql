@@ -798,13 +798,23 @@ GO
 -- ============================================================
 
 -- Khi thêm chi tiết phiếu nhập → tăng tồn kho
-CREATE TRIGGER trg_ChiTietPhieuNhap_Insert ON ChiTietPhieuNhap
-    AFTER INSERT AS
+CREATE OR ALTER TRIGGER trg_ChiTietPhieuNhap_Insert ON ChiTietPhieuNhap
+AFTER INSERT AS
 BEGIN
-UPDATE sp
-SET sp.soLuongTon = sp.soLuongTon + i.soLuongNhap
+    SET NOCOUNT ON;
+
+    UPDATE sp
+    SET sp.soLuongTon = sp.soLuongTon + nhap.soLuongNhap,
+        sp.ngayCapNhat = GETDATE()
     FROM SanPham sp
-    INNER JOIN inserted i ON sp.maSanPham = i.maSanPham;
+    INNER JOIN (
+        SELECT i.maSanPham, SUM(i.soLuongNhap) AS soLuongNhap
+        FROM inserted i
+        INNER JOIN PhieuNhapKho pn ON pn.maPhieuNhap = i.maPhieuNhap
+        WHERE pn.trangThai = N'Đã nhập'
+          AND CAST(pn.ngayNhap AS DATE) <= CAST(GETDATE() AS DATE)
+        GROUP BY i.maSanPham
+    ) nhap ON nhap.maSanPham = sp.maSanPham;
 END;
 GO
 

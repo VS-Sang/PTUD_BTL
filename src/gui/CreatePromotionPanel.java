@@ -3,6 +3,7 @@ package gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.Scrollable;
 import java.awt.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,7 +17,7 @@ import java.util.Properties;
 import DAO.KhuyenMai_DAO;
 import entity.KhuyenMai;
 
-public class CreatePromotionPanel extends JPanel {
+public class CreatePromotionPanel extends JPanel implements Scrollable {
 
     private MenuPanel menuPanel;
     private JTextField txtTenChuongTrinh;
@@ -42,80 +43,113 @@ public class CreatePromotionPanel extends JPanel {
     private static final String PH_MO_TA = "Mô tả chi tiết...";
 
     private Window parentWindow;
+    private final boolean embedded;
+    private final Runnable onSuccess;
+    private final Runnable onCancel;
 
     public CreatePromotionPanel(Window parentWindow) {
+        this(parentWindow, false, null, null);
+    }
+
+    public CreatePromotionPanel(Runnable onSuccess, Runnable onCancel) {
+        this(null, true, onSuccess, onCancel);
+    }
+
+    private CreatePromotionPanel(Window parentWindow, boolean embedded,
+                                 Runnable onSuccess, Runnable onCancel) {
         this.parentWindow = parentWindow;
+        this.embedded = embedded;
+        this.onSuccess = onSuccess;
+        this.onCancel = onCancel;
         setLayout(new BorderLayout());
         setBackground(new Color(238, 238, 238));
 
-        menuPanel = new MenuPanel();
-
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
-            new MainFrame().setVisible(true);
-            if (parentWindow != null)
-                parentWindow.dispose();
-        });
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
-            new LoginFrame().setVisible(true);
-            if (parentWindow != null)
-                parentWindow.dispose();
-        });
-
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
-            new MainFrame().setVisible(true);
-            if (parentWindow != null)
-                parentWindow.dispose();
-        });
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
-            new LoginFrame().setVisible(true);
-            if (parentWindow != null)
-                parentWindow.dispose();
-        });
-
-        add(menuPanel, BorderLayout.NORTH);
+        if (!embedded) {
+            menuPanel = new MenuPanel();
+            menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
+                new MainFrame().setVisible(true);
+                if (parentWindow != null) {
+                    parentWindow.dispose();
+                }
+            });
+            menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
+                new LoginFrame().setVisible(true);
+                if (parentWindow != null) {
+                    parentWindow.dispose();
+                }
+            });
+            menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
+                new MainFrame().setVisible(true);
+                if (parentWindow != null) {
+                    parentWindow.dispose();
+                }
+            });
+            menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
+                new LoginFrame().setVisible(true);
+                if (parentWindow != null) {
+                    parentWindow.dispose();
+                }
+            });
+            add(menuPanel, BorderLayout.NORTH);
+        }
 
         JPanel pCenterContainer = new JPanel(new BorderLayout());
         pCenterContainer.setOpaque(false);
 
-        JPanel pSubHeader = new JPanel(new BorderLayout());
-        pSubHeader.setBackground(new Color(230, 230, 230));
-        pSubHeader.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
-                new EmptyBorder(8, 15, 8, 15)));
+        if (!embedded) {
+            JPanel pSubHeader = new JPanel(new BorderLayout());
+            pSubHeader.setBackground(new Color(230, 230, 230));
+            pSubHeader.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                    new EmptyBorder(8, 15, 8, 15)));
 
-        JLabel lblTitle = new JLabel("🏷  Khuyến mãi — Tạo mới");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblTitle.setForeground(new Color(180, 40, 40));
+            JLabel lblTitle = new JLabel("🏷  Khuyến mãi — Tạo mới");
+            lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            lblTitle.setForeground(new Color(180, 40, 40));
 
-        btnQuayLai = new JButton("← Quay lại");
-        btnQuayLai.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnQuayLai.setFocusPainted(false);
-        btnQuayLai.setBackground(Color.WHITE);
-        btnQuayLai.addActionListener(e -> {
-            new PromotionPanel().setVisible(true);
-            if (parentWindow != null) {
-                parentWindow.dispose();
-            }
-        });
-        pSubHeader.add(lblTitle, BorderLayout.WEST);
-        pSubHeader.add(btnQuayLai, BorderLayout.EAST);
-
-        pCenterContainer.add(pSubHeader, BorderLayout.NORTH);
+            btnQuayLai = new JButton("← Quay lại");
+            btnQuayLai.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            btnQuayLai.setFocusPainted(false);
+            btnQuayLai.setBackground(Color.WHITE);
+            btnQuayLai.addActionListener(e -> huyTao());
+            pSubHeader.add(lblTitle, BorderLayout.WEST);
+            pSubHeader.add(btnQuayLai, BorderLayout.EAST);
+            pCenterContainer.add(pSubHeader, BorderLayout.NORTH);
+        }
 
         JPanel formContainer = createFormPanel();
 
-        JPanel leftWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        JPanel leftWrapper = new JPanel(embedded
+                ? new BorderLayout() : new FlowLayout(FlowLayout.LEFT, 15, 15));
         leftWrapper.setOpaque(false);
-        leftWrapper.add(formContainer);
+        if (embedded) {
+            leftWrapper.add(formContainer, BorderLayout.CENTER);
+        } else {
+            leftWrapper.add(formContainer);
+        }
 
         pCenterContainer.add(leftWrapper, BorderLayout.CENTER);
 
         add(pCenterContainer, BorderLayout.CENTER);
     }
 
+    private void huyTao() {
+        if (embedded) {
+            if (onCancel != null) {
+                onCancel.run();
+            }
+        } else {
+            new PromotionPanel().setVisible(true);
+            if (parentWindow != null) {
+                parentWindow.dispose();
+            }
+        }
+    }
+
     private JPanel createFormPanel() {
         JPanel cardPanel = new JPanel(new BorderLayout());
-        cardPanel.setPreferredSize(new Dimension(600, 420));
+        cardPanel.setPreferredSize(new Dimension(embedded ? 640 : 600,
+                embedded ? 620 : 420));
         cardPanel.setBackground(Color.WHITE);
         cardPanel.setBorder(new LineBorder(new Color(210, 210, 210), 1));
 
@@ -242,20 +276,44 @@ public class CreatePromotionPanel extends JPanel {
         btnHuy.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnHuy.setFocusPainted(false);
         btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnHuy.addActionListener(e -> {
-            new PromotionPanel().setVisible(true);
-            if (parentWindow != null) {
-                parentWindow.dispose();
-            }
-        });
+        btnHuy.addActionListener(e -> huyTao());
 
         buttonBar.add(btnTao);
-        buttonBar.add(btnHuy);
+        if (!embedded) {
+            buttonBar.add(btnHuy);
+        }
 
         formBody.add(buttonBar, gbc);
 
         cardPanel.add(formBody, BorderLayout.CENTER);
         return cardPanel;
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
+                                          int direction) {
+        return 16;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation,
+                                          int direction) {
+        return Math.max(visibleRect.height - 16, 16);
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return embedded;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
     }
 
     private JDatePickerImpl taoDatePicker(UtilDateModel model, Date defaultDate) {
@@ -416,17 +474,51 @@ public class CreatePromotionPanel extends JPanel {
                     "Tạo khuyến mãi \"" + tenCT + "\" thành công!\nMã: " + maKM,
                     "Thành công",
                     JOptionPane.INFORMATION_MESSAGE);
-            // Quay về trang quản lý khuyến mãi
-            new PromotionPanel().setVisible(true);
-            if (parentWindow != null) {
-                parentWindow.dispose();
+            if (embedded) {
+                resetForm();
+                if (onSuccess != null) {
+                    onSuccess.run();
+                }
+            } else {
+                new PromotionPanel().setVisible(true);
+                if (parentWindow != null) {
+                    parentWindow.dispose();
+                }
             }
+
         } else {
             JOptionPane.showMessageDialog(this,
                     "Không thể tạo khuyến mãi. Vui lòng kiểm tra kết nối database và thử lại.",
                     "Lỗi",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void resetForm() {
+        txtTenChuongTrinh.setText(PH_TEN);
+        txtTenChuongTrinh.setForeground(Color.GRAY);
+        txtGiaTriGiam.setText(PH_GIA_TRI);
+        txtGiaTriGiam.setForeground(Color.GRAY);
+        txtDieuKien.setText(PH_DIEU_KIEN);
+        txtDieuKien.setForeground(Color.GRAY);
+        cboLoaiKhuyenMai.setSelectedIndex(0);
+        txtMoTa.setText(PH_MO_TA);
+        txtMoTa.setForeground(Color.GRAY);
+
+        Date ngayBatDau = new Date();
+        java.util.Calendar ngayKetThuc = java.util.Calendar.getInstance();
+        ngayKetThuc.add(java.util.Calendar.DAY_OF_MONTH, 30);
+        setDate(modelNgayBatDau, ngayBatDau);
+        setDate(modelNgayKetThuc, ngayKetThuc.getTime());
+    }
+
+    private void setDate(UtilDateModel model, Date date) {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(date);
+        model.setDate(calendar.get(java.util.Calendar.YEAR),
+                calendar.get(java.util.Calendar.MONTH),
+                calendar.get(java.util.Calendar.DAY_OF_MONTH));
+        model.setSelected(true);
     }
 
     /**
