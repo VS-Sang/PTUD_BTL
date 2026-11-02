@@ -40,6 +40,7 @@ public class PromotionPanel extends JFrame {
             dispose();
         });
         menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
+            LoginFrame.clearCurrentUsername();
             new LoginFrame().setVisible(true);
             dispose();
         });
@@ -49,6 +50,7 @@ public class PromotionPanel extends JFrame {
             dispose();
         });
         menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
+            LoginFrame.clearCurrentUsername();
             new LoginFrame().setVisible(true);
             dispose();
         });
