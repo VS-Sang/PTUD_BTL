@@ -62,10 +62,10 @@ public class MenuPanel extends JPanel {
     }
 
     public enum Shortcut {
-        HOME("Trang chủ","/img/lo.png", "Trang chủ"),
-        CALCULATOR("🖩", null,"Tạo hóa đơn"),
-        REPORTS("📊", null,"Thống kê theo tháng"),
-        LOGOUT("Đăng xuất", "/img/lo.png","Đăng xuất");
+        HOME("", "/img/home.png", "Trang chủ"),
+        CALCULATOR("🛒", null, "Lập hoá đơn bán hàng"),
+        REPORTS("📊", null, "Doanh thu theo tháng"),
+        LOGOUT("🚪", null, "Đăng xuất");
 
         public final String label;
         public final String iconPath;

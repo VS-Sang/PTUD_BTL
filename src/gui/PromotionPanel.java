@@ -3,9 +3,9 @@ package gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import DAO.KhuyenMai_DAO;
@@ -120,7 +120,6 @@ public class PromotionPanel extends JFrame {
         } else {
             cardsContainer.setLayout(new GridLayout(0, 2, 15, 15));
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date now = new Date();
 
             for (KhuyenMai km : danhSach) {
                 // Xác định badge
@@ -393,21 +392,31 @@ public class PromotionPanel extends JFrame {
     private void deletePromotion(KhuyenMai km) {
         int choice = JOptionPane.showConfirmDialog(
                 this,
-                "Bạn có chắc chắn muốn xóa khuyến mãi:\n\"" + km.getTenKhuyenMai() + "\" (" + km.getMaKhuyenMai() + ")?",
+                "Bạn có chắc chắn muốn xóa khuyến mãi:\n\"" + km.getTenKhuyenMai()
+                        + "\" (" + km.getMaKhuyenMai() + ")?\n\n"
+                        + "Liên kết khuyến mãi trên đơn hàng cũ sẽ bị gỡ; tổng tiền đơn hàng vẫn được giữ nguyên.",
                 "Xác nhận xóa khuyến mãi",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
         if (choice == JOptionPane.YES_OPTION) {
-            boolean result = khuyenMaiDAO.xoaKhuyenMai(km.getMaKhuyenMai());
-            if (result) {
+            try {
+                boolean result = khuyenMaiDAO.xoaKhuyenMai(km.getMaKhuyenMai());
+                if (result) {
+                    JOptionPane.showMessageDialog(this,
+                            "Đã xóa khuyến mãi. Các đơn hàng cũ vẫn giữ nguyên giá trị thanh toán "
+                                    + "nhưng không còn liên kết với khuyến mãi này.",
+                            "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    loadPromotionsFromDatabase();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Không tìm thấy khuyến mãi để xóa. Danh sách sẽ được tải lại.",
+                            "Không thể xóa", JOptionPane.WARNING_MESSAGE);
+                    loadPromotionsFromDatabase();
+                }
+            } catch (SQLException exception) {
                 JOptionPane.showMessageDialog(this,
-                        "Đã xóa khuyến mãi \"" + km.getTenKhuyenMai() + "\" thành công!",
-                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                loadPromotionsFromDatabase(); // Tải lại danh sách
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Không thể xóa khuyến mãi. Có thể khuyến mãi đang được sử dụng trong đơn hàng.",
+                        "Không thể xóa khuyến mãi:\n" + exception.getMessage(),
                         "Lỗi xóa", JOptionPane.ERROR_MESSAGE);
             }
         }

@@ -14,7 +14,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +30,7 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -76,6 +81,8 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final JTable table = new JTable(model) {
         @Override
         protected void paintComponent(Graphics graphics) {
+            graphics.setColor(getBackground());
+            graphics.fillRect(0, 0, getWidth(), getHeight());
             super.paintComponent(graphics);
             if (model.getRowCount() == 0) {
                 graphics.setColor(Color.GRAY);
@@ -104,8 +111,10 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final JLabel lblThueVAT = new JLabel("0 đ");
     private final JLabel lblTongThanhToan = new JLabel("0 đ");
     private final JLabel lblTienThoi = new JLabel("0 đ");
+    private JPanel rowTienThoi;
     private final Map<String, Integer> soLuongDaChon = new LinkedHashMap<>();
     private final Map<String, SanPham> sanPhamTheoMa = new LinkedHashMap<>();
+    private boolean invoiceSaved;
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
     private final JButton btnThem = createButton("Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
     private final JButton btnLuu = createButton("Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
@@ -126,7 +135,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
 
-        add(new MenuPanel(this.tenNhanVien, vaiTro), BorderLayout.NORTH);
+        add(new MenuPanel(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
         add(createWorkspace(), BorderLayout.CENTER);
 
         loadCustomersAndProducts();
@@ -280,10 +289,11 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             public void mouseClicked(MouseEvent event) {
                 int row = table.rowAtPoint(event.getPoint());
                 int column = table.columnAtPoint(event.getPoint());
-                if (row >= 0 && column == 6) {
+                if (!invoiceSaved && row >= 0 && column == 6) {
                     String maSanPham = model.getValueAt(row, 1).toString();
                     soLuongDaChon.remove(maSanPham);
                     capNhatBangVaTongTien();
+                    table.repaint();
                 }
             }
         });
@@ -329,7 +339,17 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
         addFullWidthField(fields, c, "Phương thức thanh toán", cboPhuongThuc);
         addFullWidthField(fields, c, "Tiền khách đưa", txtTienKhachDua);
-        addSummaryRow(fields, c, "Tiền thối:", lblTienThoi, new Color(52, 120, 61));
+        rowTienThoi = new JPanel(new BorderLayout(4, 4));
+        rowTienThoi.setOpaque(false);
+        JLabel lblTienThoiTitle = new JLabel("Tiền thối:");
+        lblTienThoiTitle.setForeground(new Color(52, 120, 61));
+        rowTienThoi.add(lblTienThoiTitle, BorderLayout.WEST);
+        lblTienThoi.setHorizontalAlignment(SwingConstants.RIGHT);
+        lblTienThoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        rowTienThoi.add(lblTienThoi, BorderLayout.EAST);
+        c.gridy++;
+        fields.add(rowTienThoi, c);
+        rowTienThoi.setVisible(false);
         lblTienThoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
         addFullWidthField(fields, c, "Ghi chú", new JScrollPane(txtGhiChu));
         txtGhiChu.setLineWrap(true);
@@ -535,7 +555,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         } else if (source == btnLuu) {
             luuHoaDon();
         } else if (source == btnIn) {
-            JOptionPane.showMessageDialog(this, "In hóa đơn thành công!");
+            inHoaDonRaTep();
         } else if (source == btnMoi) {
             resetInvoice();
         }
@@ -559,6 +579,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         }
         soLuongDaChon.put(sanPham.getMaSanPham(), (int) tongSoLuong);
         capNhatBangVaTongTien();
+        table.repaint();
         cboSanPham.setSelectedIndex(0);
         spnSoLuong.setValue(1);
     }
@@ -613,10 +634,16 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     }
 
     private void capNhatTienThoi() {
+        boolean isChuyenKhoan = "Chuyển khoản".equals(cboPhuongThuc.getSelectedItem());
+        if (rowTienThoi != null) {
+            rowTienThoi.setVisible(isChuyenKhoan);
+            rowTienThoi.getParent().revalidate();
+            rowTienThoi.getParent().repaint();
+        }
         double tongTien = tinhTongThanhToan();
         BigDecimal tienKhachDua = docTienKhachDua();
         BigDecimal tienThoi = tienKhachDua.subtract(BigDecimal.valueOf(tongTien));
-        if ("Tiền mặt".equals(cboPhuongThuc.getSelectedItem()) && tienThoi.signum() > 0) {
+        if (isChuyenKhoan && tienThoi.signum() > 0) {
             lblTienThoi.setText(MONEY_FORMAT.format(tienThoi) + " đ");
         } else if (tienThoi.signum() < 0) {
             lblTienThoi.setText("Còn thiếu " + MONEY_FORMAT.format(tienThoi.abs()) + " đ");
@@ -705,14 +732,102 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     txtGhiChu.getText().trim());
             JOptionPane.showMessageDialog(this, "Tạo hóa đơn " + maHoaDon + " thành công.",
                     "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+            txtMaHoaDon.setText(maHoaDon);
+            invoiceSaved = true;
+            btnLuu.setEnabled(false);
+            setInvoiceInputsEnabled(false);
             if (owner != null) {
                 owner.docDuLieuDatabaseVaoTable();
             }
-            dispose();
         } catch (SQLException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, "Không thể tạo hóa đơn: " + ex.getMessage(),
                     "Lỗi tạo hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void inHoaDonRaTep() {
+        if (soLuongDaChon.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng thêm sản phẩm trước khi in hóa đơn.",
+                    "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Lưu hóa đơn dạng tệp văn bản");
+        chooser.setSelectedFile(new java.io.File("hoa-don-"
+                + (invoiceSaved ? txtMaHoaDon.getText().trim() : "ban-nhap") + ".txt"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        java.io.File selectedFile = chooser.getSelectedFile();
+        if (!selectedFile.getName().toLowerCase().endsWith(".txt")) {
+            selectedFile = new java.io.File(selectedFile.getParentFile(),
+                    selectedFile.getName() + ".txt");
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                selectedFile.toPath(), StandardCharsets.UTF_8)) {
+            writer.write("HOA DON BAN HANG");
+            writer.newLine();
+            writer.write("Ma hoa don: " + txtMaHoaDon.getText().trim());
+            writer.newLine();
+            writer.write("Ngay lap: " + txtNgayLap.getText().trim());
+            writer.newLine();
+            writer.write("Nhan vien: " + txtNhanVien.getText().trim());
+            writer.newLine();
+            writer.write("Khach hang: " + String.valueOf(cboKhachHang.getSelectedItem()));
+            writer.newLine();
+            writer.write("------------------------------------------------------------");
+            writer.newLine();
+            for (int row = 0; row < model.getRowCount(); row++) {
+                writer.write(model.getValueAt(row, 1) + " | "
+                        + model.getValueAt(row, 2) + " | SL: "
+                        + model.getValueAt(row, 4) + " | Don gia: "
+                        + model.getValueAt(row, 3) + " | Thanh tien: "
+                        + model.getValueAt(row, 5));
+                writer.newLine();
+            }
+            writer.write("Tong so luong: " + lblTongSoLuong.getText());
+            writer.newLine();
+            writer.write("Tong tien hang: " + lblTongTienHang.getText());
+            writer.newLine();
+            KhuyenMai khuyenMai = (KhuyenMai) cboKhuyenMai.getSelectedItem();
+            writer.write("Khuyen mai: "
+                    + (khuyenMai == null ? "Khong ap dung" : khuyenMai.getTenKhuyenMai()));
+            writer.newLine();
+            writer.write("Thue VAT: " + lblThueVAT.getText());
+            writer.newLine();
+            writer.write("Tong thanh toan: " + lblTongThanhToan.getText());
+            writer.newLine();
+            writer.write("Phuong thuc thanh toan: " + cboPhuongThuc.getSelectedItem());
+            writer.newLine();
+            writer.write("Tien khach dua: " + txtTienKhachDua.getText().trim());
+            writer.newLine();
+            if ("Chuyển khoản".equals(cboPhuongThuc.getSelectedItem())) {
+                writer.write("Tien thoi: " + lblTienThoi.getText());
+                writer.newLine();
+            }
+            writer.write("Ghi chu: " + txtGhiChu.getText().trim());
+            writer.newLine();
+            JOptionPane.showMessageDialog(this, "Đã xuất hóa đơn ra tệp:\n"
+                    + selectedFile.getAbsolutePath(), "In hóa đơn", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể xuất hóa đơn:\n"
+                    + exception.getMessage(), "Lỗi ghi tệp", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void setInvoiceInputsEnabled(boolean enabled) {
+        table.setEnabled(enabled);
+        btnThem.setEnabled(enabled);
+        cboSanPham.setEnabled(enabled);
+        spnSoLuong.setEnabled(enabled);
+        cboKhachHang.setEnabled(enabled);
+        cboPhuongThuc.setEnabled(enabled);
+        cboKhuyenMai.setEnabled(enabled);
+        txtTienKhachDua.setEnabled(enabled);
+        txtGhiChu.setEnabled(enabled);
     }
 
     private NhanVien timNhanVienDangDangNhap() {
@@ -727,6 +842,9 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
     private void resetInvoice() {
         soLuongDaChon.clear();
+        invoiceSaved = false;
+        btnLuu.setEnabled(true);
+        setInvoiceInputsEnabled(true);
         model.setRowCount(0);
         txtMaHoaDon.setText("Tự động khi lưu");
         txtNgayLap.setText(DATE_FORMAT.format(new Date()));
@@ -740,5 +858,6 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         loadPromotions();
         cboKhuyenMai.setSelectedIndex(0);
         capNhatBangVaTongTien();
+        table.repaint();
     }
 }
