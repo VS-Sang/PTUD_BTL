@@ -17,6 +17,23 @@ public class PhieuTraHang_DAO {
     public static final String TRA_HOAN_TIEN = "Trả hàng & hoàn tiền";
     public static final String DOI_HANG = "Đổi hàng";
 
+    public static final class HoaDonTuyChon {
+        private final String maHoaDon;
+        private final String moTa;
+
+        private HoaDonTuyChon(String maHoaDon, String moTa) {
+            this.maHoaDon = maHoaDon;
+            this.moTa = moTa;
+        }
+
+        public String getMaHoaDon() { return maHoaDon; }
+
+        @Override
+        public String toString() {
+            return moTa;
+        }
+    }
+
     public static final class DongHangTra {
         private final String maSanPham;
         private final String tenSanPham;
@@ -145,6 +162,26 @@ public class PhieuTraHang_DAO {
             return new HoaDonTraHang(maCanTim, tenKhachHang, trangThai,
                     tongThanhToan, docChiTiet(con, maCanTim, tongThanhToan));
         }
+    }
+
+    public List<HoaDonTuyChon> getHoaDonDaThanhToan() throws SQLException {
+        String sql = "SELECT hd.maHoaDon, COALESCE(kh.hoTen, N'Khách lẻ') AS tenKhachHang, "
+                + "CONVERT(VARCHAR(16), hd.ngayLapHoaDon, 120) AS ngayLap "
+                + "FROM HoaDon hd LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang "
+                + "WHERE hd.trangThai = N'Đã thanh toán' "
+                + "ORDER BY hd.ngayLapHoaDon DESC, hd.maHoaDon DESC";
+        List<HoaDonTuyChon> hoaDon = new ArrayList<>();
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String maHoaDon = rs.getString("maHoaDon");
+                String moTa = maHoaDon + "  |  " + rs.getString("ngayLap")
+                        + "  |  " + rs.getString("tenKhachHang");
+                hoaDon.add(new HoaDonTuyChon(maHoaDon, moTa));
+            }
+        }
+        return hoaDon;
     }
 
     public List<SanPhamDoi> getSanPhamDoi() throws SQLException {

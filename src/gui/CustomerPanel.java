@@ -11,12 +11,17 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -26,6 +31,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.KhachHang_DAO;
@@ -160,10 +166,68 @@ public class CustomerPanel extends JFrame implements ActionListener {
         if (o.equals(btnTim) || o.equals(txtSearch)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnExport)) {
-            JOptionPane.showMessageDialog(this, "Xuất danh sách khách hàng ra Excel thành công!");
+            exportCustomers();
         } else if (o.equals(btnAdd)) {
             hienThiFormThemKhachHang();
         }
+    }
+
+    private void exportCustomers() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Xuất danh sách khách hàng");
+        chooser.setFileFilter(new FileNameExtensionFilter("Excel/CSV (*.csv)", "csv"));
+        chooser.setSelectedFile(new java.io.File("danh-sach-khach-hang.csv"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        java.io.File file = chooser.getSelectedFile().getAbsoluteFile();
+        if (!file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".csv")) {
+            file = new java.io.File(file.getParentFile(), file.getName() + ".csv");
+        }
+        if (file.exists()) {
+            int overwrite = JOptionPane.showConfirmDialog(this,
+                    "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
+                    "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (overwrite != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+            writer.write('\uFEFF');
+            for (int column = 0; column < model.getColumnCount(); column++) {
+                if (column > 0) {
+                    writer.write(',');
+                }
+                writer.write(csv(String.valueOf(model.getColumnName(column))));
+            }
+            writer.newLine();
+
+            for (int row = 0; row < model.getRowCount(); row++) {
+                for (int column = 0; column < model.getColumnCount(); column++) {
+                    if (column > 0) {
+                        writer.write(',');
+                    }
+                    Object value = model.getValueAt(row, column);
+                    writer.write(csv(value == null ? "" : String.valueOf(value)));
+                }
+                writer.newLine();
+            }
+            JOptionPane.showMessageDialog(this, "Đã xuất " + model.getRowCount()
+                    + " khách hàng ra tệp:\n" + file.getAbsolutePath(),
+                    "Xuất Excel", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể xuất danh sách khách hàng:\n"
+                    + exception.getMessage(), "Lỗi xuất Excel", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String csv(String value) {
+        if (!value.isEmpty() && " =+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+            value = "'" + value;
+        }
+        return "\"" + value.replace("\"", "\"\"") + "\"";
     }
 
     private void hienThiFormThemKhachHang() {

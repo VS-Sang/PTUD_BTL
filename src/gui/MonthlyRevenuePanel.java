@@ -18,7 +18,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -52,6 +51,8 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
     };
     private final JTable table = new JTable(tableModel);
     private final RevenueChart chart = new RevenueChart();
+    private JButton exportButton;
+    private JButton printButton;
 
     public MonthlyRevenuePanel() {
         this("Nguyễn Văn An", "Quản lý");
@@ -94,12 +95,14 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         yearCombo.setPreferredSize(new Dimension(100, 32));
         yearCombo.addActionListener(this);
 
-        JButton exportButton = new JButton("Xuất CSV");
-        exportButton.addActionListener(event ->
-                JOptionPane.showMessageDialog(this, "Xuất CSV thành công!"));
-        JButton printButton = new JButton("In báo cáo");
-        printButton.addActionListener(event ->
-                JOptionPane.showMessageDialog(this, "In báo cáo thành công!"));
+        exportButton = new JButton("Xuất Excel");
+        exportButton.addActionListener(event -> ReportExportUtils.exportTable(
+                this, table, "Xuất thống kê doanh thu theo tháng",
+                "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".csv"));
+        printButton = new JButton("Xuất PDF");
+        printButton.addActionListener(event -> ReportExportUtils.exportTablePdf(
+                this, table, "Thống kê doanh thu theo tháng - " + yearCombo.getSelectedItem(),
+                "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".pdf"));
         controls.add(yearCombo);
         controls.add(exportButton);
         controls.add(printButton);
