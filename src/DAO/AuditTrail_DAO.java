@@ -42,25 +42,6 @@ public final class AuditTrail_DAO {
         }
     }
 
-    public static boolean coQuyen(String tenDangNhap, String maQuyen, String cotQuyen)
-            throws SQLException {
-        if (!"coQuyenXem".equals(cotQuyen) && !"coQuyenThem".equals(cotQuyen)
-                && !"coQuyenSua".equals(cotQuyen) && !"coQuyenXoa".equals(cotQuyen)) {
-            throw new IllegalArgumentException("Loại quyền không hợp lệ.");
-        }
-        String sql = "SELECT 1 FROM TaiKhoan tk JOIN PhanQuyen pq ON pq.maTaiKhoan = tk.maTaiKhoan "
-                + "WHERE tk.tenDangNhap = ? AND pq.maQuyen = ? AND pq." + cotQuyen + " = 1 "
-                + "AND tk.trangThai = N'Hoạt động'";
-        try (Connection connection = ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, tenDangNhap);
-            statement.setString(2, maQuyen);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next();
-            }
-        }
-    }
-
     public static void ghiDangXuat(String tenDangNhap) throws SQLException {
         try (Connection connection = ConnectDB.getConnection();
              PreparedStatement statement = connection.prepareStatement(
