@@ -73,6 +73,7 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
                 }
             });
             menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
+                LoginFrame.clearCurrentUsername();
                 new LoginFrame().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
@@ -85,6 +86,7 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
                 }
             });
             menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
+                LoginFrame.clearCurrentUsername();
                 new LoginFrame().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
