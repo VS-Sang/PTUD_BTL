@@ -11,16 +11,21 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -37,6 +42,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import DAO.PhieuTraHang_DAO;
@@ -246,6 +253,8 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         tableHangTra.setRowHeight(28);
         tableHangTra.setFillsViewportHeight(true);
         tableHangTra.getTableHeader().setReorderingAllowed(false);
+        tableHangTra.getColumnModel().getColumn(5).setCellRenderer(new SoLuongTraCellRenderer());
+        tableHangTra.getColumnModel().getColumn(5).setCellEditor(new SoLuongTraCellEditor());
         DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(
@@ -281,6 +290,79 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         pChiTiet.add(details, BorderLayout.CENTER);
         pChiTiet.setVisible(false);
         return pChiTiet;
+    }
+
+    private int getSoLuongToiDaTra(int modelRow) {
+        return ((Number) modelHangTra.getValueAt(modelRow, 4)).intValue();
+    }
+
+    private final class SoLuongTraCellRenderer extends JSpinner implements TableCellRenderer {
+        private SoLuongTraCellRenderer() {
+            setToolTipText("Dùng mũi tên lên/xuống để nhập số lượng trả");
+            JFormattedTextField field = ((JSpinner.DefaultEditor) getEditor()).getTextField();
+            field.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        public java.awt.Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            int max = getSoLuongToiDaTra(modelRow);
+            int initial = value instanceof Number ? ((Number) value).intValue() : 0;
+            setModel(new SpinnerNumberModel(Math.max(0, Math.min(initial, max)), 0, max, 1));
+            setFont(table.getFont());
+            Color background = isSelected ? table.getSelectionBackground() : table.getBackground();
+            Color foreground = isSelected ? table.getSelectionForeground() : table.getForeground();
+            setBackground(background);
+            setForeground(foreground);
+            JFormattedTextField field = ((JSpinner.DefaultEditor) getEditor()).getTextField();
+            field.setBackground(background);
+            field.setForeground(foreground);
+            setEnabled(max > 0);
+            return this;
+        }
+    }
+
+    private final class SoLuongTraCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JSpinner spinner = new JSpinner();
+
+        private SoLuongTraCellEditor() {
+            JFormattedTextField field = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+            field.setHorizontalAlignment(SwingConstants.CENTER);
+            spinner.setToolTipText("Dùng mũi tên lên/xuống để nhập số lượng trả");
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return spinner.getValue();
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            try {
+                spinner.commitEdit();
+            } catch (ParseException e) {
+                return false;
+            }
+            return super.stopCellEditing();
+        }
+
+        @Override
+        public java.awt.Component getTableCellEditorComponent(
+                JTable table, Object value, boolean isSelected, int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            int max = getSoLuongToiDaTra(modelRow);
+            int initial = value instanceof Number ? ((Number) value).intValue() : 0;
+            spinner.setModel(new SpinnerNumberModel(Math.max(0, Math.min(initial, max)), 0, max, 1));
+            return spinner;
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject event) {
+            return !(event instanceof MouseEvent)
+                    || ((MouseEvent) event).getClickCount() >= 1;
+        }
     }
 
     private JPanel createExchangeCard() {
