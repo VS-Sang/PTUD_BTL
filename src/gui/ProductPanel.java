@@ -68,6 +68,7 @@ public class ProductPanel extends JFrame implements ActionListener {
             dispose();
         });
         menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
+            LoginFrame.clearCurrentUsername();
             new LoginFrame().setVisible(true);
             dispose();
         });
@@ -77,6 +78,7 @@ public class ProductPanel extends JFrame implements ActionListener {
             dispose();
         });
         menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
+            LoginFrame.clearCurrentUsername();
             new LoginFrame().setVisible(true);
             dispose();
         });
