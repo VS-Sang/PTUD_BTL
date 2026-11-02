@@ -21,6 +21,8 @@ public class PromotionPanel extends JFrame {
 
     private MenuPanel menuPanel;
     private JPanel cardsContainer;
+    private CreatePromotionPanel createFormPanel;
+    private JScrollPane promotionsScrollPane;
     private KhuyenMai_DAO khuyenMaiDAO;
 
     public PromotionPanel() {
@@ -69,26 +71,7 @@ public class PromotionPanel extends JFrame {
         lblSubTitle.setForeground(RED_DARK);
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
-        JButton btnCreate = new JButton("+ Tạo khuyến mãi");
-        btnCreate.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnCreate.setForeground(Color.WHITE);
-        btnCreate.setBackground(RED_PRIMARY);
-        btnCreate.setFocusPainted(false);
-        btnCreate.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnCreate.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnCreate.addActionListener(e -> {
-            JFrame createFrame = new JFrame("Tạo khuyến mãi");
-            createFrame.setSize(1200, 650);
-            createFrame.setLocationRelativeTo(null);
-            createFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            createFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            CreatePromotionPanel cpp = new CreatePromotionPanel(createFrame);
-            createFrame.setContentPane(cpp);
-            createFrame.setVisible(true);
-            dispose();
-        });
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
-        pSubHeader.add(btnCreate, BorderLayout.EAST);
         pCenterContainer.add(pSubHeader, BorderLayout.NORTH);
 
         cardsContainer = new JPanel(new GridLayout(0, 2, 15, 15));
@@ -98,12 +81,29 @@ public class PromotionPanel extends JFrame {
         // Load dữ liệu từ database
         loadPromotionsFromDatabase();
 
-        JScrollPane scrollPane = new JScrollPane(cardsContainer);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        pCenterContainer.add(scrollPane, BorderLayout.CENTER);
+        promotionsScrollPane = new JScrollPane(cardsContainer);
+        promotionsScrollPane.setBorder(null);
+        promotionsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        createFormPanel = new CreatePromotionPanel(
+                this::promotionCreated, null);
+        JScrollPane formScrollPane = new JScrollPane(createFormPanel);
+        formScrollPane.setBorder(null);
+        formScrollPane.setHorizontalScrollBarPolicy(
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        formScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel content = new JPanel(new GridLayout(1, 2));
+        content.setBorder(new EmptyBorder(10, 10, 10, 10));
+        content.setBackground(BG_GRAY);
+        content.add(formScrollPane);
+        content.add(promotionsScrollPane);
+        pCenterContainer.add(content, BorderLayout.CENTER);
 
         add(pCenterContainer, BorderLayout.CENTER);
+    }
+
+    private void promotionCreated() {
+        loadPromotionsFromDatabase();
     }
 
     /**
