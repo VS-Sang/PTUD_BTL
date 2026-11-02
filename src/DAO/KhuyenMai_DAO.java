@@ -87,16 +87,37 @@ public class KhuyenMai_DAO {
         }
     }
 
-    /** Xóa khuyến mãi theo mã. @return true nếu thành công */
-    public boolean xoaKhuyenMai(String maKhuyenMai) {
-        String sql = "DELETE FROM KhuyenMai WHERE maKhuyenMai = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, maKhuyenMai);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+    /** Xóa khuyến mãi sau khi gỡ các liên kết lịch sử, giữ nguyên tổng tiền đơn hàng. */
+    public boolean xoaKhuyenMai(String maKhuyenMai) throws SQLException {
+        try (Connection con = ConnectDB.getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "UPDATE DonHang SET maKhuyenMai = NULL WHERE maKhuyenMai = ?")) {
+                    ps.setString(1, maKhuyenMai);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM KhuyenMai_SanPham WHERE maKhuyenMai = ?")) {
+                    ps.setString(1, maKhuyenMai);
+                    ps.executeUpdate();
+                }
+                int deleted;
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM KhuyenMai WHERE maKhuyenMai = ?")) {
+                    ps.setString(1, maKhuyenMai);
+                    deleted = ps.executeUpdate();
+                }
+                con.commit();
+                return deleted > 0;
+            } catch (SQLException | RuntimeException exception) {
+                try {
+                    con.rollback();
+                } catch (SQLException rollbackException) {
+                    exception.addSuppressed(rollbackException);
+                }
+                throw exception;
+            }
         }
     }
 

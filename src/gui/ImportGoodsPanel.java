@@ -2,6 +2,10 @@ package gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -58,7 +62,9 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     private JTextArea txtGhiChu;
 
     private JButton btnLuuPhieu;
+    private JButton btnIn;
     private JButton btnLamMoi;
+    private boolean phieuDaLuu;
 
     private final NhaCungCap_DAO nhaCungCapDao = new NhaCungCap_DAO();
     private final SanPham_DAO sanPhamDao = new SanPham_DAO();
@@ -145,6 +151,18 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         btnLuuPhieu.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLuuPhieu.addActionListener(this);
 
+        btnIn = new JButton("In");
+        btnIn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnIn.setForeground(Color.WHITE);
+        btnIn.setBackground(new Color(54, 103, 193));
+        btnIn.setFocusPainted(false);
+        btnIn.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(54, 103, 193), 1),
+                new EmptyBorder(6, 14, 6, 14)));
+        btnIn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnIn.setEnabled(false);
+        btnIn.addActionListener(this);
+
         btnLamMoi = new JButton("↻ Làm mới");
         btnLamMoi.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnLamMoi.setForeground(new Color(50, 50, 50));
@@ -157,6 +175,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         btnLamMoi.addActionListener(this);
 
         pRight.add(btnLuuPhieu);
+        pRight.add(btnIn);
         pRight.add(btnLamMoi);
 
         bar.add(pLeft, BorderLayout.WEST);
@@ -429,7 +448,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
             public void mouseClicked(MouseEvent e) {
                 int row = tableHangs.rowAtPoint(e.getPoint());
                 int col = tableHangs.columnAtPoint(e.getPoint());
-                if (row >= 0 && col == 5) {
+                if (!phieuDaLuu && row >= 0 && col == 5) {
                     int confirm = JOptionPane.showConfirmDialog(ImportGoodsPanel.this,
                             "Bạn có chắc muốn xóa sản phẩm này khỏi danh sách nhập?",
                             "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
@@ -512,6 +531,10 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     private void lamMoiForm() {
+        phieuDaLuu = false;
+        btnLuuPhieu.setEnabled(true);
+        btnIn.setEnabled(false);
+        setPhieuInputsEnabled(true);
         txtMaPhieuNhap.setText(phieuNhapKhoDao.sinhMaPhieuNhap());
         java.util.Calendar cal = java.util.Calendar.getInstance();
         modelNgayNhap.setDate(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH));
@@ -595,6 +618,9 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     private void luuPhieuNhap() {
+        if (phieuDaLuu) {
+            return;
+        }
         if (cboNhaCungCap.getSelectedIndex() <= 0) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhà cung cấp!", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
             cboNhaCungCap.requestFocus();
@@ -666,13 +692,80 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
                                 + "Tổng số lượng: " + tongSoLuong + "\n"
                                 + "Tổng tiền nhập: " + MONEY_FORMAT.format(tongTienNhap) + "đ",
                         "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                lamMoiForm();
+                phieuDaLuu = true;
+                btnLuuPhieu.setEnabled(false);
+                btnIn.setEnabled(true);
+                setPhieuInputsEnabled(false);
             } else {
                 JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+        }
+    }
+
+    private void setPhieuInputsEnabled(boolean enabled) {
+        datePickerNgayNhap.setEnabled(enabled);
+        cboNhaCungCap.setEnabled(enabled);
+        cboKhoNhap.setEnabled(enabled);
+        cboSanPham.setEnabled(enabled);
+        spnSoLuong.setEnabled(enabled);
+        btnThem.setEnabled(enabled);
+        tableHangs.setEnabled(enabled);
+        txtGhiChu.setEnabled(enabled);
+    }
+
+    private void inPhieuNhap() {
+        if (!phieuDaLuu) {
+            JOptionPane.showMessageDialog(this, "Vui lòng lưu phiếu nhập trước khi in.",
+                    "Phiếu nhập chưa được lưu", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Lưu phiếu nhập dạng tệp văn bản");
+        chooser.setSelectedFile(new java.io.File("phieu-nhap-"
+                + txtMaPhieuNhap.getText().trim() + ".txt"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        java.io.File file = chooser.getSelectedFile();
+        if (!file.getName().toLowerCase().endsWith(".txt")) {
+            file = new java.io.File(file.getParentFile(), file.getName() + ".txt");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+            writer.write("PHIEU NHAP KHO");
+            writer.newLine();
+            writer.write("Ma phieu: " + txtMaPhieuNhap.getText().trim());
+            writer.newLine();
+            writer.write("Ngay nhap: " + (modelNgayNhap.getValue() == null
+                    ? "" : new SimpleDateFormat("dd/MM/yyyy").format(modelNgayNhap.getValue())));
+            writer.newLine();
+            writer.write("Nha cung cap: " + String.valueOf(cboNhaCungCap.getSelectedItem()));
+            writer.newLine();
+            writer.write("Nguoi lap: " + txtNguoiLap.getText().trim());
+            writer.newLine();
+            writer.write("------------------------------------------------------------");
+            writer.newLine();
+            for (int row = 0; row < tableModel.getRowCount(); row++) {
+                writer.write(tableModel.getValueAt(row, 0) + " | "
+                        + tableModel.getValueAt(row, 1) + " | Don gia: "
+                        + tableModel.getValueAt(row, 2) + " | SL: "
+                        + tableModel.getValueAt(row, 3) + " | Thanh tien: "
+                        + tableModel.getValueAt(row, 4));
+                writer.newLine();
+            }
+            writer.write(lblTongGiaTri.getText());
+            writer.newLine();
+            writer.write("Ghi chu: " + txtGhiChu.getText().trim());
+            writer.newLine();
+            JOptionPane.showMessageDialog(this, "Đã xuất phiếu nhập ra tệp:\n"
+                    + file.getAbsolutePath(), "In phiếu nhập", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể xuất phiếu nhập:\n"
+                    + exception.getMessage(), "Lỗi ghi tệp", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -683,6 +776,8 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
             themSanPhamVaoBang();
         } else if (source == btnLuuPhieu) {
             luuPhieuNhap();
+        } else if (source == btnIn) {
+            inPhieuNhap();
         } else if (source == btnLamMoi) {
             lamMoiForm();
         }
