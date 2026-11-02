@@ -84,18 +84,19 @@ public class MenuPanel extends JPanel {
     private JMenuItem mnuTongHop;
 
     public MenuPanel() {
-        this("Nguyễn Văn An", "Quản lý");
+        this(LoginFrame.getCurrentFullName(), LoginFrame.getCurrentRole(),
+                LoginFrame.getCurrentUsername());
     }
 
     public MenuPanel(String userName, String userRole) {
-        this(userName, userRole, null);
+        this(userName, userRole, LoginFrame.getCurrentUsername());
     }
 
     public MenuPanel(String userName, String userRole, String username) {
         super(new BorderLayout());
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
-        this.currentUsername = (username != null && !username.trim().isEmpty()) ? username : "admin";
+        this.currentUsername = username == null ? "" : username.trim();
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(HEADER_COLOR);
@@ -189,6 +190,7 @@ public class MenuPanel extends JPanel {
         setMenuItemAction(MenuItem.LOGOUT, e -> {
             ghiNhatKyDangXuat();
             dongCuaSoHienTai();
+            LoginFrame.clearCurrentUsername();
             new LoginFrame().setVisible(true);
         });
         setMenuItemAction(MenuItem.PERSONAL_INFO, e ->
@@ -198,7 +200,7 @@ public class MenuPanel extends JPanel {
                 new ProfileDialog(SwingUtilities.getWindowAncestor(this),
                         currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
-            if (!coQuyen("Q010") && !laQuanTriVienTheoVaiTro()) {
+            if (!coQuyen("Q010")) {
                 JOptionPane.showMessageDialog(this,
                         "Chức năng này chỉ dành cho tài khoản quản lý.",
                         "Quản lý tài khoản", JOptionPane.WARNING_MESSAGE);
@@ -208,7 +210,7 @@ public class MenuPanel extends JPanel {
             new AccountPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.AUTHORIZATION, e -> {
-            if (!coQuyen("Q010") && !laQuanTriVienTheoVaiTro()) {
+            if (!coQuyen("Q010")) {
                 JOptionPane.showMessageDialog(this,
                         "Chức năng này chỉ dành cho tài khoản quản lý.",
                         "Phân quyền hệ thống", JOptionPane.WARNING_MESSAGE);
@@ -218,7 +220,7 @@ public class MenuPanel extends JPanel {
             new PermissionPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.AUDIT_TRAIL, e -> {
-            if (!coQuyen("Q013") && !laQuanTriVienTheoVaiTro()) {
+            if (!coQuyen("Q013")) {
                 JOptionPane.showMessageDialog(this,
                         "Chức năng này chỉ dành cho tài khoản quản lý.",
                         "Audit Trail", JOptionPane.WARNING_MESSAGE);
@@ -238,7 +240,7 @@ public class MenuPanel extends JPanel {
             new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.EMPLOYEE, e -> {
-            if (!coQuyen("Q008") && !laQuanTriVienTheoVaiTro()) {
+            if (!coQuyen("Q008")) {
                 JOptionPane.showMessageDialog(this,
                         "Chức năng này chỉ dành cho tài khoản quản lý.",
                         "Quản lý nhân sự", JOptionPane.WARNING_MESSAGE);
@@ -283,33 +285,30 @@ public class MenuPanel extends JPanel {
         mnuBanChay = menuItemMap.get(MenuItem.BEST_SELLERS);
         mnuTongHop = menuItemMap.get(MenuItem.SUMMARY_REPORT);
 
-        boolean isQuanLy = coQuyen("Q011") || laQuanTriVienTheoVaiTro();
-
-        if (isQuanLy) {
-            setMenuItemAction(MenuItem.MONTHLY_REVENUE, e -> {
+        setMenuItemAction(MenuItem.MONTHLY_REVENUE, e -> {
+            if (coQuyen("Q011")) {
                 dongCuaSoHienTai();
                 new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
-            });
-            setMenuItemAction(MenuItem.BEST_SELLERS, e -> {
+            } else {
+                thongBaoKhongCoQuyenThongKe();
+            }
+        });
+        setMenuItemAction(MenuItem.BEST_SELLERS, e -> {
+            if (coQuyen("Q011")) {
                 dongCuaSoHienTai();
                 new TopProductsPanel(currentUserName, currentUserRole).setVisible(true);
-            });
-            setMenuItemAction(MenuItem.SUMMARY_REPORT, e -> {
+            } else {
+                thongBaoKhongCoQuyenThongKe();
+            }
+        });
+        setMenuItemAction(MenuItem.SUMMARY_REPORT, e -> {
+            if (coQuyen("Q011")) {
                 dongCuaSoHienTai();
                 new GeneralReportPanel(currentUserName, currentUserRole).setVisible(true);
-            });
-        } else {
-            ActionListener baoChuaPhanQuyen = e -> {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
-                        "Phân quyền hệ thống",
-                        JOptionPane.WARNING_MESSAGE);
-            };
-            setMenuItemAction(MenuItem.MONTHLY_REVENUE, baoChuaPhanQuyen);
-            setMenuItemAction(MenuItem.BEST_SELLERS, baoChuaPhanQuyen);
-            setMenuItemAction(MenuItem.SUMMARY_REPORT, baoChuaPhanQuyen);
-        }
+            } else {
+                thongBaoKhongCoQuyenThongKe();
+            }
+        });
 
         // Shortcut Home
         JButton btnHome = shortcutButtons.get(Shortcut.HOME);
@@ -332,15 +331,11 @@ public class MenuPanel extends JPanel {
         JButton btnShortcutReports = shortcutButtons.get(Shortcut.REPORTS);
         if (btnShortcutReports != null) {
             btnShortcutReports.addActionListener(e -> {
-                if (isQuanLy) {
+                if (coQuyen("Q011")) {
                     dongCuaSoHienTai();
                     new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
                 } else {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Chức năng Thống kê chỉ dành cho tài khoản có quyền Quản lý!",
-                            "Phân quyền hệ thống",
-                            JOptionPane.WARNING_MESSAGE);
+                    thongBaoKhongCoQuyenThongKe();
                 }
             });
         }
@@ -351,6 +346,7 @@ public class MenuPanel extends JPanel {
             btnLogout.addActionListener(e -> {
                 ghiNhatKyDangXuat();
                 dongCuaSoHienTai();
+                LoginFrame.clearCurrentUsername();
                 new LoginFrame().setVisible(true);
             });
         }
@@ -363,15 +359,6 @@ public class MenuPanel extends JPanel {
         }
     }
 
-    private boolean laQuanTriVien() {
-        return coQuyen("Q010") || laQuanTriVienTheoVaiTro();
-    }
-
-    private boolean laQuanTriVienTheoVaiTro() {
-        String role = currentUserRole == null ? "" : currentUserRole.trim().toLowerCase();
-        return role.contains("quản lý") || role.contains("quan ly");
-    }
-
     private boolean coQuyen(String maQuyen) {
         try {
             return AuditTrail_DAO.coQuyen(currentUsername, maQuyen, "coQuyenXem");
@@ -381,6 +368,14 @@ public class MenuPanel extends JPanel {
                     "Lỗi phân quyền", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+    }
+
+    private void thongBaoKhongCoQuyenThongKe() {
+        JOptionPane.showMessageDialog(
+                this,
+                "Tài khoản hiện tại không có quyền xem báo cáo thống kê.",
+                "Phân quyền hệ thống",
+                JOptionPane.WARNING_MESSAGE);
     }
 
     private void ghiNhatKyDangXuat() {

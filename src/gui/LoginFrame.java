@@ -17,6 +17,27 @@ public class LoginFrame extends JDialog {
 
     private final JTextField usernameField = new PlaceholderTextField("Nhập tên đăng nhập...");
     private final JPasswordField passwordField = new PlaceholderPasswordField("Nhập mật khẩu...");
+    private static volatile String currentUsername;
+    private static volatile String currentFullName;
+    private static volatile String currentRole;
+
+    static String getCurrentUsername() {
+        return currentUsername;
+    }
+
+    static String getCurrentFullName() {
+        return currentFullName;
+    }
+
+    static String getCurrentRole() {
+        return currentRole;
+    }
+
+    static void clearCurrentUsername() {
+        currentUsername = null;
+        currentFullName = null;
+        currentRole = null;
+    }
 
     public LoginFrame() {
         super((Frame) null, "Đăng Nhập - Điện Máy Đỏ", true);
@@ -418,6 +439,9 @@ public class LoginFrame extends JDialog {
             return;
         }
 
+        currentUsername = username;
+        currentFullName = fullName;
+        currentRole = role;
         dispose();
         new MainFrame(fullName, role, username).setVisible(true);
     }
