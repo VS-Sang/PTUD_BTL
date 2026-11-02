@@ -97,27 +97,18 @@ CREATE TABLE QuyenTruyCap (
 GO
 
 -- ============================================================
--- BẢNG 4: PhanQuyen (Role-Permission Assignment)
--- Gán quyền cho từng vai trò/tài khoản
+-- BẢNG 4: VaiTroQuyen (Role-Permission Assignment)
+-- Quyền mặc định được khai báo theo vai trò, không theo từng tài khoản
 -- ============================================================
-CREATE TABLE PhanQuyen (
-                           maTaiKhoan      NVARCHAR(20)    NOT NULL,
-                           maQuyen         NVARCHAR(20)    NOT NULL,
-                           coQuyenXem      BIT             NOT NULL DEFAULT 1,
-                           coQuyenThem     BIT             NOT NULL DEFAULT 0,
-                           coQuyenSua      BIT             NOT NULL DEFAULT 0,
-                           coQuyenXoa      BIT             NOT NULL DEFAULT 0,
-                           ngayGan         DATETIME        NOT NULL DEFAULT GETDATE(),
-                           nguoiGan        NVARCHAR(20)    NULL,
-    -- Tài khoản admin nào đã gán quyền này
+CREATE TABLE VaiTroQuyen (
+                             vaiTro          NVARCHAR(30)    NOT NULL,
+                             maQuyen         NVARCHAR(20)    NOT NULL,
+                             ngayTao         DATETIME        NOT NULL DEFAULT GETDATE(),
 
-                           CONSTRAINT PK_PhanQuyen PRIMARY KEY (maTaiKhoan, maQuyen),
-                           CONSTRAINT FK_PhanQuyen_TaiKhoan FOREIGN KEY (maTaiKhoan)
-                               REFERENCES TaiKhoan(maTaiKhoan),
-                           CONSTRAINT FK_PhanQuyen_Quyen FOREIGN KEY (maQuyen)
-                               REFERENCES QuyenTruyCap(maQuyen),
-                           CONSTRAINT FK_PhanQuyen_NguoiGan FOREIGN KEY (nguoiGan)
-                               REFERENCES TaiKhoan(maTaiKhoan)
+                             CONSTRAINT PK_VaiTroQuyen PRIMARY KEY (vaiTro, maQuyen),
+                             CONSTRAINT CK_VaiTroQuyen_VaiTro CHECK (vaiTro IN (N'Quản lý', N'Nhân viên')),
+                             CONSTRAINT FK_VaiTroQuyen_Quyen FOREIGN KEY (maQuyen)
+                                 REFERENCES QuyenTruyCap(maQuyen)
 );
 GO
 
@@ -889,44 +880,20 @@ VALUES
     (N'Q013', N'Xem Audit Trail',     N'Tra cứu nhật ký thao tác quản trị',      N'Hệ thống');
 GO
 
--- 4. Phân quyền (BẢNG 4)
--- Phân quyền cho Quản lý (toàn quyền)
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
-SELECT N'TK001', maQuyen, 1, 1, 1, 1, N'TK001' FROM QuyenTruyCap;
-GO
+-- 4. Quyền mặc định theo vai trò (BẢNG 4)
+INSERT INTO VaiTroQuyen (vaiTro, maQuyen)
+SELECT N'Quản lý', maQuyen FROM QuyenTruyCap;
 
--- Phân quyền cho Quản lý kế toán (TK005)
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
+INSERT INTO VaiTroQuyen (vaiTro, maQuyen)
 VALUES
-    (N'TK005', N'Q006', 1, 0, 0, 0, N'TK001'),
-    (N'TK005', N'Q007', 1, 1, 1, 0, N'TK001'),
-    (N'TK005', N'Q008', 1, 0, 0, 0, N'TK001'),
-    (N'TK005', N'Q009', 1, 1, 1, 0, N'TK001'),
-    (N'TK005', N'Q011', 1, 1, 0, 0, N'TK001');
-GO
-
--- Phân quyền cho Nhân viên bán hàng (TK002, TK006)
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
-VALUES
-    (N'TK002', N'Q005', 1, 1, 1, 0, N'TK001'),  -- Khách hàng: xem, thêm, sửa
-    (N'TK002', N'Q006', 1, 1, 1, 0, N'TK001'),  -- Đơn hàng: xem, thêm, sửa
-    (N'TK002', N'Q007', 1, 1, 0, 0, N'TK001'),  -- Hóa đơn: xem, thêm
-    (N'TK002', N'Q001', 1, 0, 0, 0, N'TK001'),  -- Sản phẩm: chỉ xem
-    (N'TK006', N'Q005', 1, 1, 1, 0, N'TK001'),
-    (N'TK006', N'Q006', 1, 1, 1, 0, N'TK001'),
-    (N'TK006', N'Q007', 1, 1, 0, 0, N'TK001'),
-    (N'TK006', N'Q001', 1, 0, 0, 0, N'TK001');
-GO
-
--- Phân quyền cho Nhân viên kho (TK003, TK007)
-INSERT INTO PhanQuyen (maTaiKhoan, maQuyen, coQuyenXem, coQuyenThem, coQuyenSua, coQuyenXoa, nguoiGan)
-VALUES
-    (N'TK003', N'Q001', 1, 0, 1, 0, N'TK001'),  -- Sản phẩm: xem, sửa
-    (N'TK003', N'Q004', 1, 1, 1, 0, N'TK001'),  -- Kho: xem, thêm, sửa
-    (N'TK003', N'Q012', 1, 1, 1, 0, N'TK001'),  -- NCC: xem, thêm, sửa
-    (N'TK007', N'Q001', 1, 0, 1, 0, N'TK001'),
-    (N'TK007', N'Q004', 1, 1, 1, 0, N'TK001'),
-    (N'TK007', N'Q012', 1, 0, 0, 0, N'TK001');
+    (N'Nhân viên', N'Q001'),
+    (N'Nhân viên', N'Q002'),
+    (N'Nhân viên', N'Q003'),
+    (N'Nhân viên', N'Q004'),
+    (N'Nhân viên', N'Q005'),
+    (N'Nhân viên', N'Q006'),
+    (N'Nhân viên', N'Q007'),
+    (N'Nhân viên', N'Q012');
 GO
 
 -- 5. Ca làm việc (BẢNG 5)
@@ -1332,16 +1299,15 @@ WHERE tk.maTaiKhoan = @maTK;
 END;
 GO
 
--- SP: Lấy quyền của tài khoản
+-- SP: Lấy quyền mặc định của vai trò
 CREATE PROCEDURE sp_LayQuyenTaiKhoan
-    @maTaiKhoan NVARCHAR(20)
+    @vaiTro NVARCHAR(30)
 AS
 BEGIN
-SELECT pq.maTaiKhoan, q.maQuyen, q.tenQuyen, q.nhomQuyen,
-       pq.coQuyenXem, pq.coQuyenThem, pq.coQuyenSua, pq.coQuyenXoa
-FROM PhanQuyen pq
-         INNER JOIN QuyenTruyCap q ON pq.maQuyen = q.maQuyen
-WHERE pq.maTaiKhoan = @maTaiKhoan
+SELECT vtq.vaiTro, q.maQuyen, q.tenQuyen, q.nhomQuyen
+FROM VaiTroQuyen vtq
+         INNER JOIN QuyenTruyCap q ON vtq.maQuyen = q.maQuyen
+WHERE vtq.vaiTro = @vaiTro
 ORDER BY q.nhomQuyen, q.tenQuyen;
 END;
 GO
