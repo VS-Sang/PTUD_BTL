@@ -48,10 +48,6 @@ public class MenuPanel extends JPanel {
         WORK_SCHEDULE,
         ASSIGNMENT,
 
-        FIND_PRODUCT,
-        FIND_CUSTOMER,
-        INVOICE_SEARCH,
-
         MONTHLY_REVENUE,
         BEST_SELLERS,
         SUMMARY_REPORT,
@@ -149,11 +145,6 @@ public class MenuPanel extends JPanel {
         addItem(processMenu, MenuItem.RETURN, "Xử lý trả hàng");
         addItem(processMenu, MenuItem.ASSIGNMENT, "Phân công ca làm");
 
-        JMenu findMenu = new JMenu("🔍 Tìm kiếm ▾");
-        addItem(findMenu, MenuItem.FIND_PRODUCT, "Tìm sản phẩm");
-        addItem(findMenu, MenuItem.FIND_CUSTOMER, "Tìm kiếm khách hàng");
-        addItem(findMenu, MenuItem.INVOICE_SEARCH, "Tra cứu hoá đơn");
-
         JMenu statsMenu = new JMenu("📊 Thống kê ▾");
         addItem(statsMenu, MenuItem.MONTHLY_REVENUE, "Doanh thu theo tháng");
         addItem(statsMenu, MenuItem.BEST_SELLERS, "Sản phẩm bán chạy");
@@ -167,7 +158,6 @@ public class MenuPanel extends JPanel {
         menuBar.add(sysMenu);
         menuBar.add(categoryMenu);
         menuBar.add(processMenu);
-        menuBar.add(findMenu);
         menuBar.add(statsMenu);
         menuBar.add(accountMenu);
         menuLeft.add(menuBar);
@@ -286,20 +276,6 @@ public class MenuPanel extends JPanel {
         setMenuItemAction(MenuItem.ASSIGNMENT, e -> {
             dongCuaSoHienTai();
             new AssignmentPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
-        });
-
-        // Tìm kiếm
-        setMenuItemAction(MenuItem.FIND_PRODUCT, e -> {
-            dongCuaSoHienTai();
-            new ProductPanel().setVisible(true);
-        });
-        setMenuItemAction(MenuItem.FIND_CUSTOMER, e -> {
-            dongCuaSoHienTai();
-            new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
-        });
-        setMenuItemAction(MenuItem.INVOICE_SEARCH, e -> {
-            dongCuaSoHienTai();
-            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
         });
 
         // Thống kê
