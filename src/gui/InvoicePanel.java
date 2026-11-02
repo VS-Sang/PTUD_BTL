@@ -7,11 +7,13 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -26,14 +28,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.HoaDon_DAO;
+import DAO.NhanVien_DAO;
 import entity.HoaDon;
+import entity.NhanVien;
 
 public class InvoicePanel extends JFrame implements ActionListener {
     private final DefaultTableModel model;
     private final JTable table;
     private JTextField txtSearch;
     private JComboBox<String> cboStatus;
-    private JButton btnCreate, btnExport, btnPrint, btnTim;
+    private JButton btnCreate, btnDelete, btnExport, btnPrint, btnTim;
     private final String currentUserName;
     private final String currentUserRole;
     private HoaDon_DAO hd_dao = new HoaDon_DAO();
@@ -76,15 +80,20 @@ public class InvoicePanel extends JFrame implements ActionListener {
         btnCreate.setBackground(new Color(180, 40, 40));
         btnCreate.setForeground(Color.WHITE);
         btnCreate.setFocusPainted(false);
+        btnDelete = new JButton("Xóa hóa đơn");
+        btnDelete.setBackground(new Color(130, 35, 35));
+        btnDelete.setForeground(Color.WHITE);
+        btnDelete.setFocusPainted(false);
         btnExport = new JButton("Xuất Excel");
         btnExport.setBackground(Color.WHITE);
         btnExport.setFocusPainted(false);
-        btnPrint = new JButton("In báo cáo");
+        btnPrint = new JButton("Xuất PDF");
         btnPrint.setBackground(new Color(55, 105, 190));
         btnPrint.setForeground(Color.WHITE);
         btnPrint.setFocusPainted(false);
 
         pSubActions.add(btnCreate);
+        pSubActions.add(btnDelete);
         pSubActions.add(btnExport);
         pSubActions.add(btnPrint);
         pSubHeader.add(pSubActions, BorderLayout.EAST);
@@ -111,10 +120,20 @@ public class InvoicePanel extends JFrame implements ActionListener {
 
         table = new JTable(model);
         table.setRowHeight(36);
+        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setBackground(new Color(180, 40, 40));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        ArrayList<ThuNganOption> thuNganOptions = loadThuNganOptions();
+        if (!thuNganOptions.isEmpty()) {
+            table.getColumnModel().getColumn(3).setCellEditor(
+                    new ThuNganCellEditor(thuNganOptions));
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Không tìm thấy nhân viên đang làm việc để chọn làm thu ngân.",
+                    "Không thể đổi thu ngân", JOptionPane.WARNING_MESSAGE);
+        }
 
         JScrollPane scrollPane = new JScrollPane(
                 table,
@@ -127,6 +146,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
         docDuLieuDatabaseVaoTable();
 
         btnCreate.addActionListener(this);
+        btnDelete.addActionListener(this);
         btnExport.addActionListener(this);
         btnPrint.addActionListener(this);
         btnTim.addActionListener(this);
@@ -158,7 +178,9 @@ public class InvoicePanel extends JFrame implements ActionListener {
                         hd.getMaHoaDon(),
                         hd.getNgayLapHoaDon() != null ? sdf.format(hd.getNgayLapHoaDon()) : "",
                         tenKH,
-                        tenNV,
+                        new ThuNganOption(
+                                hd.getNhanVien() == null ? null : hd.getNhanVien().getMaNhanVien(),
+                                tenNV),
                         hd.getPhuongThucThanhToan(),
                         df.format(hd.getTongThanhToan()),
                         hd.getTrangThai()
@@ -173,11 +195,123 @@ public class InvoicePanel extends JFrame implements ActionListener {
         if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboStatus)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnExport)) {
-            JOptionPane.showMessageDialog(this, "Xuất danh sách hóa đơn ra Excel thành công!");
+            ReportExportUtils.exportTable(this, table, "Xuất danh sách hóa đơn",
+                    "DanhSachHoaDon.csv");
         } else if (o.equals(btnPrint)) {
-            JOptionPane.showMessageDialog(this, "In báo cáo doanh thu thành công!");
+            ReportExportUtils.exportTablePdf(this, table, "Danh sách hóa đơn",
+                    "DanhSachHoaDon.pdf");
+        } else if (o.equals(btnDelete)) {
+            xoaHoaDonDangChon();
         } else if (o.equals(btnCreate)) {
             new CreateInvoiceDialog(this, currentUserName, currentUserRole).setVisible(true);
+        }
+    }
+
+    private ArrayList<ThuNganOption> loadThuNganOptions() {
+        ArrayList<ThuNganOption> options = new ArrayList<>();
+        for (NhanVien nhanVien : new NhanVien_DAO().getAllNhanVien()) {
+            if ("Đang làm việc".equals(nhanVien.getTrangThai())) {
+                options.add(new ThuNganOption(nhanVien.getMaNhanVien(), nhanVien.getHoTen()));
+            }
+        }
+        return options;
+    }
+
+    private void xoaHoaDonDangChon() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa.",
+                    "Chưa chọn hóa đơn", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String maHoaDon = String.valueOf(model.getValueAt(selectedRow, 0));
+        int confirmation = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc muốn xóa hẳn hóa đơn " + maHoaDon
+                        + " và đơn hàng liên kết không?\nTồn kho và số liệu khách hàng sẽ được cập nhật lại.",
+                "Xác nhận xóa hóa đơn", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirmation != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            hd_dao.xoaHoaDon(maHoaDon);
+            docDuLieuDatabaseVaoTable();
+            JOptionPane.showMessageDialog(this, "Đã xóa hóa đơn " + maHoaDon + ".",
+                    "Xóa hóa đơn", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException | IllegalArgumentException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể xóa hóa đơn:\n"
+                    + exception.getMessage(), "Lỗi xóa hóa đơn", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private final class ThuNganCellEditor extends DefaultCellEditor {
+        private final JComboBox<ThuNganOption> comboBox;
+
+        ThuNganCellEditor(ArrayList<ThuNganOption> options) {
+            this(new JComboBox<>(options.toArray(new ThuNganOption[0])));
+        }
+
+        private ThuNganCellEditor(JComboBox<ThuNganOption> comboBox) {
+            super(comboBox);
+            this.comboBox = comboBox;
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            int row = table.getEditingRow();
+            Object selected = comboBox.getSelectedItem();
+            if (row < 0 || !(selected instanceof ThuNganOption)) {
+                return super.stopCellEditing();
+            }
+
+            ThuNganOption selectedOption = (ThuNganOption) selected;
+            Object current = model.getValueAt(row, 3);
+            if (selectedOption.equals(current)) {
+                return super.stopCellEditing();
+            }
+
+            String maHoaDon = String.valueOf(model.getValueAt(row, 0));
+            try {
+                hd_dao.capNhatThuNganHoaDon(maHoaDon, selectedOption.maNhanVien);
+                return super.stopCellEditing();
+            } catch (SQLException | IllegalArgumentException exception) {
+                JOptionPane.showMessageDialog(InvoicePanel.this,
+                        "Không thể cập nhật thu ngân:\n" + exception.getMessage(),
+                        "Lỗi cập nhật hóa đơn", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+    }
+
+    private static final class ThuNganOption {
+        private final String maNhanVien;
+        private final String hoTen;
+
+        ThuNganOption(String maNhanVien, String hoTen) {
+            this.maNhanVien = maNhanVien;
+            this.hoTen = hoTen == null ? "" : hoTen;
+        }
+
+        @Override
+        public String toString() {
+            return hoTen;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof ThuNganOption)) {
+                return false;
+            }
+            ThuNganOption option = (ThuNganOption) other;
+            return maNhanVien == null
+                    ? option.maNhanVien == null
+                    : maNhanVien.equals(option.maNhanVien);
+        }
+
+        @Override
+        public int hashCode() {
+            return maNhanVien == null ? 0 : maNhanVien.hashCode();
         }
     }
 
