@@ -49,7 +49,8 @@ public class MainFrame extends JFrame {
     private final DefaultTableModel invoiceTableModel;
 
     public MainFrame() {
-        this("Nguyễn Văn An", "Quản lý");
+        this(LoginFrame.getCurrentFullName(), LoginFrame.getCurrentRole(),
+                LoginFrame.getCurrentUsername());
     }
 
     public MainFrame(String userName, String userRole) {
