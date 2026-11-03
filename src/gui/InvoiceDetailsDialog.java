@@ -96,8 +96,12 @@ final class InvoiceDetailsDialog extends JDialog {
         addTotal(totals, "Tiền thối", hoaDon.getTienTraLai());
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton exportPdf = new JButton("Xuất PDF");
+        exportPdf.addActionListener(event -> InvoicePdfExporter.export(
+                this, hoaDon, maKhuyenMai, chiTiet));
         JButton close = new JButton("Đóng");
         close.addActionListener(event -> dispose());
+        actions.add(exportPdf);
         actions.add(close);
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.add(totals, BorderLayout.CENTER);
