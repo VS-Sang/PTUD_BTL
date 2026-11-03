@@ -134,7 +134,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         btnPrint.setForeground(Color.WHITE);
         btnPrint.setFocusPainted(false);
         btnPrint.setBorderPainted(false);
-        btnPrint.setPreferredSize(new Dimension(75, 32));
+        btnPrint.setPreferredSize(new Dimension(105, 32));
         btnPrint.addActionListener(this);
 
         pActions.add(cboMonth);
@@ -388,8 +388,15 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
             String period = cboMonth.getSelectedItem() == null
                     ? "bao-cao" : cboMonth.getSelectedItem().toString()
                             .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            String[][] summary = {
+                    {"Số hóa đơn", lblValHoaDon.getText()},
+                    {"Doanh thu", lblValDoanhThu.getToolTipText() == null
+                            ? lblValDoanhThu.getText() : lblValDoanhThu.getToolTipText()},
+                    {"Khách hàng mới", lblValKhachMoi.getText()},
+                    {"Trả hàng / đổi hàng", lblValDoiTra.getText()}
+            };
             ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
-                    "bao-cao-tong-hop-" + period + ".pdf");
+                    "bao-cao-tong-hop-" + period + ".pdf", summary, null, null, null);
         }
     }
 
