@@ -100,9 +100,18 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
                 this, table, "Xuất thống kê doanh thu theo tháng",
                 "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".csv"));
         printButton = new JButton("Xuất PDF");
-        printButton.addActionListener(event -> ReportExportUtils.exportTablePdf(
-                this, table, "Thống kê doanh thu theo tháng - " + yearCombo.getSelectedItem(),
-                "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".pdf"));
+        printButton.addActionListener(event -> {
+            String[][] summary = {
+                    {"Tổng doanh thu năm", giaTriKpiDayDu(0)},
+                    {"Lợi nhuận ước tính", giaTriKpiDayDu(1)},
+                    {"Hóa đơn đã thanh toán", kpiValues[2].getText()},
+                    {"Doanh thu cao nhất", giaTriKpiDayDu(3)}
+            };
+            ReportExportUtils.exportTablePdf(this, table,
+                    "Thống kê doanh thu theo tháng - " + yearCombo.getSelectedItem(),
+                    "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".pdf",
+                    summary, chart, null, null);
+        });
         controls.add(yearCombo);
         controls.add(exportButton);
         controls.add(printButton);
@@ -285,6 +294,11 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
             return String.format(Locale.ROOT, "%.0fM", value / 1_000_000);
         }
         return formatMoney(value);
+    }
+
+    private String giaTriKpiDayDu(int index) {
+        String fullValue = kpiValues[index].getToolTipText();
+        return fullValue == null ? kpiValues[index].getText() : fullValue;
     }
 
     @Override
