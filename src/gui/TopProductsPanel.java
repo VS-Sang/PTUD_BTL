@@ -8,7 +8,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -36,7 +35,6 @@ import DAO.ThongKe_DAO;
 
 public class TopProductsPanel extends JFrame implements ActionListener {
 
-    private static final Color BRAND_RED = new Color(175, 40, 40);
     private static final Color DARK_HEADER = new Color(145, 30, 30);
     private static final Color BG_LIGHT = new Color(248, 249, 250);
 
@@ -60,6 +58,14 @@ public class TopProductsPanel extends JFrame implements ActionListener {
     private JLabel lblTableTitle;
     private DefaultTableModel tableModel;
     private JTable table;
+    private final DefaultTableModel categoryPdfModel = new DefaultTableModel(
+            new Object[]{"Danh mục", "Doanh thu", "Tỷ lệ"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
+    private final JTable categoryPdfTable = new JTable(categoryPdfModel);
 
     private JPanel pCategoryBars;
     private ThongKe_DAO thongKeDAO = new ThongKe_DAO();
@@ -312,11 +318,16 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         // 2. Tải Doanh thu theo danh mục
         pCategoryBars.removeAll();
         ArrayList<Object[]> dsDanhMuc = thongKeDAO.getDoanhThuTheoDanhMuc(thang, nam);
+        categoryPdfModel.setRowCount(0);
 
         int colorIdx = 0;
         for (Object[] dm : dsDanhMuc) {
             String tenDM = dm[0].toString();
+            double doanhThu = ((Number) dm[1]).doubleValue();
             int phanTram = (int) dm[2];
+            categoryPdfModel.addRow(new Object[]{
+                    tenDM, dfMoney.format(doanhThu), phanTram + "%"
+            });
             Color barColor = CATEGORY_COLORS[colorIdx % CATEGORY_COLORS.length];
             colorIdx++;
 
@@ -403,8 +414,13 @@ public class TopProductsPanel extends JFrame implements ActionListener {
             String period = cboMonth.getSelectedItem() == null
                     ? "tat-ca" : cboMonth.getSelectedItem().toString()
                             .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
+            String[][] summary = {
+                    {"Sản phẩm hiển thị (Top 5)", String.valueOf(table.getRowCount())},
+                    {"Số danh mục", String.valueOf(categoryPdfModel.getRowCount())}
+            };
             ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
-                    "san-pham-ban-chay-" + period + ".pdf");
+                    "san-pham-ban-chay-" + period + ".pdf", summary, null,
+                    "DOANH THU THEO DANH MỤC", categoryPdfTable);
         }
     }
 
