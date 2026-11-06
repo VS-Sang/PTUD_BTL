@@ -34,6 +34,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,6 +44,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.DefaultListModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -108,8 +110,9 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             }
         }
     };
-    private final JComboBox<SanPham> cboSanPham = new JComboBox<>();
     private final JTextField txtTimSanPham = new JTextField();
+    private final DefaultListModel<SanPham> sanPhamGoiYModel = new DefaultListModel<>();
+    private final JList<SanPham> lstSanPhamGoiY = new JList<>(sanPhamGoiYModel);
     private final JComboBox<KhachHang> cboKhachHang = new JComboBox<>();
     private final JComboBox<String> cboPhuongThuc =
             new JComboBox<>(new String[]{"Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Ví điện tử"});
@@ -157,6 +160,17 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         add(new ThanhMenu(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
         add(createWorkspace(), BorderLayout.CENTER);
 
+        lstSanPhamGoiY.setVisibleRowCount(4);
+        lstSanPhamGoiY.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstSanPhamGoiY.setCellRenderer((list, value, index, selected, focus) -> {
+            JLabel label = new JLabel(value == null ? "" : value.getMaSanPham() + " — "
+                    + value.getTenSanPham() + " (" + value.getSoLuongTon() + " còn)");
+            label.setOpaque(true);
+            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+            label.setBackground(selected ? list.getSelectionBackground() : list.getBackground());
+            label.setForeground(selected ? list.getSelectionForeground() : list.getForeground());
+            return label;
+        });
         loadCustomersAndProducts();
         resetInvoice();
         wireActions();
@@ -239,12 +253,14 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         fields.add(new JLabel("Tìm mã hoặc tên"), c);
         c.gridx = 0;
         c.gridy = 5;
-        fields.add(cboSanPham, c);
+        c.gridwidth = 2;
+        fields.add(txtTimSanPham, c);
+        c.gridy = 6;
+        c.weighty = 0;
+        fields.add(new JScrollPane(lstSanPhamGoiY), c);
+        c.gridwidth = 1;
         c.gridx = 1;
         c.weightx = 0;
-        fields.add(txtTimSanPham, c);
-        c.gridx = 1;
-        c.gridy = 5;
         c.gridx = 2;
         c.gridy = 4;
         fields.add(new JLabel("Số lượng"), c);
@@ -465,31 +481,12 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                 cboKhachHang.addItem(khachHang);
             }
         }
-        cboSanPham.addItem(null);
-        cboSanPham.setRenderer((list, value, index, selected, focus) -> {
-            JLabel label = new JLabel(value == null ? "-- Chọn sản phẩm --"
-                    : value.getMaSanPham() + " — " + value.getTenSanPham()
-                            + " (" + value.getSoLuongTon() + " còn)");
-            label.setOpaque(true);
-            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-            if (selected) {
-                label.setBackground(list.getSelectionBackground());
-                label.setForeground(list.getSelectionForeground());
-            } else {
-                label.setBackground(list.getBackground());
-                label.setForeground(list.getForeground());
-            }
-            return label;
-        });
         for (SanPham sanPham : new SanPham_DAO().getAllSanPham()) {
             if ("Đang kinh doanh".equals(sanPham.getTrangThai()) && sanPham.getSoLuongTon() > 0) {
                 sanPhamTheoMa.put(sanPham.getMaSanPham(), sanPham);
-                cboSanPham.addItem(sanPham);
             }
         }
-        if (cboSanPham.getItemCount() <= 1) {
-            btnThem.setEnabled(false);
-        }
+        locSanPham();
 
         loadPromotions();
     }
@@ -559,6 +556,11 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                 locSanPham();
             }
         });
+        lstSanPhamGoiY.addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting()) {
+                btnThem.setEnabled(lstSanPhamGoiY.getSelectedValue() != null);
+            }
+        });
         cboPhuongThuc.addActionListener(event -> capNhatTienThoi());
         cboKhuyenMai.addActionListener(event -> capNhatBangVaTongTien());
         cboKhuyenMai.addPopupMenuListener(new PopupMenuListener() {
@@ -593,20 +595,16 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
     private void locSanPham() {
         String tuKhoa = txtTimSanPham.getText().trim().toLowerCase(java.util.Locale.ROOT);
-        SanPham dangChon = (SanPham) cboSanPham.getSelectedItem();
-        cboSanPham.removeAllItems();
-        cboSanPham.addItem(null);
+        sanPhamGoiYModel.clear();
         for (SanPham sanPham : sanPhamTheoMa.values()) {
             String thongTin = (sanPham.getMaSanPham() + " " + sanPham.getTenSanPham())
                     .toLowerCase(java.util.Locale.ROOT);
             if (tuKhoa.isEmpty() || thongTin.contains(tuKhoa)) {
-                cboSanPham.addItem(sanPham);
+                sanPhamGoiYModel.addElement(sanPham);
             }
         }
-        if (dangChon != null) {
-            cboSanPham.setSelectedItem(dangChon);
-        }
-        btnThem.setEnabled(cboSanPham.getItemCount() > 1);
+        lstSanPhamGoiY.clearSelection();
+        btnThem.setEnabled(!sanPhamGoiYModel.isEmpty());
     }
 
     @Override
@@ -624,9 +622,9 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     }
 
     private void themSanPham() {
-        SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
+        SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
         if (sanPham == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm.",
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một sản phẩm trong danh sách đề xuất.",
                     "Chưa chọn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -648,7 +646,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         capNhatTrangThaiKhachHang();
         capNhatBangVaTongTien();
         table.repaint();
-        cboSanPham.setSelectedIndex(0);
+        lstSanPhamGoiY.clearSelection();
         spnSoLuong.setValue(1);
     }
 
@@ -1108,7 +1106,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private void setInvoiceInputsEnabled(boolean enabled) {
         table.setEnabled(enabled);
         btnThem.setEnabled(enabled);
-        cboSanPham.setEnabled(enabled);
+        txtTimSanPham.setEnabled(enabled);
+        lstSanPhamGoiY.setEnabled(enabled);
         spnSoLuong.setEnabled(enabled);
         capNhatTrangThaiKhachHang(enabled);
         cboPhuongThuc.setEnabled(enabled);
@@ -1153,7 +1152,9 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         txtTienKhachDua.setText("0");
         txtGhiChu.setText("");
         cboKhachHang.setSelectedIndex(0);
-        cboSanPham.setSelectedIndex(0);
+        txtTimSanPham.setText("");
+        lstSanPhamGoiY.clearSelection();
+        locSanPham();
         cboPhuongThuc.setSelectedIndex(0);
         spnSoLuong.setValue(1);
         loadPromotions();
