@@ -1,6 +1,6 @@
 package gui;
 
-import DAO.AuditTrail_DAO;
+import DAO.NhatKyHeThong_DAO;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -10,7 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 
-public class LoginFrame extends JDialog {
+public class DangNhapFrame extends JDialog {
     private static final Color BRAND_RED = new Color(180, 55, 48);
     private static final Color DARK_RED = new Color(150, 42, 36);
     private static final Color TEXT_COLOR = new Color(75, 75, 75);
@@ -39,7 +39,7 @@ public class LoginFrame extends JDialog {
         currentRole = null;
     }
 
-    public LoginFrame() {
+    public DangNhapFrame() {
         super((Frame) null, "Đăng Nhập - Điện Máy Đỏ", true);
         setTitle("Đăng Nhập - Điện Máy Đỏ");
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -92,7 +92,7 @@ public class LoginFrame extends JDialog {
             @Override
             public void mouseDragged(MouseEvent event) {
                 Point screenLocation = event.getLocationOnScreen();
-                Point offset = SwingUtilities.convertPoint(event.getComponent(), dragOffset, LoginFrame.this);
+                Point offset = SwingUtilities.convertPoint(event.getComponent(), dragOffset, DangNhapFrame.this);
                 setLocation(screenLocation.x - offset.x, screenLocation.y - offset.y);
             }
         };
@@ -385,7 +385,7 @@ public class LoginFrame extends JDialog {
                         log.setString(2, !"Hoạt động".equals(status)
                                 ? "Tài khoản không hoạt động" : "Sai mật khẩu");
                         log.executeUpdate();
-                        AuditTrail_DAO.ghi(connection, accountId, "ĐĂNG NHẬP THẤT BẠI",
+                        NhatKyHeThong_DAO.ghi(connection, accountId, "ĐĂNG NHẬP THẤT BẠI",
                                 "Tài khoản", "Sai thông tin hoặc tài khoản không hoạt động");
                     }
                 }
@@ -400,7 +400,7 @@ public class LoginFrame extends JDialog {
                     success.executeUpdate();
                     log.setString(1, accountId);
                     log.executeUpdate();
-                    AuditTrail_DAO.ghi(connection, accountId, "ĐĂNG NHẬP",
+                    NhatKyHeThong_DAO.ghi(connection, accountId, "ĐĂNG NHẬP",
                             "Phiên đăng nhập", "Đăng nhập thành công");
                 }
                 connection.commit();
@@ -433,7 +433,7 @@ public class LoginFrame extends JDialog {
         currentFullName = fullName;
         currentRole = role;
         dispose();
-        new MainFrame(fullName, role, username).setVisible(true);
+        new KhungChinh(fullName, role, username).setVisible(true);
     }
 
     private static class PlaceholderTextField extends JTextField {
@@ -493,6 +493,6 @@ public class LoginFrame extends JDialog {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        SwingUtilities.invokeLater(() -> new DangNhapFrame().setVisible(true));
     }
 }

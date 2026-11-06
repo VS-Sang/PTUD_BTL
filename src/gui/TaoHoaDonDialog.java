@@ -70,19 +70,20 @@ import DAO.KhuyenMai_DAO;
 import DAO.NhanVien_DAO;
 import DAO.SanPham_DAO;
 import entity.ChiTietDonHang;
+import entity.HoaDon;
 import entity.KhachHang;
 import entity.KhuyenMai;
 import entity.NhanVien;
 import entity.SanPham;
 
-public class CreateInvoiceDialog extends JFrame implements ActionListener {
+public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private static final Color BRAND_RED = new Color(180, 40, 40);
     private static final Color PANEL_GRAY = new Color(238, 238, 238);
     private static final Color BORDER_GRAY = new Color(210, 210, 210);
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
-    private final InvoicePanel owner;
+    private final HoaDonPanel owner;
     private final String tenNhanVien;
     private final String vaiTro;
     private final DefaultTableModel model = new DefaultTableModel(
@@ -134,10 +135,10 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
     private final JButton btnThem = createButton("Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
     private final JButton btnLuu = createButton("Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
-    private final JButton btnIn = createButton("Xuất PDF", new Color(54, 103, 193), Color.WHITE);
+    private final JButton btnIn = createButton("In máy in", new Color(54, 103, 193), Color.WHITE);
     private final JButton btnMoi = createButton("Hóa đơn mới", Color.WHITE, Color.DARK_GRAY);
 
-    public CreateInvoiceDialog(InvoicePanel owner, String tenNhanVien, String vaiTro) {
+    public TaoHoaDonDialog(HoaDonPanel owner, String tenNhanVien, String vaiTro) {
         this.owner = owner;
         this.tenNhanVien = tenNhanVien == null ? "" : tenNhanVien;
         this.vaiTro = vaiTro;
@@ -152,12 +153,13 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
 
-        add(new MenuPanel(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
+        add(new ThanhMenu(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
         add(createWorkspace(), BorderLayout.CENTER);
 
         loadCustomersAndProducts();
         resetInvoice();
         wireActions();
+        btnIn.setToolTipText("in hóa đơn đã lưu trực tiếp qua máy in mặc định");
     }
 
     private JPanel createWorkspace() {
@@ -573,7 +575,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         } else if (source == btnLuu) {
             luuHoaDon();
         } else if (source == btnIn) {
-            xuatHoaDonPdf();
+            inHoaDonMayIn();
         } else if (source == btnMoi) {
             resetInvoice();
         }
@@ -819,6 +821,23 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         } catch (IOException | DocumentException exception) {
             JOptionPane.showMessageDialog(this, "Không thể xuất hóa đơn PDF:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void inHoaDonMayIn() {
+        if (!invoiceSaved) {
+            JOptionPane.showMessageDialog(this,
+                    "Hãy lưu hóa đơn trước khi in bằng máy in.",
+                    "Hóa đơn chưa được lưu", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        try {
+            HoaDon hoaDon = hoaDonDao.getHoaDonByMa(txtMaHoaDon.getText().trim());
+            BoInHoaDon.print(this, hoaDon,
+                    hoaDonDao.getChiTietHoaDon(hoaDon.getMaHoaDon()));
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể tải hóa đơn để in:\n"
+                    + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -1,7 +1,7 @@
 package gui;
 
 import connectDB.ConnectDB;
-import DAO.AuditTrail_DAO;
+import DAO.NhatKyHeThong_DAO;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -37,7 +37,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountPanel extends JFrame {
+public class TaiKhoanPanel extends JFrame {
     private static final Color BRAND_RED = new Color(180, 40, 40);
     private static final String[] ROLES = {"Quản lý", "Nhân viên"};
     private static final String[] STATUSES = {"Hoạt động", "Bị khóa", "Chưa kích hoạt"};
@@ -60,11 +60,11 @@ public class AccountPanel extends JFrame {
     private final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
     private final String currentUsername;
 
-    public AccountPanel() {
+    public TaiKhoanPanel() {
         this(null, null, null);
     }
 
-    public AccountPanel(String userName, String userRole, String username) {
+    public TaiKhoanPanel(String userName, String userRole, String username) {
         currentUsername = username;
         setTitle("Điện Máy Đỏ - Quản lý tài khoản");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -73,7 +73,7 @@ public class AccountPanel extends JFrame {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        add(new MenuPanel(userName, userRole, username), BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAccounts();
     }
@@ -237,7 +237,7 @@ public class AccountPanel extends JFrame {
                 return;
             }
             try {
-                AuditTrail_DAO.ghiTheoTenDangNhap(currentUsername, "XÓA", "Tài khoản",
+                NhatKyHeThong_DAO.ghiTheoTenDangNhap(currentUsername, "XÓA", "Tài khoản",
                         "Xóa tài khoản " + username + " (" + accountId + ")");
             } catch (SQLException auditException) {
                 showError("Đã xóa tài khoản nhưng không ghi được Audit Trail:\n"
@@ -371,14 +371,14 @@ public class AccountPanel extends JFrame {
                     try (PreparedStatement statement = connection.prepareStatement(sql)) {
                         statement.setString(1, nextAccountId(connection));
                         statement.setString(2, username);
-                        statement.setString(3, LoginFrame.toMD5(new String(password)));
+                        statement.setString(3, DangNhapFrame.toMD5(new String(password)));
                         statement.setString(4, (String) roleBox.getSelectedItem());
                         statement.setString(5, employee.id);
                         statement.setString(6, (String) statusBox.getSelectedItem());
                         statement.executeUpdate();
                     }
                     try {
-                        AuditTrail_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
+                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
                                 "Tạo tài khoản " + username + " cho nhân viên " + employee.id);
                     } catch (SQLException auditException) {
                         JOptionPane.showMessageDialog(this,
@@ -396,7 +396,7 @@ public class AccountPanel extends JFrame {
                         statement.executeUpdate();
                     }
                     try {
-                        AuditTrail_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
+                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
                                 "Cập nhật vai trò/trạng thái tài khoản " + data.id);
                     } catch (SQLException auditException) {
                         JOptionPane.showMessageDialog(this,

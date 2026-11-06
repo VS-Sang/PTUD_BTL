@@ -19,7 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AuditTrailPanel extends javax.swing.JFrame {
+public class NhatKyHeThongPanel extends javax.swing.JFrame {
     private static final Color BRAND_RED = new Color(180, 40, 40);
     private final String currentUsername;
     private final JTextField searchField = new JTextField(22);
@@ -32,7 +32,7 @@ public class AuditTrailPanel extends javax.swing.JFrame {
         }
     };
 
-    public AuditTrailPanel(String userName, String userRole, String username) {
+    public NhatKyHeThongPanel(String userName, String userRole, String username) {
         currentUsername = username;
         setTitle("Điện Máy Đỏ - Audit Trail");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -40,7 +40,7 @@ public class AuditTrailPanel extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setExtendedState(MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        add(new MenuPanel(userName, userRole, username), BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAuditTrail();
     }

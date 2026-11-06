@@ -11,7 +11,7 @@ import java.util.List;
 import DAO.KhuyenMai_DAO;
 import entity.KhuyenMai;
 
-public class PromotionPanel extends JFrame {
+public class KhuyenMaiPanel extends JFrame {
 
     private static final Color RED_PRIMARY = new Color(200, 35, 45);
     private static final Color RED_DARK = new Color(180, 30, 30);
@@ -19,13 +19,13 @@ public class PromotionPanel extends JFrame {
     private static final Color BG_GRAY = new Color(242, 242, 242);
     private static final Color CARD_BORDER = new Color(220, 220, 220);
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JPanel cardsContainer;
-    private CreatePromotionPanel createFormPanel;
+    private TaoKhuyenMaiPanel createFormPanel;
     private JScrollPane promotionsScrollPane;
     private KhuyenMai_DAO khuyenMaiDAO;
 
-    public PromotionPanel() {
+    public KhuyenMaiPanel() {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
@@ -35,25 +35,25 @@ public class PromotionPanel extends JFrame {
 
         khuyenMaiDAO = new KhuyenMai_DAO();
 
-        menuPanel = new MenuPanel();
+        menuPanel = new ThanhMenu();
 
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
-            new MainFrame().setVisible(true);
+        menuPanel.setShortcutAction(ThanhMenu.Shortcut.HOME, e -> {
+            new KhungChinh().setVisible(true);
             dispose();
         });
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
-            LoginFrame.clearCurrentUsername();
-            new LoginFrame().setVisible(true);
+        menuPanel.setShortcutAction(ThanhMenu.Shortcut.LOGOUT, e -> {
+            DangNhapFrame.clearCurrentUsername();
+            new DangNhapFrame().setVisible(true);
             dispose();
         });
 
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
-            new MainFrame().setVisible(true);
+        menuPanel.setMenuItemAction(ThanhMenu.MenuItem.HOME, e -> {
+            new KhungChinh().setVisible(true);
             dispose();
         });
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
-            LoginFrame.clearCurrentUsername();
-            new LoginFrame().setVisible(true);
+        menuPanel.setMenuItemAction(ThanhMenu.MenuItem.LOGOUT, e -> {
+            DangNhapFrame.clearCurrentUsername();
+            new DangNhapFrame().setVisible(true);
             dispose();
         });
 
@@ -84,7 +84,7 @@ public class PromotionPanel extends JFrame {
         promotionsScrollPane = new JScrollPane(cardsContainer);
         promotionsScrollPane.setBorder(null);
         promotionsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        createFormPanel = new CreatePromotionPanel(
+        createFormPanel = new TaoKhuyenMaiPanel(
                 this::promotionCreated, null);
         JScrollPane formScrollPane = new JScrollPane(createFormPanel);
         formScrollPane.setBorder(null);
@@ -425,6 +425,6 @@ public class PromotionPanel extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new PromotionPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new KhuyenMaiPanel().setVisible(true));
     }
 }

@@ -33,7 +33,7 @@ import javax.swing.table.DefaultTableModel;
 
 import DAO.ThongKe_DAO;
 
-public class TopProductsPanel extends JFrame implements ActionListener {
+public class SanPhamBanChayPanel extends JFrame implements ActionListener {
 
     private static final Color DARK_HEADER = new Color(145, 30, 30);
     private static final Color BG_LIGHT = new Color(248, 249, 250);
@@ -71,11 +71,11 @@ public class TopProductsPanel extends JFrame implements ActionListener {
     private ThongKe_DAO thongKeDAO = new ThongKe_DAO();
     private DecimalFormat dfMoney = new DecimalFormat("#,###đ");
 
-    public TopProductsPanel() {
+    public SanPhamBanChayPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public TopProductsPanel(String userName, String userRole) {
+    public SanPhamBanChayPanel(String userName, String userRole) {
         this.currentUserName = userName;
         this.currentUserRole = userRole;
 
@@ -88,7 +88,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
 
         // 1. MENU CHÍNH
-        add(new MenuPanel(currentUserName, currentUserRole), BorderLayout.NORTH);
+        add(new ThanhMenu(currentUserName, currentUserRole), BorderLayout.NORTH);
 
         // 2. KHUNG NỘI DUNG CHÍNH
         JPanel pMain = new JPanel(new BorderLayout(0, 14));
@@ -408,7 +408,7 @@ public class TopProductsPanel extends JFrame implements ActionListener {
             String period = cboMonth.getSelectedItem() == null
                     ? "tat-ca" : cboMonth.getSelectedItem().toString()
                             .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
-            ReportExportUtils.exportTable(this, table, "Xuất thống kê sản phẩm bán chạy",
+            TienIchXuatBaoCao.exportTable(this, table, "Xuất thống kê sản phẩm bán chạy",
                     "san-pham-ban-chay-" + period + ".csv");
         } else if (source.equals(btnPrint)) {
             String period = cboMonth.getSelectedItem() == null
@@ -418,13 +418,13 @@ public class TopProductsPanel extends JFrame implements ActionListener {
                     {"Sản phẩm hiển thị (Top 5)", String.valueOf(table.getRowCount())},
                     {"Số danh mục", String.valueOf(categoryPdfModel.getRowCount())}
             };
-            ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
+            TienIchXuatBaoCao.exportTablePdf(this, table, lblTableTitle.getText(),
                     "san-pham-ban-chay-" + period + ".pdf", summary, null,
                     "DOANH THU THEO DANH MỤC", categoryPdfTable);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TopProductsPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new SanPhamBanChayPanel().setVisible(true));
     }
 }

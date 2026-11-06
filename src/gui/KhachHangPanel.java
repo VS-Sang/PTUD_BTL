@@ -37,7 +37,7 @@ import javax.swing.table.DefaultTableModel;
 import DAO.KhachHang_DAO;
 import entity.KhachHang;
 
-public class CustomerPanel extends JFrame implements ActionListener {
+public class KhachHangPanel extends JFrame implements ActionListener {
     private DefaultTableModel model;
     private JTable table;
     private JTextField txtSearch;
@@ -54,11 +54,11 @@ public class CustomerPanel extends JFrame implements ActionListener {
     private JTextArea txtFormDiaChi;
     private JComboBox<String> cboFormGioiTinh;
 
-    public CustomerPanel() {
+    public KhachHangPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public CustomerPanel(String userName, String userRole) {
+    public KhachHangPanel(String userName, String userRole) {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
@@ -66,7 +66,7 @@ public class CustomerPanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        add(new MenuPanel(userName, userRole), BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
 
         // 1. KHUNG NỘI DUNG VÀ BẢNG DỮ LIỆU
         JPanel pCenterContainer = new JPanel(new BorderLayout());
@@ -429,6 +429,6 @@ public class CustomerPanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new CustomerPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new KhachHangPanel().setVisible(true));
     }
 }

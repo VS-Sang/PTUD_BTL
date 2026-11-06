@@ -31,7 +31,7 @@ import DAO.NhanVien_DAO;
 import entity.HoaDon;
 import entity.NhanVien;
 
-public class InvoicePanel extends JFrame implements ActionListener {
+public class HoaDonPanel extends JFrame implements ActionListener {
     private final DefaultTableModel model;
     private final JTable table;
     private JTextField txtSearch;
@@ -44,11 +44,11 @@ public class InvoicePanel extends JFrame implements ActionListener {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
-    public InvoicePanel() {
+    public HoaDonPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public InvoicePanel(String userName, String userRole) {
+    public HoaDonPanel(String userName, String userRole) {
         currentUserName = userName == null || userName.trim().isEmpty()
                 ? "Nguyễn Văn An" : userName;
         currentUserRole = userRole == null || userRole.trim().isEmpty()
@@ -60,7 +60,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        add(new MenuPanel(userName, userRole), BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
 
         JPanel pCenterContainer = new JPanel(new BorderLayout());
 
@@ -87,7 +87,8 @@ public class InvoicePanel extends JFrame implements ActionListener {
         btnExport = new JButton("Xuất Excel");
         btnExport.setBackground(Color.WHITE);
         btnExport.setFocusPainted(false);
-        btnPrint = new JButton("Xuất PDF");
+        btnPrint = new JButton("In máy in");
+        btnPrint.setToolTipText("in hóa đơn đang chọn qua máy in mặc định");
         btnPrint.setBackground(new Color(55, 105, 190));
         btnPrint.setForeground(Color.WHITE);
         btnPrint.setFocusPainted(false);
@@ -207,15 +208,14 @@ public class InvoicePanel extends JFrame implements ActionListener {
         if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboStatus)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnExport)) {
-            ReportExportUtils.exportTable(this, table, "Xuất danh sách hóa đơn",
+            TienIchXuatBaoCao.exportTable(this, table, "Xuất danh sách hóa đơn",
                     "DanhSachHoaDon.csv");
         } else if (o.equals(btnPrint)) {
-            ReportExportUtils.exportTablePdf(this, table, "Danh sách hóa đơn",
-                    "DanhSachHoaDon.pdf");
+            inHoaDonDangChon();
         } else if (o.equals(btnDelete)) {
             xoaHoaDonDangChon();
         } else if (o.equals(btnCreate)) {
-            new CreateInvoiceDialog(this, currentUserName, currentUserRole).setVisible(true);
+            new TaoHoaDonDialog(this, currentUserName, currentUserRole).setVisible(true);
         } else if (o.equals(btnDetail)) {
             moChiTietHoaDonDangChon();
         } else if (o.equals(btnEdit)) {
@@ -238,13 +238,28 @@ public class InvoicePanel extends JFrame implements ActionListener {
         if (maHoaDon == null) {
             return;
         }
+
         try {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
-            new InvoiceDetailsDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
+            new ChiTietHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
             JOptionPane.showMessageDialog(this, "Không thể tải chi tiết hóa đơn:\n"
                     + exception.getMessage(), "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void inHoaDonDangChon() {
+        String maHoaDon = layMaHoaDonDangChon();
+        if (maHoaDon == null) {
+            return;
+        }
+        try {
+            HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
+            BoInHoaDon.print(this, hoaDon, hd_dao.getChiTietHoaDon(maHoaDon));
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể tải hóa đơn để in:\n"
+                    + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -255,7 +270,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
         }
         try {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
-            new EditInvoiceDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
+            new SuaHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
             JOptionPane.showMessageDialog(this, "Không thể tải hóa đơn để sửa:\n"
@@ -332,7 +347,7 @@ public class InvoicePanel extends JFrame implements ActionListener {
                 hd_dao.capNhatThuNganHoaDon(maHoaDon, selectedOption.maNhanVien);
                 return super.stopCellEditing();
             } catch (SQLException | IllegalArgumentException exception) {
-                JOptionPane.showMessageDialog(InvoicePanel.this,
+                JOptionPane.showMessageDialog(HoaDonPanel.this,
                         "Không thể cập nhật thu ngân:\n" + exception.getMessage(),
                         "Lỗi cập nhật hóa đơn", JOptionPane.ERROR_MESSAGE);
                 return false;
@@ -372,6 +387,6 @@ public class InvoicePanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new InvoicePanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new HoaDonPanel().setVisible(true));
     }
 }

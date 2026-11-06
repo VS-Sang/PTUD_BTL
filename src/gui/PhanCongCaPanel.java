@@ -44,9 +44,9 @@ import entity.CaLamViec;
 import entity.NhanVien;
 import entity.PhanCongCaLam;
 
-public class AssignmentPanel extends JFrame implements ActionListener {
+public class PhanCongCaPanel extends JFrame implements ActionListener {
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private String currentUserName;
     private String currentUserRole;
     private String currentUsername;
@@ -64,15 +64,15 @@ public class AssignmentPanel extends JFrame implements ActionListener {
     private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
-    public AssignmentPanel() {
+    public PhanCongCaPanel() {
         this(null, null, null);
     }
 
-    public AssignmentPanel(String userName, String userRole) {
+    public PhanCongCaPanel(String userName, String userRole) {
         this(userName, userRole, null);
     }
 
-    public AssignmentPanel(String userName, String userRole, String username) {
+    public PhanCongCaPanel(String userName, String userRole, String username) {
         this.currentUserName = userName;
         this.currentUserRole = userRole;
         this.currentUsername = username;
@@ -84,7 +84,7 @@ public class AssignmentPanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel(userName, userRole, username);
+        menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -506,11 +506,11 @@ public class AssignmentPanel extends JFrame implements ActionListener {
             }
         } else if (o.equals(btnQuanLyCa)) {
             dispose();
-            new WorkSchedulePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new LichLamViecPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new AssignmentPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new PhanCongCaPanel().setVisible(true));
     }
 }

@@ -14,6 +14,7 @@ import java.util.Set;
 
 import connectDB.ConnectDB;
 import entity.ChiTietDonHang;
+import entity.ChiTietHoaDon;
 import entity.DonHang;
 import entity.HoaDon;
 import entity.KhachHang;
@@ -104,13 +105,12 @@ public class HoaDon_DAO {
         }
     }
 
-    public ArrayList<ChiTietDonHang> getChiTietHoaDon(String maHoaDon) throws SQLException {
-        ArrayList<ChiTietDonHang> chiTiet = new ArrayList<>();
-        String sql = "SELECT ct.maDonHang, ct.maSanPham, sp.tenSanPham, ct.soLuong, "
-                + "ct.donGia, ct.giamGia, ct.thanhTien, ct.ghiChu "
-                + "FROM ChiTietDonHang ct JOIN SanPham sp ON sp.maSanPham = ct.maSanPham "
-                + "JOIN HoaDon hd ON hd.maDonHang = ct.maDonHang "
-                + "WHERE hd.maHoaDon = ? ORDER BY ct.maSanPham";
+    public ArrayList<ChiTietHoaDon> getChiTietHoaDon(String maHoaDon) throws SQLException {
+        ArrayList<ChiTietHoaDon> chiTiet = new ArrayList<>();
+        String sql = "SELECT ct.maHoaDon, ct.maDonHang, ct.maSanPham, sp.tenSanPham, "
+                + "ct.soLuong, ct.donGia, ct.giamGia, ct.thanhTien, ct.ghiChu "
+                + "FROM ChiTietHoaDon ct JOIN SanPham sp ON sp.maSanPham = ct.maSanPham "
+                + "WHERE ct.maHoaDon = ? ORDER BY ct.maSanPham";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, maHoaDon);
@@ -119,7 +119,8 @@ public class HoaDon_DAO {
                     SanPham sanPham = new SanPham(rs.getString("maSanPham"));
                     sanPham.setTenSanPham(rs.getString("tenSanPham"));
                     sanPham.setGiaBan(rs.getDouble("donGia"));
-                    chiTiet.add(new ChiTietDonHang(new DonHang(rs.getString("maDonHang")),
+                    chiTiet.add(new ChiTietHoaDon(rs.getString("maHoaDon"),
+                            new DonHang(rs.getString("maDonHang")),
                             sanPham, rs.getInt("soLuong"), rs.getDouble("donGia"),
                             rs.getDouble("giamGia"), rs.getDouble("thanhTien"),
                             rs.getString("ghiChu")));
@@ -395,6 +396,11 @@ public class HoaDon_DAO {
                     stmt.setString(1, maDonHang);
                     stmt.executeUpdate();
                 }
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "DELETE FROM ChiTietHoaDon WHERE maHoaDon = ?")) {
+                    stmt.setString(1, maHoaDon);
+                    stmt.executeUpdate();
+                }
                 String sqlThemChiTiet = "INSERT INTO ChiTietDonHang "
                         + "(maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
                         + "VALUES (?, ?, ?, ?, 0, ?, NULL)";
@@ -408,6 +414,16 @@ public class HoaDon_DAO {
                         stmt.addBatch();
                     }
                     stmt.executeBatch();
+                }
+                String sqlThemChiTietHoaDon = "INSERT INTO ChiTietHoaDon "
+                        + "(maHoaDon, maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
+                        + "SELECT ?, ?, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu "
+                        + "FROM ChiTietDonHang WHERE maDonHang = ?";
+                try (PreparedStatement stmt = con.prepareStatement(sqlThemChiTietHoaDon)) {
+                    stmt.setString(1, maHoaDon);
+                    stmt.setString(2, maDonHang);
+                    stmt.setString(3, maDonHang);
+                    stmt.executeUpdate();
                 }
 
                 String sqlUpdateOrder = "UPDATE DonHang SET maKhachHang = ?, tongTienHang = ?, "
@@ -608,6 +624,11 @@ public class HoaDon_DAO {
                 try (PreparedStatement stmt = con.prepareStatement(
                         "DELETE FROM ChiTietDonHang WHERE maDonHang = ?")) {
                     stmt.setString(1, maDonHang);
+                    stmt.executeUpdate();
+                }
+                String sqlXoaChiTietHoaDon = "DELETE FROM ChiTietHoaDon WHERE maHoaDon = ?";
+                try (PreparedStatement stmt = con.prepareStatement(sqlXoaChiTietHoaDon)) {
+                    stmt.setString(1, maHoaDon);
                     stmt.executeUpdate();
                 }
                 try (PreparedStatement stmt = con.prepareStatement(
@@ -820,6 +841,21 @@ public class HoaDon_DAO {
                     stmt.setString(11, phuongThucThanhToan);
                     stmt.setString(12, ghiChu);
                     stmt.executeUpdate();
+                }
+
+                String sqlChiTietHoaDon = "INSERT INTO ChiTietHoaDon "
+                        + "(maHoaDon, maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
+                        + "VALUES (?, ?, ?, ?, 0, 0, ?, NULL)";
+                try (PreparedStatement stmt = con.prepareStatement(sqlChiTietHoaDon)) {
+                    for (ChiTietDonHang item : chiTietDaXacNhan) {
+                        stmt.setString(1, maHoaDon);
+                        stmt.setString(2, maDonHang);
+                        stmt.setString(3, item.getSanPham().getMaSanPham());
+                        stmt.setInt(4, item.getSoLuong());
+                        stmt.setDouble(5, item.getThanhTien());
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
                 }
 
                 if (maKhachHang != null) {

@@ -49,10 +49,10 @@ import DAO.PhieuNhapKho_DAO;
 import entity.DanhMuc;
 import entity.SanPham;
 
-public class ProductPanel extends JFrame implements ActionListener {
+public class SanPhamPanel extends JFrame implements ActionListener {
     private DefaultTableModel model;
     private JTable table;
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JTextField txtSearch;
     private JComboBox<DanhMuc> cboCategory;
     private JComboBox<String> cboStatus;
@@ -61,7 +61,7 @@ public class ProductPanel extends JFrame implements ActionListener {
     private final SanPham_DAO sp_dao = new SanPham_DAO();
     private final DecimalFormat df = new DecimalFormat("#,##0.## VNĐ");
 
-    public ProductPanel() {
+    public SanPhamPanel() {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setSize(1200, 650);
         setLocationRelativeTo(null);
@@ -69,25 +69,25 @@ public class ProductPanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // MenuPanel tích hợp chuyển màn hình từ nhánh thuy
-        menuPanel = new MenuPanel();
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
-            new MainFrame().setVisible(true);
+        // ThanhMenu tích hợp chuyển màn hình từ nhánh thuy
+        menuPanel = new ThanhMenu();
+        menuPanel.setShortcutAction(ThanhMenu.Shortcut.HOME, e -> {
+            new KhungChinh().setVisible(true);
             dispose();
         });
-        menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
-            LoginFrame.clearCurrentUsername();
-            new LoginFrame().setVisible(true);
+        menuPanel.setShortcutAction(ThanhMenu.Shortcut.LOGOUT, e -> {
+            DangNhapFrame.clearCurrentUsername();
+            new DangNhapFrame().setVisible(true);
             dispose();
         });
 
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
-            new MainFrame().setVisible(true);
+        menuPanel.setMenuItemAction(ThanhMenu.MenuItem.HOME, e -> {
+            new KhungChinh().setVisible(true);
             dispose();
         });
-        menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
-            LoginFrame.clearCurrentUsername();
-            new LoginFrame().setVisible(true);
+        menuPanel.setMenuItemAction(ThanhMenu.MenuItem.LOGOUT, e -> {
+            DangNhapFrame.clearCurrentUsername();
+            new DangNhapFrame().setVisible(true);
             dispose();
         });
 
@@ -153,7 +153,7 @@ public class ProductPanel extends JFrame implements ActionListener {
                     try {
                         sp_dao.capNhatTrangThai(maSanPham, (String) value);
                     } catch (SQLException | IllegalArgumentException exception) {
-                        JOptionPane.showMessageDialog(ProductPanel.this,
+                        JOptionPane.showMessageDialog(SanPhamPanel.this,
                                 "Không thể cập nhật trạng thái sản phẩm:\n" + exception.getMessage(),
                                 "Lỗi cập nhật", JOptionPane.ERROR_MESSAGE);
                         return;
@@ -161,7 +161,7 @@ public class ProductPanel extends JFrame implements ActionListener {
                 }
                 super.setValueAt(value, row, columnIndex);
                 if (columnIndex == 9) {
-                    SwingUtilities.invokeLater(ProductPanel.this::docDuLieuDatabaseVaoTable);
+                    SwingUtilities.invokeLater(SanPhamPanel.this::docDuLieuDatabaseVaoTable);
                 }
             }
         };
@@ -542,6 +542,6 @@ public class ProductPanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProductPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new SanPhamPanel().setVisible(true));
     }
 }

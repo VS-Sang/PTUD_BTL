@@ -28,7 +28,7 @@ import javax.imageio.ImageIO;
  *
  * Giữ nguyên chữ ký hàm write(...) nên các nơi đang gọi không cần sửa.
  */
-final class PdfDocumentExporter {
+final class XuatTaiLieuPdf {
 
     // ====== THÔNG TIN CỬA HÀNG (sửa lại cho đúng) ======
     private static final String STORE_NAME = "ĐIỆN MÁY ĐỎ";
@@ -68,7 +68,7 @@ final class PdfDocumentExporter {
     private static final Color MUTED = new Color(100, 100, 100);
     private static final Color BORDER = Color.BLACK;
 
-    private PdfDocumentExporter() {}
+    private XuatTaiLieuPdf() {}
 
     private static final class QrImage {
         final byte[] data;   // RGB 8-bit, đã nén Flate
@@ -89,7 +89,7 @@ final class PdfDocumentExporter {
             if (file.isFile()) {
                 src = ImageIO.read(file);
             } else {
-                try (InputStream in = PdfDocumentExporter.class.getResourceAsStream(
+                try (InputStream in = XuatTaiLieuPdf.class.getResourceAsStream(
                         "/" + QR_IMAGE_PATH)) {
                     if (in != null) {
                         src = ImageIO.read(in);

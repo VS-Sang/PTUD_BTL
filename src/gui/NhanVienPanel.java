@@ -33,9 +33,9 @@ import javax.swing.table.DefaultTableModel;
 import DAO.NhanVien_DAO;
 import entity.NhanVien;
 
-public class EmployeePanel extends JFrame implements ActionListener {
+public class NhanVienPanel extends JFrame implements ActionListener {
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtCMND, txtSDT, txtEmail, txtMucLuong, txtDiaChi, txtSearch;
     private JComboBox<String> cboGioiTinh, cboPhongBan, cboChucVu, cboTrangThai, cboDepartment, cboStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnTim;
@@ -45,11 +45,11 @@ public class EmployeePanel extends JFrame implements ActionListener {
     private NhanVien_DAO nv_dao = new NhanVien_DAO();
     private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
 
-    public EmployeePanel() {
+    public NhanVienPanel() {
         this(null, null, null);
     }
 
-    public EmployeePanel(String userName, String userRole, String username) {
+    public NhanVienPanel(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ — Quản lý Nhân Viên");
         setSize(1200, 680);
         setLocationRelativeTo(null);
@@ -57,7 +57,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel(userName, userRole, username);
+        menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -455,6 +455,6 @@ public class EmployeePanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new EmployeePanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new NhanVienPanel().setVisible(true));
     }
 }

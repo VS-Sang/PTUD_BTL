@@ -423,6 +423,30 @@ CREATE TABLE HoaDon (
 GO
 
 -- ============================================================
+-- BẢNG 15: ChiTietHoaDon (Invoice Detail)
+-- Lưu sản phẩm và đơn giá thực tế trên từng hóa đơn
+-- ============================================================
+CREATE TABLE ChiTietHoaDon (
+                               maHoaDon        NVARCHAR(20)    NOT NULL,
+                               maDonHang       NVARCHAR(20)    NOT NULL,
+                               maSanPham       NVARCHAR(20)    NOT NULL,
+                               soLuong         INT             NOT NULL CHECK (soLuong > 0),
+                               donGia          DECIMAL(15, 2)  NOT NULL CHECK (donGia >= 0),
+                               giamGia         DECIMAL(15, 2)  NOT NULL DEFAULT 0 CHECK (giamGia >= 0),
+                               thanhTien       DECIMAL(18, 2)  NOT NULL CHECK (thanhTien >= 0),
+                               ghiChu          NVARCHAR(255)   NULL,
+
+                               CONSTRAINT PK_ChiTietHoaDon PRIMARY KEY (maHoaDon, maSanPham),
+                               CONSTRAINT FK_CTHD_HoaDon FOREIGN KEY (maHoaDon)
+                                   REFERENCES HoaDon(maHoaDon),
+                               CONSTRAINT FK_CTHD_DonHang FOREIGN KEY (maDonHang)
+                                   REFERENCES DonHang(maDonHang),
+                               CONSTRAINT FK_CTHD_SanPham FOREIGN KEY (maSanPham)
+                                   REFERENCES SanPham(maSanPham)
+);
+GO
+
+-- ============================================================
 -- BẢNG 15: NhaCungCap (Supplier)
 -- Thông tin nhà cung cấp cho phiếu nhập kho
 -- ============================================================
@@ -1063,7 +1087,15 @@ VALUES
     (N'HD007', N'DH007', N'KH006', N'NV002', '2026-10-18 10:05:00', 38990000, 3899000, 100000, 0, 34991000, 0,        0,      N'Chuyển khoản', N'00710008888', N'Vietcombank',NULL,            350, N'Chờ thanh toán',N'Thanh toán khi nhận hàng');
 GO
 
--- 15. Nhà cung cấp (BẢNG 15)
+-- 15. Chi tiết hóa đơn, đồng bộ từ chi tiết đơn hàng liên kết
+INSERT INTO ChiTietHoaDon (maHoaDon, maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu)
+SELECT hd.maHoaDon, ct.maDonHang, ct.maSanPham, ct.soLuong, ct.donGia,
+       ct.giamGia, ct.thanhTien, ct.ghiChu
+FROM HoaDon hd
+JOIN ChiTietDonHang ct ON ct.maDonHang = hd.maDonHang;
+GO
+
+-- 16. Nhà cung cấp (BẢNG 16)
 INSERT INTO NhaCungCap (maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, nguoiLienHe, maSoThue, soTaiKhoanNH, tenNganHang, congNo, trangThai, ghiChu)
 VALUES
     (N'NCC001', N'Công ty TNHH Apple Việt Nam',             '02838001111', 'apple.vn@supplier.com',   N'Tòa nhà Bitexco, Q.1, TP.HCM',       N'Nguyễn Minh Tâm', N'0312345678', N'0071001112223', N'Vietcombank', 150000000, N'Hoạt động',     N'Nhà phân phối ủy quyền Apple'),

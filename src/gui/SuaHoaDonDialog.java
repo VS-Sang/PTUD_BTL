@@ -34,10 +34,10 @@ import entity.HoaDon;
 import entity.KhachHang;
 import entity.SanPham;
 
-final class EditInvoiceDialog extends JDialog {
+final class SuaHoaDonDialog extends JDialog {
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
 
-    private final InvoicePanel owner;
+    private final HoaDonPanel owner;
     private final HoaDon hoaDon;
     private final String maKhuyenMai;
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
@@ -61,8 +61,8 @@ final class EditInvoiceDialog extends JDialog {
     private final JTable table = new JTable(model);
     private final Map<String, ChiTietDonHang> chiTietTheoMa = new LinkedHashMap<>();
 
-    EditInvoiceDialog(InvoicePanel owner, HoaDon hoaDon, String maKhuyenMai,
-                      List<ChiTietDonHang> chiTiet) {
+    SuaHoaDonDialog(HoaDonPanel owner, HoaDon hoaDon, String maKhuyenMai,
+                      List<? extends ChiTietDonHang> chiTiet) {
         super(owner, "Sửa hóa đơn " + hoaDon.getMaHoaDon(), true);
         this.owner = owner;
         this.hoaDon = hoaDon;
@@ -76,7 +76,7 @@ final class EditInvoiceDialog extends JDialog {
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(8, 8));
         add(createInvoiceFields(), BorderLayout.NORTH);
-        add(createProductPanel(), BorderLayout.CENTER);
+        add(createSanPhamPanel(), BorderLayout.CENTER);
         add(createActions(), BorderLayout.SOUTH);
         loadCustomers();
         loadProducts();
@@ -123,7 +123,7 @@ final class EditInvoiceDialog extends JDialog {
         return fields;
     }
 
-    private JPanel createProductPanel() {
+    private JPanel createSanPhamPanel() {
         JPanel panel = new JPanel(new BorderLayout(6, 6));
         panel.setBorder(BorderFactory.createTitledBorder("Sản phẩm trong hóa đơn"));
         JPanel addProduct = new JPanel(new FlowLayout(FlowLayout.LEFT));
