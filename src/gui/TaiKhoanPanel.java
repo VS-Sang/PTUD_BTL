@@ -337,17 +337,47 @@ public class TaiKhoanPanel extends JFrame {
         private void loadEmployees() {
             String sql = "SELECT nv.maNhanVien, nv.hoTen FROM NhanVien nv "
                     + "WHERE nv.trangThai = N'Đang làm việc' "
-                    + "AND NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
+                    + (data == null
+                            ? "AND NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
+                            : "AND (nv.maNhanVien = (SELECT maNhanVien FROM TaiKhoan WHERE maTaiKhoan = ?) "
+                                    + "OR NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien)) ")
                     + "ORDER BY nv.hoTen";
             try (Connection connection = ConnectDB.getConnection();
                  PreparedStatement statement = connection.prepareStatement(sql);
-                 ResultSet resultSet = statement.executeQuery()) {
+                 ) {
+                if (data != null) {
+                    statement.setString(1, data.id);
+                }
+                try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     employeeBox.addItem(new EmployeeOption(resultSet.getString(1), resultSet.getString(2)));
+                }
+                }
+                if (data != null) {
+                    selectEmployeeForAccount(data.id, connection);
                 }
             } catch (SQLException exception) {
                 JOptionPane.showMessageDialog(this, "Không thể tải danh sách nhân viên.",
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        private void selectEmployeeForAccount(String accountId, Connection connection)
+                throws SQLException {
+            String sql = "SELECT maNhanVien FROM TaiKhoan WHERE maTaiKhoan = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, accountId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String employeeId = resultSet.getString(1);
+                        for (int i = 0; i < employeeBox.getItemCount(); i++) {
+                            if (employeeId.equals(employeeBox.getItemAt(i).id)) {
+                                employeeBox.setSelectedIndex(i);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 

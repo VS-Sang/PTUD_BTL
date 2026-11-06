@@ -10,14 +10,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,6 +35,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.NhanVien_DAO;
+import connectDB.ConnectDB;
 import entity.NhanVien;
 
 public class NhanVienPanel extends JFrame implements ActionListener {
@@ -120,13 +121,11 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         pGrid.add(txtEmail);
 
         pGrid.add(new JLabel("Phòng ban:"));
-        cboPhongBan = new JComboBox<>(new String[]{"Bán hàng", "Kho", "Kế toán", "Quản lý"});
+        cboPhongBan = new JComboBox<>();
         pGrid.add(cboPhongBan);
 
         pGrid.add(new JLabel("Chức vụ:"));
-        cboChucVu = new JComboBox<>(new String[]{
-                "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
-        });
+        cboChucVu = new JComboBox<>();
         pGrid.add(cboChucVu);
 
         pGrid.add(new JLabel("Mức lương (VNĐ):"));
@@ -181,9 +180,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         btnTim.setBackground(Color.WHITE);
         btnTim.setFocusPainted(false);
 
-        cboDepartment = new JComboBox<>(new String[]{
-                "Tất cả chức vụ", "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
-        });
+        cboDepartment = new JComboBox<>();
         cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
 
         pSearch.add(txtSearch);
@@ -191,7 +188,6 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         pSearch.add(cboDepartment);
         pSearch.add(cboStatus);
         pTop.add(pSearch, BorderLayout.SOUTH);
-        loadDanhMucNhanVien();
 
         pMain.add(pTop, BorderLayout.NORTH);
 
@@ -233,6 +229,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         pMain.add(new JScrollPane(table), BorderLayout.CENTER);
         add(pMain, BorderLayout.CENTER);
 
+        napDanhSachPhongBanVaChucVu();
         // Đọc dữ liệu từ Database vào bảng
         docDuLieuDatabaseVaoTable();
         xoaRong();
@@ -266,36 +263,8 @@ public class NhanVienPanel extends JFrame implements ActionListener {
                     cboTrangThai.setSelectedItem(model.getValueAt(row, 11).toString());
                     cboTrangThai.setEnabled(true);
                 }
-
             }
         });
-    }
-
-    private void loadDanhMucNhanVien() {
-        cboPhongBan.removeAllItems();
-        cboChucVu.removeAllItems();
-        cboDepartment.removeAllItems();
-        cboDepartment.addItem("Tất cả chức vụ");
-        String sql = "SELECT DISTINCT phongBan, chucVu FROM NhanVien "
-                + "WHERE phongBan IS NOT NULL OR chucVu IS NOT NULL ORDER BY phongBan, chucVu";
-        try (Connection connection = connectDB.ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            java.util.LinkedHashSet<String> phongBans = new java.util.LinkedHashSet<>();
-            java.util.LinkedHashSet<String> chucVus = new java.util.LinkedHashSet<>();
-            while (resultSet.next()) {
-                if (resultSet.getString("phongBan") != null) phongBans.add(resultSet.getString("phongBan"));
-                if (resultSet.getString("chucVu") != null) chucVus.add(resultSet.getString("chucVu"));
-            }
-            for (String phongBan : phongBans) cboPhongBan.addItem(phongBan);
-            for (String chucVu : chucVus) {
-                cboChucVu.addItem(chucVu);
-                cboDepartment.addItem(chucVu);
-            }
-        } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải phòng ban và chức vụ:\n"
-                    + exception.getMessage(), "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     public void docDuLieuDatabaseVaoTable() {
@@ -352,6 +321,36 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         txtDiaChi.setText("");
         table.clearSelection();
         txtHoTen.requestFocus();
+    }
+
+    private void napDanhSachPhongBanVaChucVu() {
+        cboPhongBan.removeAllItems();
+        cboChucVu.removeAllItems();
+        cboDepartment.removeAllItems();
+        cboDepartment.addItem("Tất cả chức vụ");
+        String sqlPhongBan = "SELECT DISTINCT phongBan FROM NhanVien "
+                + "WHERE phongBan IS NOT NULL AND LTRIM(RTRIM(phongBan)) <> '' ORDER BY phongBan";
+        String sqlChucVu = "SELECT DISTINCT chucVu FROM NhanVien "
+                + "WHERE chucVu IS NOT NULL AND LTRIM(RTRIM(chucVu)) <> '' ORDER BY chucVu";
+        try (Connection connection = ConnectDB.getConnection()) {
+            napDanhSach(connection, sqlPhongBan, cboPhongBan);
+            napDanhSach(connection, sqlChucVu, cboChucVu);
+            napDanhSach(connection, sqlChucVu, cboDepartment);
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tải phòng ban và chức vụ:\n" + exception.getMessage(),
+                    "Lỗi dữ liệu nhân viên", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void napDanhSach(Connection connection, String sql, JComboBox<String> comboBox)
+            throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                comboBox.addItem(resultSet.getString(1));
+            }
+        }
     }
 
     private Date parseNgaySinh() throws ParseException {
