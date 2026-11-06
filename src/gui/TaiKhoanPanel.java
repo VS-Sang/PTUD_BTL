@@ -327,7 +327,7 @@ public class TaiKhoanPanel extends JFrame {
             loadEmployees();
             if (data != null) {
                 usernameField.setText(data.username);
-                usernameField.setEditable(false);
+                usernameField.setEditable(true);
                 passwordField.setVisible(false);
                 roleBox.setSelectedItem(data.role);
                 statusBox.setSelectedItem(data.status);
@@ -387,12 +387,20 @@ public class TaiKhoanPanel extends JFrame {
                                 JOptionPane.WARNING_MESSAGE);
                     }
                 } else {
-                    String sql = "UPDATE TaiKhoan SET vaiTro = ?, trangThai = ?, ngayCapNhat = GETDATE() "
+                    if (!username.matches("[A-Za-z0-9._-]{3,50}")) {
+                        JOptionPane.showMessageDialog(this,
+                                "Tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -).",
+                                "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    String sql = "UPDATE TaiKhoan SET tenDangNhap = ?, vaiTro = ?, trangThai = ?, "
+                            + "ngayCapNhat = GETDATE() "
                             + "WHERE maTaiKhoan = ?";
                     try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                        statement.setString(1, (String) roleBox.getSelectedItem());
-                        statement.setString(2, (String) statusBox.getSelectedItem());
-                        statement.setString(3, data.id);
+                        statement.setString(1, username);
+                        statement.setString(2, (String) roleBox.getSelectedItem());
+                        statement.setString(3, (String) statusBox.getSelectedItem());
+                        statement.setString(4, data.id);
                         statement.executeUpdate();
                     }
                     try {
