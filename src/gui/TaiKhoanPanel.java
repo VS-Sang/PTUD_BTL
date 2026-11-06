@@ -30,8 +30,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -322,10 +320,7 @@ public class TaiKhoanPanel extends JFrame {
             save.addActionListener(event -> saveAccount());
             JButton cancel = new JButton("Hủy");
             cancel.addActionListener(event -> dispose());
-            JButton addEmployee = new JButton("Thêm nhân viên mới");
-            addEmployee.addActionListener(event -> openEmployeeForm());
             JPanel buttons = new JPanel();
-            buttons.add(addEmployee);
             buttons.add(save);
             buttons.add(cancel);
             add(buttons, BorderLayout.SOUTH);
@@ -337,26 +332,11 @@ public class TaiKhoanPanel extends JFrame {
                 roleBox.setSelectedItem(data.role);
                 statusBox.setSelectedItem(data.status);
             }
-
-        }
-
-        private void openEmployeeForm() {
-            NhanVienPanel employeePanel = new NhanVienPanel();
-            employeePanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            employeePanel.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosed(WindowEvent event) {
-                    loadEmployees();
-                }
-            });
-            employeePanel.setVisible(true);
         }
 
         private void loadEmployees() {
-            employeeBox.removeAllItems();
-            employeeBox.setEnabled(true);
             String sql = "SELECT nv.maNhanVien, nv.hoTen FROM NhanVien nv "
-                    + "WHERE nv.hoTen IS NOT NULL AND LTRIM(RTRIM(nv.hoTen)) <> '' "
+                    + "WHERE nv.trangThai = N'Đang làm việc' "
                     + (data == null
                             ? "AND NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
                             : "AND (nv.maNhanVien = (SELECT maNhanVien FROM TaiKhoan WHERE maTaiKhoan = ?) "
@@ -375,10 +355,6 @@ public class TaiKhoanPanel extends JFrame {
                 }
                 if (data != null) {
                     selectEmployeeForAccount(data.id, connection);
-                }
-                if (employeeBox.getItemCount() == 0) {
-                    employeeBox.addItem(new EmployeeOption("", "-- Không còn nhân viên chưa có tài khoản --"));
-                    employeeBox.setEnabled(false);
                 }
             } catch (SQLException exception) {
                 JOptionPane.showMessageDialog(this, "Không thể tải danh sách nhân viên.",
@@ -408,9 +384,7 @@ public class TaiKhoanPanel extends JFrame {
         private void saveAccount() {
             String username = usernameField.getText().trim();
             char[] password = passwordField.getPassword();
-            EmployeeOption selectedEmployee = employeeBox.getSelectedItem() instanceof EmployeeOption
-                    ? (EmployeeOption) employeeBox.getSelectedItem() : null;
-            if (data == null && (selectedEmployee == null || selectedEmployee.id.isEmpty()
+            if (data == null && (employeeBox.getSelectedItem() == null
                     || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
                 JOptionPane.showMessageDialog(this,
                         "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
@@ -421,7 +395,7 @@ public class TaiKhoanPanel extends JFrame {
             }
             try (Connection connection = ConnectDB.getConnection()) {
                 if (data == null) {
-                    EmployeeOption employee = selectedEmployee;
+                    EmployeeOption employee = (EmployeeOption) employeeBox.getSelectedItem();
                     String sql = "INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai) "
                             + "VALUES (?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement statement = connection.prepareStatement(sql)) {
