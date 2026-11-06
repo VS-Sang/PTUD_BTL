@@ -51,7 +51,7 @@ public class KhungChinh extends JFrame {
     private final JLabel clockLabel = new JLabel();
     private final JLabel dateLabel = new JLabel();
     private final DefaultTableModel invoiceTableModel;
-    private final JPanel pageContainer = new JPanel(new GridLayout(1, 1));
+    private final JPanel pageContainer = new FullSizePanel();
     private final Map<ThanhMenu.MenuItem, Component> pageCache =
             new EnumMap<>(ThanhMenu.MenuItem.class);
     private HoaDonPanel hoaDonPage;
@@ -223,13 +223,27 @@ public class KhungChinh extends JFrame {
         content.setPreferredSize(new Dimension(0, 0));
         content.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        JPanel page = new JPanel(new GridLayout(1, 1));
+        JPanel page = new FullSizePanel();
         page.setOpaque(false);
         page.setMinimumSize(new Dimension(0, 0));
         page.setPreferredSize(new Dimension(0, 0));
         page.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         page.add(content);
         return page;
+    }
+
+    private static final class FullSizePanel extends JPanel {
+        FullSizePanel() {
+            super(new BorderLayout());
+        }
+
+        @Override
+        public void doLayout() {
+            super.doLayout();
+            for (Component component : getComponents()) {
+                component.setBounds(0, 0, getWidth(), getHeight());
+            }
+        }
     }
 
     private String currentUserName() {

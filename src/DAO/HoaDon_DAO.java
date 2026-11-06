@@ -571,7 +571,8 @@ public class HoaDon_DAO {
                     }
                 }
 
-                if (coBanGhi(con, "SELECT 1 FROM PhieuTraHang WHERE maHoaDon = ?", maHoaDon)) {
+                if (bangTonTai(con, "PhieuTraHang")
+                        && coBanGhi(con, "SELECT 1 FROM PhieuTraHang WHERE maHoaDon = ?", maHoaDon)) {
                     throw new SQLException("Không thể xóa hóa đơn đã phát sinh phiếu trả hàng.");
                 }
                 if (coBanGhi(con,
@@ -579,6 +580,7 @@ public class HoaDon_DAO {
                         maHoaDon, maDonHang)) {
                     throw new SQLException("Không thể xóa hóa đơn đã có lịch sử điểm thưởng.");
                 }
+
                 if (coBanGhi(con, "SELECT 1 FROM PhieuXuatKho WHERE maDonHang = ?", maDonHang)) {
                     throw new SQLException("Không thể xóa hóa đơn đã liên kết với phiếu xuất kho.");
                 }
@@ -663,9 +665,18 @@ public class HoaDon_DAO {
             for (int i = 0; i < parameters.length; i++) {
                 stmt.setString(i + 1, parameters[i]);
             }
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
+        }
+    }
+
+    private boolean bangTonTai(Connection con, String tenBang) throws SQLException {
+        String sql = "SELECT 1 WHERE OBJECT_ID(N'dbo." + tenBang + "', N'U') IS NOT NULL";
+        try (PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next();
         }
     }
 
