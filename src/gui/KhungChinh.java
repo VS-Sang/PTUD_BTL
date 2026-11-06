@@ -51,7 +51,7 @@ public class KhungChinh extends JFrame {
     private final JLabel clockLabel = new JLabel();
     private final JLabel dateLabel = new JLabel();
     private final DefaultTableModel invoiceTableModel;
-    private final JPanel pageContainer = new JPanel(new BorderLayout());
+    private final JPanel pageContainer = new JPanel(new GridLayout(1, 1));
     private final Map<ThanhMenu.MenuItem, Component> pageCache =
             new EnumMap<>(ThanhMenu.MenuItem.class);
     private HoaDonPanel hoaDonPage;
@@ -139,7 +139,7 @@ public class KhungChinh extends JFrame {
     public void moTrang(ThanhMenu.MenuItem item) {
         if (item == ThanhMenu.MenuItem.HOME) {
             pageContainer.removeAll();
-            pageContainer.add(dashboard, BorderLayout.CENTER);
+            pageContainer.add(dashboard);
         } else {
             Component page = pageCache.get(item);
             if (page == null) {
@@ -147,7 +147,7 @@ public class KhungChinh extends JFrame {
                 pageCache.put(item, page);
             }
             pageContainer.removeAll();
-            pageContainer.add(page, BorderLayout.CENTER);
+            pageContainer.add(page);
         }
         pageContainer.revalidate();
         pageContainer.repaint();
@@ -223,12 +223,12 @@ public class KhungChinh extends JFrame {
         content.setPreferredSize(new Dimension(0, 0));
         content.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        JPanel page = new JPanel(new BorderLayout());
+        JPanel page = new JPanel(new GridLayout(1, 1));
         page.setOpaque(false);
         page.setMinimumSize(new Dimension(0, 0));
         page.setPreferredSize(new Dimension(0, 0));
         page.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        page.add(content, BorderLayout.CENTER);
+        page.add(content);
         return page;
     }
 
