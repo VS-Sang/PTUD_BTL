@@ -11,7 +11,8 @@ public class ChiTietHoaDon extends ChiTietDonHang {
                          int soLuong, double donGia, double giamGia,
                          double thanhTien, String ghiChu) {
         super(donHang, sanPham, soLuong, donGia, giamGia, thanhTien, ghiChu);
-        setMaHoaDon(maHoaDon);
+        this.maHoaDon = maHoaDon;
+        this.hoaDon = maHoaDon == null ? null : new HoaDon(maHoaDon);
     }
 
     public String getMaHoaDon() {
@@ -20,13 +21,7 @@ public class ChiTietHoaDon extends ChiTietDonHang {
 
     public void setMaHoaDon(String maHoaDon) {
         this.maHoaDon = maHoaDon;
-        if (maHoaDon == null) {
-            this.hoaDon = null;
-        } else if (this.hoaDon == null) {
-            this.hoaDon = new HoaDon(maHoaDon);
-        } else {
-            this.hoaDon.setMaHoaDon(maHoaDon);
-        }
+        this.hoaDon = maHoaDon == null ? null : new HoaDon(maHoaDon);
     }
 
     public HoaDon getHoaDon() {
