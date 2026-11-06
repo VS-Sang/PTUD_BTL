@@ -505,8 +505,10 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
                 }
             }
         } else if (o.equals(btnQuanLyCa)) {
-            dispose();
-            new LichLamViecPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.WORK_SCHEDULE)) {
+                dispose();
+                new LichLamViecPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            }
         }
     }
 
