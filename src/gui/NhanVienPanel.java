@@ -14,6 +14,10 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -187,6 +191,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         pSearch.add(cboDepartment);
         pSearch.add(cboStatus);
         pTop.add(pSearch, BorderLayout.SOUTH);
+        loadDanhMucNhanVien();
 
         pMain.add(pTop, BorderLayout.NORTH);
 
@@ -261,8 +266,36 @@ public class NhanVienPanel extends JFrame implements ActionListener {
                     cboTrangThai.setSelectedItem(model.getValueAt(row, 11).toString());
                     cboTrangThai.setEnabled(true);
                 }
+
             }
         });
+    }
+
+    private void loadDanhMucNhanVien() {
+        cboPhongBan.removeAllItems();
+        cboChucVu.removeAllItems();
+        cboDepartment.removeAllItems();
+        cboDepartment.addItem("Tất cả chức vụ");
+        String sql = "SELECT DISTINCT phongBan, chucVu FROM NhanVien "
+                + "WHERE phongBan IS NOT NULL OR chucVu IS NOT NULL ORDER BY phongBan, chucVu";
+        try (Connection connection = connectDB.ConnectDB.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            java.util.LinkedHashSet<String> phongBans = new java.util.LinkedHashSet<>();
+            java.util.LinkedHashSet<String> chucVus = new java.util.LinkedHashSet<>();
+            while (resultSet.next()) {
+                if (resultSet.getString("phongBan") != null) phongBans.add(resultSet.getString("phongBan"));
+                if (resultSet.getString("chucVu") != null) chucVus.add(resultSet.getString("chucVu"));
+            }
+            for (String phongBan : phongBans) cboPhongBan.addItem(phongBan);
+            for (String chucVu : chucVus) {
+                cboChucVu.addItem(chucVu);
+                cboDepartment.addItem(chucVu);
+            }
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this, "Không thể tải phòng ban và chức vụ:\n"
+                    + exception.getMessage(), "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void docDuLieuDatabaseVaoTable() {

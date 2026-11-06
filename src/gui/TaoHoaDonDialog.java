@@ -160,6 +160,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         resetInvoice();
         wireActions();
         btnIn.setToolTipText("in hóa đơn đã lưu trực tiếp qua máy in mặc định");
+        cboSanPham.setEditable(true);
+        cboSanPham.setToolTipText("nhập mã hoặc tên sản phẩm trong danh sách");
     }
 
     private JPanel createWorkspace() {
@@ -582,7 +584,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     }
 
     private void themSanPham() {
-        SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
+        SanPham sanPham = timSanPhamDaChon();
         if (sanPham == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm.",
                     "Chưa chọn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
@@ -608,6 +610,30 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         table.repaint();
         cboSanPham.setSelectedIndex(0);
         spnSoLuong.setValue(1);
+    }
+
+    private SanPham timSanPhamDaChon() {
+        Object value = cboSanPham.getEditor().getItem();
+        if (value instanceof SanPham) {
+            return (SanPham) value;
+        }
+        if (value == null) {
+            return null;
+        }
+        String keyword = value.toString().trim();
+        if (keyword.isEmpty()) {
+            return null;
+        }
+        for (SanPham sanPham : sanPhamTheoMa.values()) {
+            if (keyword.equalsIgnoreCase(sanPham.getMaSanPham())
+                    || keyword.equalsIgnoreCase(sanPham.getTenSanPham())) {
+                return sanPham;
+            }
+        }
+        JOptionPane.showMessageDialog(this,
+                "Không tìm thấy sản phẩm theo mã hoặc tên: " + keyword,
+                "Sản phẩm không tồn tại", JOptionPane.WARNING_MESSAGE);
+        return null;
     }
 
     private double tinhTienGiam(double tongTienHang) {
