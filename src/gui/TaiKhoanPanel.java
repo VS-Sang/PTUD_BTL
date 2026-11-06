@@ -336,7 +336,7 @@ public class TaiKhoanPanel extends JFrame {
 
         private void loadEmployees() {
             String sql = "SELECT nv.maNhanVien, nv.hoTen FROM NhanVien nv "
-                    + "WHERE nv.trangThai = N'Đang làm việc' "
+                    + "WHERE nv.hoTen IS NOT NULL AND LTRIM(RTRIM(nv.hoTen)) <> '' "
                     + (data == null
                             ? "AND NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien) "
                             : "AND (nv.maNhanVien = (SELECT maNhanVien FROM TaiKhoan WHERE maTaiKhoan = ?) "
@@ -355,6 +355,10 @@ public class TaiKhoanPanel extends JFrame {
                 }
                 if (data != null) {
                     selectEmployeeForAccount(data.id, connection);
+                }
+                if (employeeBox.getItemCount() == 0) {
+                    employeeBox.addItem(new EmployeeOption("", "-- Không còn nhân viên chưa có tài khoản --"));
+                    employeeBox.setEnabled(false);
                 }
             } catch (SQLException exception) {
                 JOptionPane.showMessageDialog(this, "Không thể tải danh sách nhân viên.",
@@ -384,7 +388,9 @@ public class TaiKhoanPanel extends JFrame {
         private void saveAccount() {
             String username = usernameField.getText().trim();
             char[] password = passwordField.getPassword();
-            if (data == null && (employeeBox.getSelectedItem() == null
+            EmployeeOption selectedEmployee = employeeBox.getSelectedItem() instanceof EmployeeOption
+                    ? (EmployeeOption) employeeBox.getSelectedItem() : null;
+            if (data == null && (selectedEmployee == null || selectedEmployee.id.isEmpty()
                     || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
                 JOptionPane.showMessageDialog(this,
                         "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
@@ -395,7 +401,7 @@ public class TaiKhoanPanel extends JFrame {
             }
             try (Connection connection = ConnectDB.getConnection()) {
                 if (data == null) {
-                    EmployeeOption employee = (EmployeeOption) employeeBox.getSelectedItem();
+                    EmployeeOption employee = selectedEmployee;
                     String sql = "INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai) "
                             + "VALUES (?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement statement = connection.prepareStatement(sql)) {
