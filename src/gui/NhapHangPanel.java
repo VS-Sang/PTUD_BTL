@@ -757,7 +757,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             } else {
                 JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             JOptionPane.showMessageDialog(this, "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
