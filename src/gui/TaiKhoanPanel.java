@@ -30,6 +30,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -320,7 +322,10 @@ public class TaiKhoanPanel extends JFrame {
             save.addActionListener(event -> saveAccount());
             JButton cancel = new JButton("Hủy");
             cancel.addActionListener(event -> dispose());
+            JButton addEmployee = new JButton("Thêm nhân viên mới");
+            addEmployee.addActionListener(event -> openEmployeeForm());
             JPanel buttons = new JPanel();
+            buttons.add(addEmployee);
             buttons.add(save);
             buttons.add(cancel);
             add(buttons, BorderLayout.SOUTH);
@@ -332,9 +337,24 @@ public class TaiKhoanPanel extends JFrame {
                 roleBox.setSelectedItem(data.role);
                 statusBox.setSelectedItem(data.status);
             }
+
+        }
+
+        private void openEmployeeForm() {
+            NhanVienPanel employeePanel = new NhanVienPanel();
+            employeePanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            employeePanel.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent event) {
+                    loadEmployees();
+                }
+            });
+            employeePanel.setVisible(true);
         }
 
         private void loadEmployees() {
+            employeeBox.removeAllItems();
+            employeeBox.setEnabled(true);
             String sql = "SELECT nv.maNhanVien, nv.hoTen FROM NhanVien nv "
                     + "WHERE nv.hoTen IS NOT NULL AND LTRIM(RTRIM(nv.hoTen)) <> '' "
                     + (data == null
