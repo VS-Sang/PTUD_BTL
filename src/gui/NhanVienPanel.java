@@ -10,6 +10,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -31,11 +35,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import DAO.NhanVien_DAO;
+import connectDB.ConnectDB;
 import entity.NhanVien;
 
-public class EmployeePanel extends JFrame implements ActionListener {
+public class NhanVienPanel extends JFrame implements ActionListener {
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JTextField txtMaNV, txtHoTen, txtNgaySinh, txtCMND, txtSDT, txtEmail, txtMucLuong, txtDiaChi, txtSearch;
     private JComboBox<String> cboGioiTinh, cboPhongBan, cboChucVu, cboTrangThai, cboDepartment, cboStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnTim;
@@ -45,11 +50,11 @@ public class EmployeePanel extends JFrame implements ActionListener {
     private NhanVien_DAO nv_dao = new NhanVien_DAO();
     private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
 
-    public EmployeePanel() {
+    public NhanVienPanel() {
         this(null, null, null);
     }
 
-    public EmployeePanel(String userName, String userRole, String username) {
+    public NhanVienPanel(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ — Quản lý Nhân Viên");
         setSize(1200, 680);
         setLocationRelativeTo(null);
@@ -57,7 +62,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel(userName, userRole, username);
+        menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -116,13 +121,11 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pGrid.add(txtEmail);
 
         pGrid.add(new JLabel("Phòng ban:"));
-        cboPhongBan = new JComboBox<>(new String[]{"Bán hàng", "Kho", "Kế toán", "Quản lý"});
+        cboPhongBan = new JComboBox<>();
         pGrid.add(cboPhongBan);
 
         pGrid.add(new JLabel("Chức vụ:"));
-        cboChucVu = new JComboBox<>(new String[]{
-                "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
-        });
+        cboChucVu = new JComboBox<>();
         pGrid.add(cboChucVu);
 
         pGrid.add(new JLabel("Mức lương (VNĐ):"));
@@ -177,9 +180,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         btnTim.setBackground(Color.WHITE);
         btnTim.setFocusPainted(false);
 
-        cboDepartment = new JComboBox<>(new String[]{
-                "Tất cả chức vụ", "Nhân viên", "Thu ngân", "Nhân viên kho", "Quản lý"
-        });
+        cboDepartment = new JComboBox<>();
         cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang làm việc", "Tạm nghỉ", "Đã nghỉ việc"});
 
         pSearch.add(txtSearch);
@@ -228,6 +229,7 @@ public class EmployeePanel extends JFrame implements ActionListener {
         pMain.add(new JScrollPane(table), BorderLayout.CENTER);
         add(pMain, BorderLayout.CENTER);
 
+        napDanhSachPhongBanVaChucVu();
         // Đọc dữ liệu từ Database vào bảng
         docDuLieuDatabaseVaoTable();
         xoaRong();
@@ -319,6 +321,36 @@ public class EmployeePanel extends JFrame implements ActionListener {
         txtDiaChi.setText("");
         table.clearSelection();
         txtHoTen.requestFocus();
+    }
+
+    private void napDanhSachPhongBanVaChucVu() {
+        cboPhongBan.removeAllItems();
+        cboChucVu.removeAllItems();
+        cboDepartment.removeAllItems();
+        cboDepartment.addItem("Tất cả chức vụ");
+        String sqlPhongBan = "SELECT DISTINCT phongBan FROM NhanVien "
+                + "WHERE phongBan IS NOT NULL AND LTRIM(RTRIM(phongBan)) <> '' ORDER BY phongBan";
+        String sqlChucVu = "SELECT DISTINCT chucVu FROM NhanVien "
+                + "WHERE chucVu IS NOT NULL AND LTRIM(RTRIM(chucVu)) <> '' ORDER BY chucVu";
+        try (Connection connection = ConnectDB.getConnection()) {
+            napDanhSach(connection, sqlPhongBan, cboPhongBan);
+            napDanhSach(connection, sqlChucVu, cboChucVu);
+            napDanhSach(connection, sqlChucVu, cboDepartment);
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(this,
+                    "Không thể tải phòng ban và chức vụ:\n" + exception.getMessage(),
+                    "Lỗi dữ liệu nhân viên", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void napDanhSach(Connection connection, String sql, JComboBox<String> comboBox)
+            throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                comboBox.addItem(resultSet.getString(1));
+            }
+        }
     }
 
     private Date parseNgaySinh() throws ParseException {
@@ -455,6 +487,6 @@ public class EmployeePanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new EmployeePanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new NhanVienPanel().setVisible(true));
     }
 }

@@ -22,12 +22,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import entity.ChiTietDonHang;
 import entity.HoaDon;
 
-final class InvoiceDetailsDialog extends JDialog {
+final class ChiTietHoaDonDialog extends JDialog {
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-    InvoiceDetailsDialog(JFrame owner, HoaDon hoaDon, String maKhuyenMai,
-                         List<ChiTietDonHang> chiTiet) {
+    ChiTietHoaDonDialog(JFrame owner, HoaDon hoaDon, String maKhuyenMai,
+                         List<? extends ChiTietDonHang> chiTiet) {
         super(owner, "Chi tiết hóa đơn " + hoaDon.getMaHoaDon(), true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(820, 600);
@@ -96,11 +96,15 @@ final class InvoiceDetailsDialog extends JDialog {
         addTotal(totals, "Tiền thối", hoaDon.getTienTraLai());
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton print = new JButton("In máy in");
+        print.setToolTipText("in hóa đơn trực tiếp qua máy in mặc định");
+        print.addActionListener(event -> BoInHoaDon.print(this, hoaDon, chiTiet));
         JButton exportPdf = new JButton("Xuất PDF");
-        exportPdf.addActionListener(event -> InvoicePdfExporter.export(
+        exportPdf.addActionListener(event -> XuatHoaDonPdf.export(
                 this, hoaDon, maKhuyenMai, chiTiet));
         JButton close = new JButton("Đóng");
         close.addActionListener(event -> dispose());
+        actions.add(print);
         actions.add(exportPdf);
         actions.add(close);
         JPanel bottom = new JPanel(new BorderLayout());

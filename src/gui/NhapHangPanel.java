@@ -25,7 +25,7 @@ import entity.NhanVien;
 import entity.PhieuNhapKho;
 import entity.SanPham;
 
-public class ImportGoodsPanel extends JFrame implements ActionListener {
+public class NhapHangPanel extends JFrame implements ActionListener {
 
     private static final Color BRAND_RED = new Color(177, 48, 42);
     private static final Color HEADER_GRAY = new Color(238, 238, 238);
@@ -36,7 +36,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     private final String currentUserName;
     private final String currentUserRole;
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JTextField txtMaPhieuNhap;
     private JTextField txtNgayNhap;
     private JTextField txtNguoiLap;
@@ -67,11 +67,11 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     private final List<SanPham> listSanPham = new ArrayList<>();
     private final List<NhaCungCap> listNhaCungCap = new ArrayList<>();
 
-    public ImportGoodsPanel() {
+    public NhapHangPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public ImportGoodsPanel(String userName, String userRole) {
+    public NhapHangPanel(String userName, String userRole) {
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
 
@@ -82,7 +82,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel(currentUserName, currentUserRole);
+        menuPanel = new ThanhMenu(currentUserName, currentUserRole);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout());
@@ -415,7 +415,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
                 int row = tableHangs.rowAtPoint(e.getPoint());
                 int col = tableHangs.columnAtPoint(e.getPoint());
                 if (!phieuDaLuu && row >= 0 && col == 5) {
-                    int confirm = JOptionPane.showConfirmDialog(ImportGoodsPanel.this,
+                    int confirm = JOptionPane.showConfirmDialog(NhapHangPanel.this,
                             "Bạn có chắc muốn xóa sản phẩm này khỏi danh sách nhập?",
                             "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
@@ -757,7 +757,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
             } else {
                 JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             JOptionPane.showMessageDialog(this, "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
@@ -827,7 +827,7 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
                     new String[]{"Tổng số lượng", String.valueOf(tongSoLuong)},
                     new String[]{"Tổng giá trị nhập", lblTongGiaTri.getText()
                             .replace("Tổng giá trị nhập: ", ""), "true"});
-            PdfDocumentExporter.write(file, "PHIẾU NHẬP KHO",
+            XuatTaiLieuPdf.write(file, "PHIẾU NHẬP KHO",
                     txtMaPhieuNhap.getText().trim(), metadata, "CHI TIẾT HÀNG NHẬP",
                     Arrays.asList("MÃ SP", "TÊN SẢN PHẨM", "SL NHẬP",
                             "ĐƠN GIÁ", "THÀNH TIỀN"),
@@ -857,6 +857,6 @@ public class ImportGoodsPanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ImportGoodsPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new NhapHangPanel().setVisible(true));
     }
 }

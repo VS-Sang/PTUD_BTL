@@ -34,6 +34,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,6 +44,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.DefaultListModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -70,19 +72,20 @@ import DAO.KhuyenMai_DAO;
 import DAO.NhanVien_DAO;
 import DAO.SanPham_DAO;
 import entity.ChiTietDonHang;
+import entity.HoaDon;
 import entity.KhachHang;
 import entity.KhuyenMai;
 import entity.NhanVien;
 import entity.SanPham;
 
-public class CreateInvoiceDialog extends JFrame implements ActionListener {
+public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private static final Color BRAND_RED = new Color(180, 40, 40);
     private static final Color PANEL_GRAY = new Color(238, 238, 238);
     private static final Color BORDER_GRAY = new Color(210, 210, 210);
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
-    private final InvoicePanel owner;
+    private final HoaDonPanel owner;
     private final String tenNhanVien;
     private final String vaiTro;
     private final DefaultTableModel model = new DefaultTableModel(
@@ -107,7 +110,9 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             }
         }
     };
-    private final JComboBox<SanPham> cboSanPham = new JComboBox<>();
+    private final JTextField txtTimSanPham = new JTextField();
+    private final DefaultListModel<SanPham> sanPhamGoiYModel = new DefaultListModel<>();
+    private final JList<SanPham> lstSanPhamGoiY = new JList<>(sanPhamGoiYModel);
     private final JComboBox<KhachHang> cboKhachHang = new JComboBox<>();
     private final JComboBox<String> cboPhuongThuc =
             new JComboBox<>(new String[]{"Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Ví điện tử"});
@@ -134,10 +139,10 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
     private final HoaDon_DAO hoaDonDao = new HoaDon_DAO();
     private final JButton btnThem = createButton("Thêm vào hóa đơn", BRAND_RED, Color.WHITE);
     private final JButton btnLuu = createButton("Lưu hóa đơn", new Color(77, 145, 72), Color.WHITE);
-    private final JButton btnIn = createButton("Xuất PDF", new Color(54, 103, 193), Color.WHITE);
+    private final JButton btnIn = createButton("In máy in", new Color(54, 103, 193), Color.WHITE);
     private final JButton btnMoi = createButton("Hóa đơn mới", Color.WHITE, Color.DARK_GRAY);
 
-    public CreateInvoiceDialog(InvoicePanel owner, String tenNhanVien, String vaiTro) {
+    public TaoHoaDonDialog(HoaDonPanel owner, String tenNhanVien, String vaiTro) {
         this.owner = owner;
         this.tenNhanVien = tenNhanVien == null ? "" : tenNhanVien;
         this.vaiTro = vaiTro;
@@ -152,12 +157,24 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
 
-        add(new MenuPanel(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
+        add(new ThanhMenu(this.tenNhanVien, this.vaiTro), BorderLayout.NORTH);
         add(createWorkspace(), BorderLayout.CENTER);
 
+        lstSanPhamGoiY.setVisibleRowCount(4);
+        lstSanPhamGoiY.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstSanPhamGoiY.setCellRenderer((list, value, index, selected, focus) -> {
+            JLabel label = new JLabel(value == null ? "" : value.getMaSanPham() + " — "
+                    + value.getTenSanPham() + " (" + value.getSoLuongTon() + " còn)");
+            label.setOpaque(true);
+            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+            label.setBackground(selected ? list.getSelectionBackground() : list.getBackground());
+            label.setForeground(selected ? list.getSelectionForeground() : list.getForeground());
+            return label;
+        });
         loadCustomersAndProducts();
         resetInvoice();
         wireActions();
+        btnIn.setToolTipText("in hóa đơn đã lưu trực tiếp qua máy in mặc định");
     }
 
     private JPanel createWorkspace() {
@@ -166,20 +183,13 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         workspace.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
         workspace.add(createPageHeader(), BorderLayout.NORTH);
 
-        JPanel content = new JPanel(new GridBagLayout());
+        JPanel content = new JPanel(new BorderLayout(8, 0));
         content.setOpaque(false);
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridy = 0;
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 1;
-        c.insets = new Insets(0, 0, 0, 8);
-        c.gridx = 0;
-        c.weightx = 0.75;
-        content.add(createLeftWorkspace(), c);
-        c.gridx = 1;
-        c.weightx = 0.25;
-        c.insets = new Insets(0, 0, 0, 0);
-        content.add(createPaymentPanel(), c);
+        content.add(createLeftWorkspace(), BorderLayout.CENTER);
+        JPanel paymentPanel = createPaymentPanel();
+        paymentPanel.setMinimumSize(new Dimension(300, 0));
+        paymentPanel.setPreferredSize(new Dimension(320, 0));
+        content.add(paymentPanel, BorderLayout.EAST);
         workspace.add(content, BorderLayout.CENTER);
         return workspace;
     }
@@ -232,16 +242,25 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         c.gridy = 4;
         c.gridwidth = 1;
         fields.add(productLabel, c);
+        c.gridx = 1;
+        fields.add(new JLabel("Tìm mã hoặc tên"), c);
         c.gridx = 0;
         c.gridy = 5;
-        fields.add(cboSanPham, c);
+        c.gridwidth = 2;
+        fields.add(txtTimSanPham, c);
+        c.gridy = 6;
+        c.weighty = 0;
+        fields.add(new JScrollPane(lstSanPhamGoiY), c);
+        c.gridwidth = 1;
         c.gridx = 1;
         c.weightx = 0;
+        c.gridx = 2;
+        c.gridy = 4;
         fields.add(new JLabel("Số lượng"), c);
-        c.gridx = 1;
+        c.gridx = 2;
         c.gridy = 5;
         fields.add(spnSoLuong, c);
-        c.gridx = 2;
+        c.gridx = 3;
         c.gridwidth = 1;
         fields.add(btnThem, c);
 
@@ -455,31 +474,12 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                 cboKhachHang.addItem(khachHang);
             }
         }
-        cboSanPham.addItem(null);
-        cboSanPham.setRenderer((list, value, index, selected, focus) -> {
-            JLabel label = new JLabel(value == null ? "-- Chọn sản phẩm --"
-                    : value.getMaSanPham() + " — " + value.getTenSanPham()
-                            + " (" + value.getSoLuongTon() + " còn)");
-            label.setOpaque(true);
-            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-            if (selected) {
-                label.setBackground(list.getSelectionBackground());
-                label.setForeground(list.getSelectionForeground());
-            } else {
-                label.setBackground(list.getBackground());
-                label.setForeground(list.getForeground());
-            }
-            return label;
-        });
         for (SanPham sanPham : new SanPham_DAO().getAllSanPham()) {
             if ("Đang kinh doanh".equals(sanPham.getTrangThai()) && sanPham.getSoLuongTon() > 0) {
                 sanPhamTheoMa.put(sanPham.getMaSanPham(), sanPham);
-                cboSanPham.addItem(sanPham);
             }
         }
-        if (cboSanPham.getItemCount() <= 1) {
-            btnThem.setEnabled(false);
-        }
+        locSanPham();
 
         loadPromotions();
     }
@@ -533,6 +533,33 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         btnIn.addActionListener(this);
         btnMoi.addActionListener(this);
         cboKhachHang.setSelectedIndex(0);
+        txtTimSanPham.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                locSanPham();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                locSanPham();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                locSanPham();
+            }
+        });
+        lstSanPhamGoiY.addListSelectionListener(event -> {
+            if (!event.getValueIsAdjusting()) {
+                SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
+                btnThem.setEnabled(sanPham != null);
+                if (sanPham != null && !txtTimSanPham.getText().equals(sanPham.getTenSanPham())) {
+                    txtTimSanPham.setText(sanPham.getTenSanPham());
+                    javax.swing.SwingUtilities.invokeLater(() ->
+                            lstSanPhamGoiY.setSelectedValue(sanPham, true));
+                }
+            }
+        });
         cboPhuongThuc.addActionListener(event -> capNhatTienThoi());
         cboKhuyenMai.addActionListener(event -> capNhatBangVaTongTien());
         cboKhuyenMai.addPopupMenuListener(new PopupMenuListener() {
@@ -565,6 +592,20 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         });
     }
 
+    private void locSanPham() {
+        String tuKhoa = txtTimSanPham.getText().trim().toLowerCase(java.util.Locale.ROOT);
+        sanPhamGoiYModel.clear();
+        for (SanPham sanPham : sanPhamTheoMa.values()) {
+            String thongTin = (sanPham.getMaSanPham() + " " + sanPham.getTenSanPham())
+                    .toLowerCase(java.util.Locale.ROOT);
+            if (tuKhoa.isEmpty() || thongTin.contains(tuKhoa)) {
+                sanPhamGoiYModel.addElement(sanPham);
+            }
+        }
+        lstSanPhamGoiY.clearSelection();
+        btnThem.setEnabled(!sanPhamGoiYModel.isEmpty());
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
@@ -573,16 +614,16 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         } else if (source == btnLuu) {
             luuHoaDon();
         } else if (source == btnIn) {
-            xuatHoaDonPdf();
+            inHoaDonMayIn();
         } else if (source == btnMoi) {
             resetInvoice();
         }
     }
 
     private void themSanPham() {
-        SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
+        SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
         if (sanPham == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng chọn một sản phẩm trong danh sách đề xuất.",
                     "Chưa chọn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -590,7 +631,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         long tongSoLuong = soLuongDaChon.containsKey(sanPham.getMaSanPham())
                 ? (long) soLuongDaChon.get(sanPham.getMaSanPham()) + soLuong : soLuong;
         if (tongSoLuong > sanPham.getSoLuongTon()) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(boMeThongBao(),
                     "Sản phẩm chỉ còn " + sanPham.getSoLuongTon() + " trong kho.",
                     "Không đủ tồn kho", JOptionPane.WARNING_MESSAGE);
             return;
@@ -604,7 +645,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         capNhatTrangThaiKhachHang();
         capNhatBangVaTongTien();
         table.repaint();
-        cboSanPham.setSelectedIndex(0);
+        lstSanPhamGoiY.clearSelection();
         spnSoLuong.setValue(1);
     }
 
@@ -699,19 +740,19 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
     private void luuHoaDon() {
         if (invoiceSaved) {
-            JOptionPane.showMessageDialog(this, "Hóa đơn này đã được lưu. Vui lòng tạo hóa đơn mới.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Hóa đơn này đã được lưu. Vui lòng tạo hóa đơn mới.",
                     "Hóa đơn đã lưu", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (soLuongDaChon.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng thêm ít nhất một sản phẩm.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng thêm ít nhất một sản phẩm.",
                     "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             return;
         }
         KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
         String maKhachHangHienTai = khachHang == null ? null : khachHang.getMaKhachHang();
         if (khachHangDaChot && !java.util.Objects.equals(maKhachHangDaChot, maKhachHangHienTai)) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(boMeThongBao(),
                     "Không thể đổi khách hàng khi hóa đơn đã có sản phẩm. "
                             + "Vui lòng tạo hóa đơn mới nếu muốn chọn khách hàng khác.",
                     "Khách hàng không khớp", JOptionPane.WARNING_MESSAGE);
@@ -722,14 +763,14 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
             tienKhachDua = new BigDecimal(txtTienKhachDua.getText().trim()
                     .replace(",", "").replace(" ", ""));
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tiền khách đưa hợp lệ.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng nhập tiền khách đưa hợp lệ.",
                     "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
             txtTienKhachDua.requestFocusInWindow();
             return;
         }
         if (tienKhachDua.signum() < 0
                 || tienKhachDua.compareTo(BigDecimal.valueOf(tinhTongThanhToan())) < 0) {
-            JOptionPane.showMessageDialog(this, "Tiền khách đưa chưa đủ thanh toán.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Tiền khách đưa chưa đủ thanh toán.",
                     "Chưa đủ tiền thanh toán", JOptionPane.WARNING_MESSAGE);
             txtTienKhachDua.requestFocusInWindow();
             return;
@@ -737,7 +778,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
         NhanVien nhanVien = timNhanVienDangDangNhap();
         if (nhanVien == null) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(boMeThongBao(),
                     "Không tìm thấy nhân viên \"" + tenNhanVien
                             + "\" trong dữ liệu nhân viên. Không thể lập hóa đơn.",
                     "Không xác định được thu ngân", JOptionPane.ERROR_MESSAGE);
@@ -767,7 +808,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     tienGiam,
                     10,
                     txtGhiChu.getText().trim());
-            JOptionPane.showMessageDialog(this, "Tạo hóa đơn " + maHoaDon + " thành công.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Tạo hóa đơn " + maHoaDon + " thành công.",
                     "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
             txtMaHoaDon.setText(maHoaDon);
             invoiceSaved = true;
@@ -777,14 +818,14 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                 owner.docDuLieuDatabaseVaoTable();
             }
         } catch (SQLException | IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, "Không thể tạo hóa đơn: " + ex.getMessage(),
+            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tạo hóa đơn: " + ex.getMessage(),
                     "Lỗi tạo hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void xuatHoaDonPdf() {
         if (soLuongDaChon.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng thêm sản phẩm trước khi in hóa đơn.",
+            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng thêm sản phẩm trước khi in hóa đơn.",
                     "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -804,7 +845,7 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
                     selectedFile.getName() + ".pdf");
         }
         if (selectedFile.exists()) {
-            int overwrite = JOptionPane.showConfirmDialog(this,
+            int overwrite = JOptionPane.showConfirmDialog(boMeThongBao(),
                     "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                     "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (overwrite != JOptionPane.YES_OPTION) {
@@ -814,11 +855,28 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
 
         try {
             ghiHoaDonPdf(selectedFile);
-            JOptionPane.showMessageDialog(this, "Đã xuất hóa đơn PDF:\n"
+            JOptionPane.showMessageDialog(boMeThongBao(), "Đã xuất hóa đơn PDF:\n"
                     + selectedFile.getAbsolutePath(), "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException | DocumentException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể xuất hóa đơn PDF:\n"
+            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể xuất hóa đơn PDF:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void inHoaDonMayIn() {
+        if (!invoiceSaved) {
+            JOptionPane.showMessageDialog(boMeThongBao(),
+                    "Hãy lưu hóa đơn trước khi in bằng máy in.",
+                    "Hóa đơn chưa được lưu", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        try {
+            HoaDon hoaDon = hoaDonDao.getHoaDonByMa(txtMaHoaDon.getText().trim());
+            BoInHoaDon.print(this, hoaDon,
+                    hoaDonDao.getChiTietHoaDon(hoaDon.getMaHoaDon()));
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tải hóa đơn để in:\n"
+                    + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -1044,10 +1102,16 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         }
     }
 
+    private Component boMeThongBao() {
+        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(getContentPane());
+        return window == null ? this : window;
+    }
+
     private void setInvoiceInputsEnabled(boolean enabled) {
         table.setEnabled(enabled);
         btnThem.setEnabled(enabled);
-        cboSanPham.setEnabled(enabled);
+        txtTimSanPham.setEnabled(enabled);
+        lstSanPhamGoiY.setEnabled(enabled);
         spnSoLuong.setEnabled(enabled);
         capNhatTrangThaiKhachHang(enabled);
         cboPhuongThuc.setEnabled(enabled);
@@ -1092,7 +1156,9 @@ public class CreateInvoiceDialog extends JFrame implements ActionListener {
         txtTienKhachDua.setText("0");
         txtGhiChu.setText("");
         cboKhachHang.setSelectedIndex(0);
-        cboSanPham.setSelectedIndex(0);
+        txtTimSanPham.setText("");
+        lstSanPhamGoiY.clearSelection();
+        locSanPham();
         cboPhuongThuc.setSelectedIndex(0);
         spnSoLuong.setValue(1);
         loadPromotions();

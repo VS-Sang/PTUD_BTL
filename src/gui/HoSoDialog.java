@@ -1,6 +1,6 @@
 package gui;
 
-import DAO.AuditTrail_DAO;
+import DAO.NhatKyHeThong_DAO;
 import connectDB.ConnectDB;
 
 import javax.swing.BorderFactory;
@@ -29,21 +29,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ProfileDialog extends JDialog {
+public class HoSoDialog extends JDialog {
     private static final Color BRAND_RED = new Color(214, 31, 47);
     private static final Color DARK_RED = new Color(193, 35, 39);
     private static final Color TEXT_GRAY = new Color(112, 112, 112);
     private static final Color LINE_GRAY = new Color(228, 228, 228);
 
-    public ProfileDialog(Window owner, String fullName, String role) {
+    public HoSoDialog(Window owner, String fullName, String role) {
         this(owner, fullName, role, "admin", "admin@dienmaydo.vn", "0901234567", "Hoạt động");
     }
 
-    public ProfileDialog(Window owner, String fullName, String role, String username) {
+    public HoSoDialog(Window owner, String fullName, String role, String username) {
         this(owner, fullName, role, username, null, null, "Hoạt động");
     }
 
-    public ProfileDialog(Window owner, String fullName, String role, String username,
+    public HoSoDialog(Window owner, String fullName, String role, String username,
                          String email, String phone, String status) {
         super(owner, "Thông tin cá nhân", Dialog.ModalityType.APPLICATION_MODAL);
         ProfileData profile = loadProfile(username, fullName, role, email, phone, status);
@@ -339,17 +339,17 @@ public class ProfileDialog extends JDialog {
                         + "AND (matKhau = ? OR matKhau = ?)";
                 try (java.sql.Connection connection = connectDB.ConnectDB.getConnection();
                      java.sql.PreparedStatement statement = connection.prepareStatement(sql)) {
-                    statement.setString(1, LoginFrame.toMD5(nextText));
+                    statement.setString(1, DangNhapFrame.toMD5(nextText));
                     statement.setString(2, username);
                     statement.setString(3, currentText);
-                    statement.setString(4, LoginFrame.toMD5(currentText));
+                    statement.setString(4, DangNhapFrame.toMD5(currentText));
                     if (statement.executeUpdate() == 0) {
                         JOptionPane.showMessageDialog(this, "Mật khẩu hiện tại không chính xác.",
                                 "Đổi mật khẩu thất bại", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                     try {
-                        AuditTrail_DAO.ghiTheoTenDangNhap(username, "ĐỔI MẬT KHẨU",
+                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(username, "ĐỔI MẬT KHẨU",
                                 "Tài khoản", "Đổi mật khẩu thành công");
                     } catch (SQLException auditException) {
                         JOptionPane.showMessageDialog(this,

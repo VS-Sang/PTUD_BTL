@@ -52,7 +52,7 @@ import DAO.PhieuTraHang_DAO.HoaDonTraHang;
 import DAO.PhieuTraHang_DAO.KetQuaTraHang;
 import DAO.PhieuTraHang_DAO.SanPhamDoi;
 
-public class ReturnGoodsPanel extends JFrame implements ActionListener {
+public class TraHangPanel extends JFrame implements ActionListener {
     private static final Color BRAND_RED = new Color(177, 48, 42);
     private static final Color HEADER_GRAY = new Color(220, 220, 220);
     private static final Color BORDER_GRAY = new Color(205, 205, 205);
@@ -87,11 +87,11 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
 
     private HoaDonTraHang hoaDonDangXuLy;
 
-    public ReturnGoodsPanel() {
+    public TraHangPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public ReturnGoodsPanel(String userName, String userRole) {
+    public TraHangPanel(String userName, String userRole) {
         currentUserName = userName == null || userName.trim().isEmpty()
                 ? "Nguyễn Văn An" : userName;
         currentUserRole = userRole == null || userRole.trim().isEmpty()
@@ -103,7 +103,7 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
-        add(new MenuPanel(currentUserName, currentUserRole), BorderLayout.NORTH);
+        add(new ThanhMenu(currentUserName, currentUserRole), BorderLayout.NORTH);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(BG_LIGHT);
@@ -813,6 +813,6 @@ public class ReturnGoodsPanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ReturnGoodsPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new TraHangPanel().setVisible(true));
     }
 }

@@ -10,7 +10,9 @@ import entity.SanPham;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PhieuNhapKho_DAO {
 
@@ -34,9 +36,29 @@ public class PhieuNhapKho_DAO {
         if (pn == null || chiTietList == null || chiTietList.isEmpty()) {
             throw new IllegalArgumentException("Thông tin phiếu nhập không hợp lệ.");
         }
+        if (pn.getMaPhieuNhap() == null || pn.getMaPhieuNhap().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã phiếu nhập không được để trống.");
+        }
         if (pn.getNhaCungCap() == null || pn.getNhaCungCap().getMaNhaCungCap() == null
                 || pn.getNgayNhap() == null) {
             throw new IllegalArgumentException("Phiếu nhập phải có nhà cung cấp và ngày nhập.");
+        }
+        if (pn.getNhanVien() == null || pn.getNhanVien().getMaNhanVien() == null
+                || pn.getNhanVien().getMaNhanVien().trim().isEmpty()) {
+            throw new IllegalArgumentException("Phiếu nhập phải có nhân viên lập phiếu.");
+        }
+        Set<String> maSanPhamDaThem = new HashSet<>();
+        for (ChiTietPhieuNhap ct : chiTietList) {
+            if (ct == null || ct.getSanPham() == null
+                    || ct.getSanPham().getMaSanPham() == null
+                    || ct.getSanPham().getMaSanPham().trim().isEmpty()
+                    || ct.getSoLuongNhap() <= 0
+                    || ct.getDonGiaNhap() < 0
+                    || ct.getThanhTien() < 0
+                    || !maSanPhamDaThem.add(ct.getSanPham().getMaSanPham())) {
+                throw new IllegalArgumentException(
+                        "Chi tiết phiếu nhập phải có sản phẩm hợp lệ và không trùng sản phẩm.");
+            }
         }
         boolean denNgayNhap = !new java.sql.Date(pn.getNgayNhap().getTime())
                 .toLocalDate().isAfter(LocalDate.now());

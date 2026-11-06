@@ -7,8 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public final class AuditTrail_DAO {
-    private AuditTrail_DAO() {
+public final class NhatKyHeThong_DAO {
+    private NhatKyHeThong_DAO() {
     }
 
     public static void ghi(Connection connection, String maTaiKhoan, String hanhDong,

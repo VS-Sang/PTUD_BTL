@@ -32,9 +32,9 @@ import javax.swing.table.DefaultTableModel;
 import DAO.CaLamViec_DAO;
 import entity.CaLamViec;
 
-public class WorkSchedulePanel extends JFrame implements ActionListener {
+public class LichLamViecPanel extends JFrame implements ActionListener {
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private String currentUserName;
     private String currentUserRole;
     private String currentUsername;
@@ -47,15 +47,15 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
     private CaLamViec_DAO ca_dao = new CaLamViec_DAO();
     private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
-    public WorkSchedulePanel() {
+    public LichLamViecPanel() {
         this(null, null, null);
     }
 
-    public WorkSchedulePanel(String userName, String userRole) {
+    public LichLamViecPanel(String userName, String userRole) {
         this(userName, userRole, null);
     }
 
-    public WorkSchedulePanel(String userName, String userRole, String username) {
+    public LichLamViecPanel(String userName, String userRole, String username) {
         this.currentUserName = userName;
         this.currentUserRole = userRole;
         this.currentUsername = username;
@@ -68,7 +68,7 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        menuPanel = new MenuPanel(userName, userRole, username);
+        menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
@@ -358,12 +358,14 @@ public class WorkSchedulePanel extends JFrame implements ActionListener {
                 }
             }
         } else if (o.equals(btnPhanCong)) {
-            dispose();
-            new AssignmentPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.ASSIGNMENT)) {
+                dispose();
+                new PhanCongCaPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            }
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new WorkSchedulePanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new LichLamViecPanel().setVisible(true));
     }
 }

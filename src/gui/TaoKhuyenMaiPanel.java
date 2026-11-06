@@ -17,9 +17,9 @@ import java.util.Properties;
 import DAO.KhuyenMai_DAO;
 import entity.KhuyenMai;
 
-public class CreatePromotionPanel extends JPanel implements Scrollable {
+public class TaoKhuyenMaiPanel extends JPanel implements Scrollable {
 
-    private MenuPanel menuPanel;
+    private ThanhMenu menuPanel;
     private JTextField txtTenChuongTrinh;
     private JComboBox<String> cboLoaiKhuyenMai;
     private JTextField txtGiaTriGiam;
@@ -47,15 +47,15 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
     private final Runnable onSuccess;
     private final Runnable onCancel;
 
-    public CreatePromotionPanel(Window parentWindow) {
+    public TaoKhuyenMaiPanel(Window parentWindow) {
         this(parentWindow, false, null, null);
     }
 
-    public CreatePromotionPanel(Runnable onSuccess, Runnable onCancel) {
+    public TaoKhuyenMaiPanel(Runnable onSuccess, Runnable onCancel) {
         this(null, true, onSuccess, onCancel);
     }
 
-    private CreatePromotionPanel(Window parentWindow, boolean embedded,
+    private TaoKhuyenMaiPanel(Window parentWindow, boolean embedded,
                                  Runnable onSuccess, Runnable onCancel) {
         this.parentWindow = parentWindow;
         this.embedded = embedded;
@@ -65,29 +65,29 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
         setBackground(new Color(238, 238, 238));
 
         if (!embedded) {
-            menuPanel = new MenuPanel();
-            menuPanel.setShortcutAction(MenuPanel.Shortcut.HOME, e -> {
-                new MainFrame().setVisible(true);
+            menuPanel = new ThanhMenu();
+            menuPanel.setShortcutAction(ThanhMenu.Shortcut.HOME, e -> {
+                new KhungChinh().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
                 }
             });
-            menuPanel.setShortcutAction(MenuPanel.Shortcut.LOGOUT, e -> {
-                LoginFrame.clearCurrentUsername();
-                new LoginFrame().setVisible(true);
+            menuPanel.setShortcutAction(ThanhMenu.Shortcut.LOGOUT, e -> {
+                DangNhapFrame.clearCurrentUsername();
+                new DangNhapFrame().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
                 }
             });
-            menuPanel.setMenuItemAction(MenuPanel.MenuItem.HOME, e -> {
-                new MainFrame().setVisible(true);
+            menuPanel.setMenuItemAction(ThanhMenu.MenuItem.HOME, e -> {
+                new KhungChinh().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
                 }
             });
-            menuPanel.setMenuItemAction(MenuPanel.MenuItem.LOGOUT, e -> {
-                LoginFrame.clearCurrentUsername();
-                new LoginFrame().setVisible(true);
+            menuPanel.setMenuItemAction(ThanhMenu.MenuItem.LOGOUT, e -> {
+                DangNhapFrame.clearCurrentUsername();
+                new DangNhapFrame().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
                 }
@@ -141,7 +141,7 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
                 onCancel.run();
             }
         } else {
-            new PromotionPanel().setVisible(true);
+            new KhuyenMaiPanel().setVisible(true);
             if (parentWindow != null) {
                 parentWindow.dispose();
             }
@@ -482,7 +482,7 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
                     onSuccess.run();
                 }
             } else {
-                new PromotionPanel().setVisible(true);
+                new KhuyenMaiPanel().setVisible(true);
                 if (parentWindow != null) {
                     parentWindow.dispose();
                 }
@@ -614,12 +614,12 @@ public class CreatePromotionPanel extends JPanel implements Scrollable {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Test CreatePromotionPanel");
+            JFrame frame = new JFrame("Test TaoKhuyenMaiPanel");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1200, 700);
             frame.setLocationRelativeTo(null);
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setContentPane(new CreatePromotionPanel(frame));
+            frame.setContentPane(new TaoKhuyenMaiPanel(frame));
             frame.setVisible(true);
         });
     }

@@ -33,7 +33,7 @@ import javax.swing.table.DefaultTableModel;
 
 import DAO.ThongKe_DAO;
 
-public class GeneralReportPanel extends JFrame implements ActionListener {
+public class BaoCaoTongHopPanel extends JFrame implements ActionListener {
 
     private static final Color BRAND_RED = new Color(180, 40, 40);
     private static final Color CARD_BG = Color.WHITE;
@@ -58,11 +58,11 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
     private ThongKe_DAO thongKeDAO = new ThongKe_DAO();
     private DecimalFormat dfMoney = new DecimalFormat("#,###đ");
 
-    public GeneralReportPanel() {
+    public BaoCaoTongHopPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public GeneralReportPanel(String userName, String userRole) {
+    public BaoCaoTongHopPanel(String userName, String userRole) {
         this.currentUserName = userName;
         this.currentUserRole = userRole;
 
@@ -75,7 +75,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
 
         // 1. MENU CHÍNH
-        add(new MenuPanel(currentUserName, currentUserRole), BorderLayout.NORTH);
+        add(new ThanhMenu(currentUserName, currentUserRole), BorderLayout.NORTH);
 
         // 2. KHUNG NỘI DUNG CHÍNH
         JPanel pMain = new JPanel(new BorderLayout(0, 16));
@@ -382,7 +382,7 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
             String period = cboMonth.getSelectedItem() == null
                     ? "bao-cao" : cboMonth.getSelectedItem().toString()
                             .toLowerCase(java.util.Locale.ROOT).replace(' ', '-').replace('/', '-');
-            ReportExportUtils.exportTable(this, table, "Xuất báo cáo tổng hợp",
+            TienIchXuatBaoCao.exportTable(this, table, "Xuất báo cáo tổng hợp",
                     "bao-cao-tong-hop-" + period + ".csv");
         } else if (source.equals(btnPrint)) {
             String period = cboMonth.getSelectedItem() == null
@@ -395,12 +395,12 @@ public class GeneralReportPanel extends JFrame implements ActionListener {
                     {"Khách hàng mới", lblValKhachMoi.getText()},
                     {"Trả hàng / đổi hàng", lblValDoiTra.getText()}
             };
-            ReportExportUtils.exportTablePdf(this, table, lblTableTitle.getText(),
+            TienIchXuatBaoCao.exportTablePdf(this, table, lblTableTitle.getText(),
                     "bao-cao-tong-hop-" + period + ".pdf", summary, null, null, null);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GeneralReportPanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new BaoCaoTongHopPanel().setVisible(true));
     }
 }
