@@ -191,12 +191,15 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         c.weighty = 1;
         c.insets = new Insets(0, 0, 0, 8);
         c.gridx = 0;
-        c.weightx = 0.75;
+        c.weightx = 1;
         content.add(createLeftWorkspace(), c);
         c.gridx = 1;
-        c.weightx = 0.25;
+        c.weightx = 0;
         c.insets = new Insets(0, 0, 0, 0);
-        content.add(createPaymentPanel(), c);
+        JPanel paymentPanel = createPaymentPanel();
+        paymentPanel.setMinimumSize(new Dimension(300, 0));
+        paymentPanel.setPreferredSize(new Dimension(320, 0));
+        content.add(paymentPanel, c);
         workspace.add(content, BorderLayout.CENTER);
         return workspace;
     }
