@@ -54,6 +54,7 @@ public class KhungChinh extends JFrame {
     private final JPanel pageContainer = new JPanel(new BorderLayout());
     private final Map<ThanhMenu.MenuItem, Component> pageCache =
             new EnumMap<>(ThanhMenu.MenuItem.class);
+    private HoaDonPanel hoaDonPage;
     private JPanel dashboard;
 
     public KhungChinh() {
@@ -152,6 +153,12 @@ public class KhungChinh extends JFrame {
         pageContainer.repaint();
     }
 
+    public static void lamMoiTrangHoaDon() {
+        if (khungDangHoatDong != null && khungDangHoatDong.hoaDonPage != null) {
+            khungDangHoatDong.hoaDonPage.docDuLieuDatabaseVaoTable();
+        }
+    }
+
     private Component taoTrang(ThanhMenu.MenuItem item) {
         JFrame frame;
         switch (item) {
@@ -162,7 +169,8 @@ public class KhungChinh extends JFrame {
                 frame = new NhatKyHeThongPanel(currentUserName(), currentUserRole(), currentUsername());
                 break;
             case INVOICE:
-                frame = new HoaDonPanel(currentUserName(), currentUserRole());
+                hoaDonPage = new HoaDonPanel(currentUserName(), currentUserRole());
+                frame = hoaDonPage;
                 break;
             case CUSTOMER:
                 frame = new KhachHangPanel(currentUserName(), currentUserRole());

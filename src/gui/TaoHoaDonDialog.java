@@ -379,6 +379,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
         addFullWidthField(fields, c, "Phương thức thanh toán", cboPhuongThuc);
         addFullWidthField(fields, c, "Tiền khách đưa", txtTienKhachDua);
+        c.gridy++;
         fields.add(btnDuTien, c);
         JLabel lblQr = new JLabel();
         lblQr.setHorizontalAlignment(SwingConstants.CENTER);
@@ -837,6 +838,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             setInvoiceInputsEnabled(false);
             if (owner != null) {
                 owner.docDuLieuDatabaseVaoTable();
+            } else {
+                KhungChinh.lamMoiTrangHoaDon();
             }
         } catch (SQLException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tạo hóa đơn: " + ex.getMessage(),
