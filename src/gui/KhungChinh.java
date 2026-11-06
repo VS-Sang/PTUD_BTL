@@ -219,7 +219,17 @@ public class KhungChinh extends JFrame {
             }
         }
         content.revalidate();
-        return content;
+        content.setMinimumSize(new Dimension(0, 0));
+        content.setPreferredSize(new Dimension(0, 0));
+        content.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+        JPanel page = new JPanel(new BorderLayout());
+        page.setOpaque(false);
+        page.setMinimumSize(new Dimension(0, 0));
+        page.setPreferredSize(new Dimension(0, 0));
+        page.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        page.add(content, BorderLayout.CENTER);
+        return page;
     }
 
     private String currentUserName() {
