@@ -558,7 +558,13 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         });
         lstSanPhamGoiY.addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
-                btnThem.setEnabled(lstSanPhamGoiY.getSelectedValue() != null);
+                SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
+                btnThem.setEnabled(sanPham != null);
+                if (sanPham != null && !txtTimSanPham.getText().equals(sanPham.getTenSanPham())) {
+                    txtTimSanPham.setText(sanPham.getTenSanPham());
+                    javax.swing.SwingUtilities.invokeLater(() ->
+                            lstSanPhamGoiY.setSelectedValue(sanPham, true));
+                }
             }
         });
         cboPhuongThuc.addActionListener(event -> capNhatTienThoi());
