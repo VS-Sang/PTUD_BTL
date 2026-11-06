@@ -27,10 +27,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import DAO.AuditTrail_DAO;
+import DAO.NhatKyHeThong_DAO;
 import DAO.VaiTroQuyen_DAO;
 
-public class MenuPanel extends JPanel {
+public class ThanhMenu extends JPanel {
     private static final Color HEADER_COLOR = new Color(180, 40, 40);
     private static final Color MENU_COLOR = new Color(240, 240, 240);
 
@@ -86,16 +86,16 @@ public class MenuPanel extends JPanel {
     private JMenuItem mnuBanChay;
     private JMenuItem mnuTongHop;
 
-    public MenuPanel() {
-        this(LoginFrame.getCurrentFullName(), LoginFrame.getCurrentRole(),
-                LoginFrame.getCurrentUsername());
+    public ThanhMenu() {
+        this(DangNhapFrame.getCurrentFullName(), DangNhapFrame.getCurrentRole(),
+                DangNhapFrame.getCurrentUsername());
     }
 
-    public MenuPanel(String userName, String userRole) {
-        this(userName, userRole, LoginFrame.getCurrentUsername());
+    public ThanhMenu(String userName, String userRole) {
+        this(userName, userRole, DangNhapFrame.getCurrentUsername());
     }
 
-    public MenuPanel(String userName, String userRole, String username) {
+    public ThanhMenu(String userName, String userRole, String username) {
         super(new BorderLayout());
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Chưa đăng nhập";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole.trim() : "";
@@ -193,72 +193,85 @@ public class MenuPanel extends JPanel {
     private void caiDatDieuHuongMacDinh() {
         // Hệ thống
         setMenuItemAction(MenuItem.HOME, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.HOME)) return;
             dongCuaSoHienTai();
-            new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new KhungChinh(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.LOGOUT, e -> {
             ghiNhatKyDangXuat();
             dongCuaSoHienTai();
-            LoginFrame.clearCurrentUsername();
-            new LoginFrame().setVisible(true);
+            DangNhapFrame.clearCurrentUsername();
+            new DangNhapFrame().setVisible(true);
         });
         setMenuItemAction(MenuItem.PERSONAL_INFO, e ->
-                new ProfileDialog(SwingUtilities.getWindowAncestor(this),
+                new HoSoDialog(SwingUtilities.getWindowAncestor(this),
                         currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.CHANGE_PASSWORD, e ->
-                new ProfileDialog(SwingUtilities.getWindowAncestor(this),
+                new HoSoDialog(SwingUtilities.getWindowAncestor(this),
                         currentUserName, currentUserRole, currentUsername).setVisible(true));
         setMenuItemAction(MenuItem.LIST_ACCOUNT, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.LIST_ACCOUNT)) return;
             dongCuaSoHienTai();
-            new AccountPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new TaiKhoanPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.AUDIT_TRAIL, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.AUDIT_TRAIL)) return;
             dongCuaSoHienTai();
-            new AuditTrailPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new NhatKyHeThongPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
 
         // Danh mục
         setMenuItemAction(MenuItem.INVOICE, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.INVOICE)) return;
             dongCuaSoHienTai();
-            new InvoicePanel(currentUserName, currentUserRole).setVisible(true);
+            new HoaDonPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.CUSTOMER, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.CUSTOMER)) return;
             dongCuaSoHienTai();
-            new CustomerPanel(currentUserName, currentUserRole).setVisible(true);
+            new KhachHangPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.EMPLOYEE, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.EMPLOYEE)) return;
             dongCuaSoHienTai();
-            new EmployeePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new NhanVienPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.PRODUCT, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.PRODUCT)) return;
             dongCuaSoHienTai();
-            new ProductPanel().setVisible(true);
+            new SanPhamPanel().setVisible(true);
         });
         setMenuItemAction(MenuItem.PROMOTION, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.PROMOTION)) return;
             dongCuaSoHienTai();
-            new PromotionPanel().setVisible(true);
+            new KhuyenMaiPanel().setVisible(true);
         });
 
         // Xử lý
         setMenuItemAction(MenuItem.INVOICING, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.INVOICING)) return;
             dongCuaSoHienTai();
-            new CreateInvoiceDialog(null, currentUserName, currentUserRole).setVisible(true);
+            new TaoHoaDonDialog(null, currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.IMPORT_GOODS, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.IMPORT_GOODS)) return;
             dongCuaSoHienTai();
-            new ImportGoodsPanel(currentUserName, currentUserRole).setVisible(true);
+            new NhapHangPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.RETURN, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.RETURN)) return;
             dongCuaSoHienTai();
-            new ReturnGoodsPanel(currentUserName, currentUserRole).setVisible(true);
+            new TraHangPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.WORK_SCHEDULE, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.WORK_SCHEDULE)) return;
             dongCuaSoHienTai();
-            new WorkSchedulePanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new LichLamViecPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
         setMenuItemAction(MenuItem.ASSIGNMENT, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.ASSIGNMENT)) return;
             dongCuaSoHienTai();
-            new AssignmentPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
+            new PhanCongCaPanel(currentUserName, currentUserRole, currentUsername).setVisible(true);
         });
 
         // Thống kê
@@ -267,32 +280,37 @@ public class MenuPanel extends JPanel {
         mnuTongHop = menuItemMap.get(MenuItem.SUMMARY_REPORT);
 
         setMenuItemAction(MenuItem.MONTHLY_REVENUE, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.MONTHLY_REVENUE)) return;
             dongCuaSoHienTai();
-            new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
+            new DoanhThuThangPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.BEST_SELLERS, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.BEST_SELLERS)) return;
             dongCuaSoHienTai();
-            new TopProductsPanel(currentUserName, currentUserRole).setVisible(true);
+            new SanPhamBanChayPanel(currentUserName, currentUserRole).setVisible(true);
         });
         setMenuItemAction(MenuItem.SUMMARY_REPORT, e -> {
+            if (moTrangTrongKhungChinh(MenuItem.SUMMARY_REPORT)) return;
             dongCuaSoHienTai();
-            new GeneralReportPanel(currentUserName, currentUserRole).setVisible(true);
+            new BaoCaoTongHopPanel(currentUserName, currentUserRole).setVisible(true);
         });
 
         // Shortcut Home
         JButton btnHome = shortcutButtons.get(Shortcut.HOME);
         if (btnHome != null) {
             btnHome.addActionListener(e -> {
+                if (moTrangTrongKhungChinh(MenuItem.HOME)) return;
                 dongCuaSoHienTai();
-                new MainFrame(currentUserName, currentUserRole, currentUsername).setVisible(true);
+                new KhungChinh(currentUserName, currentUserRole, currentUsername).setVisible(true);
             });
         }
 
         JButton btnShortcutInvoice = shortcutButtons.get(Shortcut.CALCULATOR);
         if (btnShortcutInvoice != null) {
             btnShortcutInvoice.addActionListener(e -> {
+                if (moTrangTrongKhungChinh(MenuItem.INVOICING)) return;
                 dongCuaSoHienTai();
-                new CreateInvoiceDialog(null, currentUserName, currentUserRole).setVisible(true);
+                new TaoHoaDonDialog(null, currentUserName, currentUserRole).setVisible(true);
             });
         }
 
@@ -301,8 +319,9 @@ public class MenuPanel extends JPanel {
         if (btnShortcutReports != null) {
             btnShortcutReports.addActionListener(e -> {
                 if (coQuyen("Q011")) {
+                    if (moTrangTrongKhungChinh(MenuItem.MONTHLY_REVENUE)) return;
                     dongCuaSoHienTai();
-                    new MonthlyRevenuePanel(currentUserName, currentUserRole).setVisible(true);
+                    new DoanhThuThangPanel(currentUserName, currentUserRole).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(this,
                             "Tài khoản hiện tại không có quyền xem báo cáo thống kê.",
@@ -317,8 +336,8 @@ public class MenuPanel extends JPanel {
             btnLogout.addActionListener(e -> {
                 ghiNhatKyDangXuat();
                 dongCuaSoHienTai();
-                LoginFrame.clearCurrentUsername();
-                new LoginFrame().setVisible(true);
+                DangNhapFrame.clearCurrentUsername();
+                new DangNhapFrame().setVisible(true);
             });
         }
     }
@@ -334,6 +353,15 @@ public class MenuPanel extends JPanel {
         return rolePermissions.contains(maQuyen);
     }
 
+    private boolean moTrangTrongKhungChinh(MenuItem item) {
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window instanceof KhungChinh) {
+            ((KhungChinh) window).moTrang(item);
+            return true;
+        }
+        return false;
+    }
+
     private Set<String> loadRolePermissions(String role) {
         try {
             return VaiTroQuyen_DAO.layMaQuyenTheoVaiTro(role);
@@ -347,7 +375,7 @@ public class MenuPanel extends JPanel {
 
     private void ghiNhatKyDangXuat() {
         try {
-            AuditTrail_DAO.ghiDangXuat(currentUsername);
+            NhatKyHeThong_DAO.ghiDangXuat(currentUsername);
         } catch (java.sql.SQLException exception) {
             JOptionPane.showMessageDialog(this,
                     "Không thể ghi Audit Trail khi đăng xuất:\n" + exception.getMessage(),
@@ -437,11 +465,11 @@ public class MenuPanel extends JPanel {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Điện Máy Đỏ — MenuPanel Preview");
+            JFrame frame = new JFrame("Điện Máy Đỏ — ThanhMenu Preview");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1200, 100);
             frame.setLocationRelativeTo(null);
-            MenuPanel mp = new MenuPanel();
+            ThanhMenu mp = new ThanhMenu();
             mp.setShortcutAction(Shortcut.LOGOUT, e -> System.exit(0));
             frame.setContentPane(mp);
             frame.setVisible(true);

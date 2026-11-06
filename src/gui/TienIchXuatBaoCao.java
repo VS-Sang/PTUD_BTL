@@ -37,8 +37,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 
-final class ReportExportUtils {
-    private ReportExportUtils() {
+final class TienIchXuatBaoCao {
+    private TienIchXuatBaoCao() {
     }
 
     static void exportTable(Component parent, JTable table, String title, String defaultFileName) {

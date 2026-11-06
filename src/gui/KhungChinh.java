@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -19,6 +20,8 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.EnumMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,7 +38,7 @@ import javax.swing.table.DefaultTableModel;
 
 import connectDB.ConnectDB;
 
-public class MainFrame extends JFrame {
+public class KhungChinh extends JFrame {
     private static final Color BRAND_RED = new Color(177, 48, 42);
     private static final Color TEXT_COLOR = new Color(55, 55, 55);
     private static final Color MUTED_COLOR = new Color(125, 125, 125);
@@ -47,17 +50,21 @@ public class MainFrame extends JFrame {
     private final JLabel clockLabel = new JLabel();
     private final JLabel dateLabel = new JLabel();
     private final DefaultTableModel invoiceTableModel;
+    private final JPanel pageContainer = new JPanel(new BorderLayout());
+    private final Map<ThanhMenu.MenuItem, Component> pageCache =
+            new EnumMap<>(ThanhMenu.MenuItem.class);
+    private JPanel dashboard;
 
-    public MainFrame() {
-        this(LoginFrame.getCurrentFullName(), LoginFrame.getCurrentRole(),
-                LoginFrame.getCurrentUsername());
+    public KhungChinh() {
+        this(DangNhapFrame.getCurrentFullName(), DangNhapFrame.getCurrentRole(),
+                DangNhapFrame.getCurrentUsername());
     }
 
-    public MainFrame(String userName, String userRole) {
+    public KhungChinh(String userName, String userRole) {
         this(userName, userRole, null);
     }
 
-    public MainFrame(String userName, String userRole, String username) {
+    public KhungChinh(String userName, String userRole, String username) {
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1000, 680));
@@ -66,7 +73,7 @@ public class MainFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
 
-        MenuPanel menuPanel = new MenuPanel(userName, userRole, username);
+        ThanhMenu menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
 
         invoiceTableModel = new DefaultTableModel(
@@ -77,7 +84,7 @@ public class MainFrame extends JFrame {
             }
         };
 
-        JPanel dashboard = new JPanel(new GridBagLayout());
+        dashboard = new JPanel(new GridBagLayout());
         dashboard.setBackground(new Color(242, 243, 245));
         dashboard.setBorder(new EmptyBorder(20, 22, 20, 22));
 
@@ -107,7 +114,8 @@ public class MainFrame extends JFrame {
         column.insets = new Insets(0, 0, 0, 0);
         dashboard.add(rightColumn, column);
 
-        add(dashboard, BorderLayout.CENTER);
+        pageContainer.add(dashboard, BorderLayout.CENTER);
+        add(pageContainer, BorderLayout.CENTER);
         add(createStatusBar(userName, userRole), BorderLayout.SOUTH);
         updateClock();
         new Timer(1000, event -> updateClock()).start();
@@ -115,6 +123,97 @@ public class MainFrame extends JFrame {
 
     public DefaultTableModel getInvoiceTableModel() {
         return invoiceTableModel;
+    }
+
+    public void moTrang(ThanhMenu.MenuItem item) {
+        if (item == ThanhMenu.MenuItem.HOME) {
+            pageContainer.removeAll();
+            pageContainer.add(dashboard, BorderLayout.CENTER);
+        } else {
+            Component page = pageCache.get(item);
+            if (page == null) {
+                page = taoTrang(item);
+                pageCache.put(item, page);
+            }
+            pageContainer.removeAll();
+            pageContainer.add(page, BorderLayout.CENTER);
+        }
+        pageContainer.revalidate();
+        pageContainer.repaint();
+    }
+
+    private Component taoTrang(ThanhMenu.MenuItem item) {
+        JFrame frame;
+        switch (item) {
+            case LIST_ACCOUNT:
+                frame = new TaiKhoanPanel(currentUserName(), currentUserRole(), currentUsername());
+                break;
+            case AUDIT_TRAIL:
+                frame = new NhatKyHeThongPanel(currentUserName(), currentUserRole(), currentUsername());
+                break;
+            case INVOICE:
+                frame = new HoaDonPanel(currentUserName(), currentUserRole());
+                break;
+            case CUSTOMER:
+                frame = new KhachHangPanel(currentUserName(), currentUserRole());
+                break;
+            case EMPLOYEE:
+                frame = new NhanVienPanel(currentUserName(), currentUserRole(), currentUsername());
+                break;
+            case PRODUCT:
+                frame = new SanPhamPanel();
+                break;
+            case PROMOTION:
+                frame = new KhuyenMaiPanel();
+                break;
+            case INVOICING:
+                frame = new TaoHoaDonDialog(null, currentUserName(), currentUserRole());
+                break;
+            case IMPORT_GOODS:
+                frame = new NhapHangPanel(currentUserName(), currentUserRole());
+                break;
+            case RETURN:
+                frame = new TraHangPanel(currentUserName(), currentUserRole());
+                break;
+            case WORK_SCHEDULE:
+                frame = new LichLamViecPanel(currentUserName(), currentUserRole(), currentUsername());
+                break;
+            case ASSIGNMENT:
+                frame = new PhanCongCaPanel(currentUserName(), currentUserRole(), currentUsername());
+                break;
+            case MONTHLY_REVENUE:
+                frame = new DoanhThuThangPanel(currentUserName(), currentUserRole());
+                break;
+            case BEST_SELLERS:
+                frame = new SanPhamBanChayPanel(currentUserName(), currentUserRole());
+                break;
+            case SUMMARY_REPORT:
+                frame = new BaoCaoTongHopPanel(currentUserName(), currentUserRole());
+                break;
+            default:
+                throw new IllegalArgumentException("Trang không được hỗ trợ: " + item);
+        }
+        Container content = frame.getContentPane();
+        for (Component component : content.getComponents()) {
+            if (component instanceof ThanhMenu) {
+                content.remove(component);
+                break;
+            }
+        }
+        content.revalidate();
+        return content;
+    }
+
+    private String currentUserName() {
+        return DangNhapFrame.getCurrentFullName();
+    }
+
+    private String currentUserRole() {
+        return DangNhapFrame.getCurrentRole();
+    }
+
+    private String currentUsername() {
+        return DangNhapFrame.getCurrentUsername();
     }
 
     private void addWelcomeCard(JPanel parent, String userName, String userRole) {
@@ -385,6 +484,6 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+        SwingUtilities.invokeLater(() -> new KhungChinh().setVisible(true));
     }
 }

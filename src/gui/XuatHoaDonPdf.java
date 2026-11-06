@@ -28,16 +28,16 @@ import com.lowagie.text.pdf.PdfWriter;
 import entity.ChiTietDonHang;
 import entity.HoaDon;
 
-final class InvoicePdfExporter {
+final class XuatHoaDonPdf {
     private static final Color RED = new Color(180, 40, 40);
     private static final Color LABEL_BACKGROUND = new Color(245, 245, 245);
     private static final Color ALTERNATE_ROW = new Color(248, 248, 248);
 
-    private InvoicePdfExporter() {
+    private XuatHoaDonPdf() {
     }
 
     static void export(Component parent, HoaDon hoaDon, String maKhuyenMai,
-                       List<ChiTietDonHang> chiTiet) {
+                       List<? extends ChiTietDonHang> chiTiet) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Lưu hóa đơn thành PDF");
         chooser.setFileFilter(new FileNameExtensionFilter("Tệp PDF (*.pdf)", "pdf"));
@@ -67,7 +67,7 @@ final class InvoicePdfExporter {
     }
 
     private static void write(File file, HoaDon hoaDon, String maKhuyenMai,
-                              List<ChiTietDonHang> chiTiet)
+                              List<? extends ChiTietDonHang> chiTiet)
             throws IOException, DocumentException {
         BaseFont baseFont = BaseFont.createFont(findVietnameseFont(),
                 BaseFont.IDENTITY_H, BaseFont.EMBEDDED);

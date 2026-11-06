@@ -29,7 +29,7 @@ import javax.swing.table.DefaultTableModel;
 
 import DAO.ThongKe_DAO;
 
-public class MonthlyRevenuePanel extends JFrame implements ActionListener {
+public class DoanhThuThangPanel extends JFrame implements ActionListener {
     private static final Color BRAND_RED = new Color(177, 48, 42);
     private static final Color TEXT_COLOR = new Color(55, 55, 55);
     private static final Color MUTED_COLOR = new Color(125, 125, 125);
@@ -54,11 +54,11 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
     private JButton exportButton;
     private JButton printButton;
 
-    public MonthlyRevenuePanel() {
+    public DoanhThuThangPanel() {
         this("Nguyễn Văn An", "Quản lý");
     }
 
-    public MonthlyRevenuePanel(String userName, String userRole) {
+    public DoanhThuThangPanel(String userName, String userRole) {
         this.userName = userName;
         this.userRole = userRole;
 
@@ -69,7 +69,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        add(new MenuPanel(userName, userRole), BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         add(createStatusBar(), BorderLayout.SOUTH);
 
@@ -96,7 +96,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
         yearCombo.addActionListener(this);
 
         exportButton = new JButton("Xuất Excel");
-        exportButton.addActionListener(event -> ReportExportUtils.exportTable(
+        exportButton.addActionListener(event -> TienIchXuatBaoCao.exportTable(
                 this, table, "Xuất thống kê doanh thu theo tháng",
                 "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".csv"));
         printButton = new JButton("Xuất PDF");
@@ -107,7 +107,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
                     {"Hóa đơn đã thanh toán", kpiValues[2].getText()},
                     {"Doanh thu cao nhất", giaTriKpiDayDu(3)}
             };
-            ReportExportUtils.exportTablePdf(this, table,
+            TienIchXuatBaoCao.exportTablePdf(this, table,
                     "Thống kê doanh thu theo tháng - " + yearCombo.getSelectedItem(),
                     "thong-ke-doanh-thu-" + yearCombo.getSelectedItem() + ".pdf",
                     summary, chart, null, null);
@@ -309,7 +309,7 @@ public class MonthlyRevenuePanel extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MonthlyRevenuePanel().setVisible(true));
+        SwingUtilities.invokeLater(() -> new DoanhThuThangPanel().setVisible(true));
     }
 
     private static final class RevenueChart extends JPanel {
