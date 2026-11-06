@@ -215,7 +215,9 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         } else if (o.equals(btnDelete)) {
             xoaHoaDonDangChon();
         } else if (o.equals(btnCreate)) {
-            new TaoHoaDonDialog(this, currentUserName, currentUserRole).setVisible(true);
+            if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.INVOICING)) {
+                new TaoHoaDonDialog(this, currentUserName, currentUserRole).setVisible(true);
+            }
         } else if (o.equals(btnDetail)) {
             moChiTietHoaDonDangChon();
         } else if (o.equals(btnEdit)) {
