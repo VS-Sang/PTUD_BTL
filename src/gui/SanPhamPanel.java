@@ -72,8 +72,10 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         // ThanhMenu tích hợp chuyển màn hình từ nhánh thuy
         menuPanel = new ThanhMenu();
         menuPanel.setShortcutAction(ThanhMenu.Shortcut.HOME, e -> {
-            new KhungChinh().setVisible(true);
-            dispose();
+            if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.HOME)) {
+                new KhungChinh().setVisible(true);
+                dispose();
+            }
         });
         menuPanel.setShortcutAction(ThanhMenu.Shortcut.LOGOUT, e -> {
             DangNhapFrame.clearCurrentUsername();
@@ -82,8 +84,10 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         });
 
         menuPanel.setMenuItemAction(ThanhMenu.MenuItem.HOME, e -> {
-            new KhungChinh().setVisible(true);
-            dispose();
+            if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.HOME)) {
+                new KhungChinh().setVisible(true);
+                dispose();
+            }
         });
         menuPanel.setMenuItemAction(ThanhMenu.MenuItem.LOGOUT, e -> {
             DangNhapFrame.clearCurrentUsername();

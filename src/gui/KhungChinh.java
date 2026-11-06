@@ -39,6 +39,7 @@ import javax.swing.table.DefaultTableModel;
 import connectDB.ConnectDB;
 
 public class KhungChinh extends JFrame {
+    private static KhungChinh khungDangHoatDong;
     private static final Color BRAND_RED = new Color(177, 48, 42);
     private static final Color TEXT_COLOR = new Color(55, 55, 55);
     private static final Color MUTED_COLOR = new Color(125, 125, 125);
@@ -65,6 +66,7 @@ public class KhungChinh extends JFrame {
     }
 
     public KhungChinh(String userName, String userRole, String username) {
+        khungDangHoatDong = this;
         setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1000, 680));
@@ -123,6 +125,14 @@ public class KhungChinh extends JFrame {
 
     public DefaultTableModel getInvoiceTableModel() {
         return invoiceTableModel;
+    }
+
+    public static boolean moTrangHienTai(ThanhMenu.MenuItem item) {
+        if (khungDangHoatDong == null || !khungDangHoatDong.isDisplayable()) {
+            return false;
+        }
+        khungDangHoatDong.moTrang(item);
+        return true;
     }
 
     public void moTrang(ThanhMenu.MenuItem item) {

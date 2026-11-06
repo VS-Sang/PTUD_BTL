@@ -354,6 +354,9 @@ public class ThanhMenu extends JPanel {
     }
 
     private boolean moTrangTrongKhungChinh(MenuItem item) {
+        if (KhungChinh.moTrangHienTai(item)) {
+            return true;
+        }
         Window window = SwingUtilities.getWindowAncestor(this);
         if (window instanceof KhungChinh) {
             ((KhungChinh) window).moTrang(item);
