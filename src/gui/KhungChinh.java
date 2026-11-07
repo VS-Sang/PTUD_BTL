@@ -241,6 +241,14 @@ public class KhungChinh extends JFrame {
         FullSizePanel() {
             super(new BorderLayout());
         }
+
+        @Override
+        public void doLayout() {
+            super.doLayout();
+            for (Component component : getComponents()) {
+                component.setBounds(0, 0, getWidth(), getHeight());
+            }
+        }
     }
 
     private String currentUserName() {
