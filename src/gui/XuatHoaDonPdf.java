@@ -50,7 +50,7 @@ final class XuatHoaDonPdf {
         if (!file.getName().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
             file = new File(file.getParentFile(), file.getName() + ".pdf");
         }
-        if (file.exists() && JOptionPane.showConfirmDialog(parent,
+        if (file.exists() && JOptionPane.showConfirmDialog(UiDialogOwner.resolve(parent),
                 "Tệp đã tồn tại. Bạn có muốn ghi đè không?", "Xác nhận ghi đè",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
             return;
@@ -58,10 +58,10 @@ final class XuatHoaDonPdf {
 
         try {
             write(file, hoaDon, maKhuyenMai, chiTiet);
-            JOptionPane.showMessageDialog(parent, "Đã lưu hóa đơn PDF tại:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Đã lưu hóa đơn PDF tại:\n"
                     + file.getAbsolutePath(), "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException | DocumentException exception) {
-            JOptionPane.showMessageDialog(parent, "Không thể lưu hóa đơn PDF:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Không thể lưu hóa đơn PDF:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
     }

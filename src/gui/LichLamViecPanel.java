@@ -294,7 +294,7 @@ public class LichLamViecPanel extends JFrame implements ActionListener {
             String bd = txtGioBatDau.getText().trim();
             String kt = txtGioKetThuc.getText().trim();
             if (ten.isEmpty() || bd.isEmpty() || kt.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin ca làm việc!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng nhập đầy đủ thông tin ca làm việc!");
                 return;
             }
             try {
@@ -306,23 +306,23 @@ public class LichLamViecPanel extends JFrame implements ActionListener {
                         cboTrangThai.getSelectedItem().toString(), new Date());
                 if (ca_dao.themCaLamViec(ca)) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(this, "Thêm ca làm việc thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Thêm ca làm việc thành công!");
                     xoaRong();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Thêm thất bại (Mã ca đã tồn tại)!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Thêm thất bại (Mã ca đã tồn tại)!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Giờ bắt đầu / kết thúc phải có định dạng HH:mm (VD: 08:00)!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Giờ bắt đầu / kết thúc phải có định dạng HH:mm (VD: 08:00)!");
             }
         } else if (o.equals(btnCapNhat)) {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn một ca trên bảng để cập nhật!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn một ca trên bảng để cập nhật!");
                 return;
             }
             String ten = txtTenCa.getText().trim();
             if (ten.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập tên ca làm việc!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng nhập tên ca làm việc!");
                 return;
             }
             try {
@@ -333,28 +333,28 @@ public class LichLamViecPanel extends JFrame implements ActionListener {
                         cboTrangThai.getSelectedItem().toString(), new Date());
                 if (ca_dao.capNhatCaLamViec(ca)) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(this, "Cập nhật ca làm việc thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật ca làm việc thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật thất bại!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Giờ bắt đầu / kết thúc phải có định dạng HH:mm!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Giờ bắt đầu / kết thúc phải có định dạng HH:mm!");
             }
         } else if (o.equals(btnXoa)) {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn ca cần xóa!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn ca cần xóa!");
                 return;
             }
             String maCa = model.getValueAt(row, 0).toString();
-            if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa ca " + maCa + "?", "Xác nhận",
+            if (JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Bạn có chắc muốn xóa ca " + maCa + "?", "Xác nhận",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (ca_dao.xoaCaLamViec(maCa)) {
                     docDuLieuDatabaseVaoTable();
                     xoaRong();
-                    JOptionPane.showMessageDialog(this, "Xóa ca làm việc thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Xóa ca làm việc thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Không thể xóa ca này (đã có phân công nhân viên)!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xóa ca này (đã có phân công nhân viên)!");
                 }
             }
         } else if (o.equals(btnPhanCong)) {

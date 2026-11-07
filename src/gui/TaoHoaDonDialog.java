@@ -38,6 +38,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -114,6 +115,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private final JTextField txtTimSanPham = new JTextField();
     private final DefaultListModel<SanPham> sanPhamGoiYModel = new DefaultListModel<>();
     private final JList<SanPham> lstSanPhamGoiY = new JList<>(sanPhamGoiYModel);
+    private final JPopupMenu popupSanPhamGoiY = new JPopupMenu();
     private final JComboBox<KhachHang> cboKhachHang = new JComboBox<>();
     private final JComboBox<String> cboPhuongThuc =
             new JComboBox<>(new String[]{"Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Ví điện tử"});
@@ -174,6 +176,12 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             label.setForeground(selected ? list.getSelectionForeground() : list.getForeground());
             return label;
         });
+        lstSanPhamGoiY.setFixedCellHeight(lstSanPhamGoiY.getFontMetrics(
+                lstSanPhamGoiY.getFont()).getHeight() + 6);
+        JScrollPane suggestions = new JScrollPane(lstSanPhamGoiY);
+        suggestions.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+        popupSanPhamGoiY.setFocusable(false);
+        popupSanPhamGoiY.add(suggestions);
         loadCustomersAndProducts();
         resetInvoice();
         wireActions();
@@ -240,23 +248,16 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         addField(fields, c, 2, 0, "Nhân viên", txtNhanVien);
         addField(fields, c, 0, 2, "Khách hàng", cboKhachHang);
 
-        JLabel productLabel = createFieldLabel("Thêm sản phẩm");
+        JLabel productLabel = createFieldLabel("Tìm mã hoặc tên");
         c.gridx = 0;
         c.gridy = 4;
         c.gridwidth = 1;
         fields.add(productLabel, c);
-        c.gridx = 1;
-        fields.add(new JLabel("Tìm mã hoặc tên"), c);
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth = 2;
         fields.add(txtTimSanPham, c);
-        c.gridy = 6;
-        c.weighty = 0;
-        fields.add(new JScrollPane(lstSanPhamGoiY), c);
         c.gridwidth = 1;
-        c.gridx = 1;
-        c.weightx = 0;
         c.gridx = 2;
         c.gridy = 4;
         fields.add(new JLabel("Số lượng"), c);
@@ -572,10 +573,37 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             if (!event.getValueIsAdjusting()) {
                 SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
                 btnThem.setEnabled(sanPham != null);
-                if (sanPham != null && !txtTimSanPham.getText().equals(sanPham.getTenSanPham())) {
-                    txtTimSanPham.setText(sanPham.getTenSanPham());
-                    javax.swing.SwingUtilities.invokeLater(() ->
-                            lstSanPhamGoiY.setSelectedValue(sanPham, true));
+            }
+        });
+        txtTimSanPham.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent event) {
+                if (!popupSanPhamGoiY.isVisible()) {
+                    return;
+                }
+                if (event.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN) {
+                    int next = Math.min(lstSanPhamGoiY.getSelectedIndex() + 1,
+                            sanPhamGoiYModel.size() - 1);
+                    lstSanPhamGoiY.setSelectedIndex(next);
+                    lstSanPhamGoiY.ensureIndexIsVisible(next);
+                    event.consume();
+                } else if (event.getKeyCode() == java.awt.event.KeyEvent.VK_UP) {
+                    int next = Math.max(0, lstSanPhamGoiY.getSelectedIndex() - 1);
+                    lstSanPhamGoiY.setSelectedIndex(next);
+                    lstSanPhamGoiY.ensureIndexIsVisible(next);
+                    event.consume();
+                } else if (event.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    if (lstSanPhamGoiY.getSelectedValue() != null) {
+                        themSanPham();
+                    } else if (!sanPhamGoiYModel.isEmpty()) {
+                        lstSanPhamGoiY.setSelectedIndex(0);
+                    }
+                    event.consume();
+                } else if (event.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
+                    popupSanPhamGoiY.setVisible(false);
+                    lstSanPhamGoiY.clearSelection();
+                    btnThem.setEnabled(false);
+                    event.consume();
                 }
             }
         });
@@ -614,15 +642,30 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private void locSanPham() {
         String tuKhoa = txtTimSanPham.getText().trim().toLowerCase(java.util.Locale.ROOT);
         sanPhamGoiYModel.clear();
+        lstSanPhamGoiY.clearSelection();
+        if (tuKhoa.isEmpty()) {
+            popupSanPhamGoiY.setVisible(false);
+            btnThem.setEnabled(false);
+            return;
+        }
         for (SanPham sanPham : sanPhamTheoMa.values()) {
             String thongTin = (sanPham.getMaSanPham() + " " + sanPham.getTenSanPham())
                     .toLowerCase(java.util.Locale.ROOT);
-            if (tuKhoa.isEmpty() || thongTin.contains(tuKhoa)) {
+            if (thongTin.contains(tuKhoa)) {
                 sanPhamGoiYModel.addElement(sanPham);
             }
         }
-        lstSanPhamGoiY.clearSelection();
-        btnThem.setEnabled(!sanPhamGoiYModel.isEmpty());
+        if (sanPhamGoiYModel.isEmpty() || !txtTimSanPham.isShowing()) {
+            popupSanPhamGoiY.setVisible(false);
+            btnThem.setEnabled(false);
+            return;
+        }
+        lstSanPhamGoiY.setVisibleRowCount(Math.min(5, sanPhamGoiYModel.size()));
+        popupSanPhamGoiY.setPreferredSize(new Dimension(
+                txtTimSanPham.getWidth(),
+                Math.min(5, sanPhamGoiYModel.size()) * lstSanPhamGoiY.getFixedCellHeight() + 4));
+        popupSanPhamGoiY.show(txtTimSanPham, 0, txtTimSanPham.getHeight());
+        btnThem.setEnabled(false);
     }
 
     @Override
@@ -642,7 +685,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private void themSanPham() {
         SanPham sanPham = lstSanPhamGoiY.getSelectedValue();
         if (sanPham == null) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng chọn một sản phẩm trong danh sách đề xuất.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Vui lòng chọn một sản phẩm trong danh sách đề xuất.",
                     "Chưa chọn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -650,7 +693,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         long tongSoLuong = soLuongDaChon.containsKey(sanPham.getMaSanPham())
                 ? (long) soLuongDaChon.get(sanPham.getMaSanPham()) + soLuong : soLuong;
         if (tongSoLuong > sanPham.getSoLuongTon()) {
-            JOptionPane.showMessageDialog(boMeThongBao(),
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Sản phẩm chỉ còn " + sanPham.getSoLuongTon() + " trong kho.",
                     "Không đủ tồn kho", JOptionPane.WARNING_MESSAGE);
             return;
@@ -664,6 +707,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         capNhatTrangThaiKhachHang();
         capNhatBangVaTongTien();
         table.repaint();
+        txtTimSanPham.setText("");
         lstSanPhamGoiY.clearSelection();
         spnSoLuong.setValue(1);
     }
@@ -762,19 +806,19 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
     private void luuHoaDon() {
         if (invoiceSaved) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Hóa đơn này đã được lưu. Vui lòng tạo hóa đơn mới.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Hóa đơn này đã được lưu. Vui lòng tạo hóa đơn mới.",
                     "Hóa đơn đã lưu", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (soLuongDaChon.isEmpty()) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng thêm ít nhất một sản phẩm.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Vui lòng thêm ít nhất một sản phẩm.",
                     "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             return;
         }
         KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
         String maKhachHangHienTai = khachHang == null ? null : khachHang.getMaKhachHang();
         if (khachHangDaChot && !java.util.Objects.equals(maKhachHangDaChot, maKhachHangHienTai)) {
-            JOptionPane.showMessageDialog(boMeThongBao(),
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Không thể đổi khách hàng khi hóa đơn đã có sản phẩm. "
                             + "Vui lòng tạo hóa đơn mới nếu muốn chọn khách hàng khác.",
                     "Khách hàng không khớp", JOptionPane.WARNING_MESSAGE);
@@ -785,14 +829,14 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             tienKhachDua = new BigDecimal(txtTienKhachDua.getText().trim()
                     .replace(",", "").replace(" ", ""));
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng nhập tiền khách đưa hợp lệ.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Vui lòng nhập tiền khách đưa hợp lệ.",
                     "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
             txtTienKhachDua.requestFocusInWindow();
             return;
         }
         if (tienKhachDua.signum() < 0
                 || tienKhachDua.compareTo(BigDecimal.valueOf(tinhTongThanhToan())) < 0) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Tiền khách đưa chưa đủ thanh toán.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Tiền khách đưa chưa đủ thanh toán.",
                     "Chưa đủ tiền thanh toán", JOptionPane.WARNING_MESSAGE);
             txtTienKhachDua.requestFocusInWindow();
             return;
@@ -800,7 +844,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
         NhanVien nhanVien = timNhanVienDangDangNhap();
         if (nhanVien == null) {
-            JOptionPane.showMessageDialog(boMeThongBao(),
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Không tìm thấy nhân viên \"" + tenNhanVien
                             + "\" trong dữ liệu nhân viên. Không thể lập hóa đơn.",
                     "Không xác định được thu ngân", JOptionPane.ERROR_MESSAGE);
@@ -830,7 +874,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                     tienGiam,
                     10,
                     txtGhiChu.getText().trim());
-            JOptionPane.showMessageDialog(boMeThongBao(), "Tạo hóa đơn " + maHoaDon + " thành công.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Tạo hóa đơn " + maHoaDon + " thành công.",
                     "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
             txtMaHoaDon.setText(maHoaDon);
             invoiceSaved = true;
@@ -842,14 +886,14 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                 KhungChinh.lamMoiTrangHoaDon();
             }
         } catch (SQLException | IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tạo hóa đơn: " + ex.getMessage(),
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Không thể tạo hóa đơn: " + ex.getMessage(),
                     "Lỗi tạo hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void xuatHoaDonPdf() {
         if (soLuongDaChon.isEmpty()) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Vui lòng thêm sản phẩm trước khi in hóa đơn.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Vui lòng thêm sản phẩm trước khi in hóa đơn.",
                     "Hóa đơn chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -869,7 +913,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                     selectedFile.getName() + ".pdf");
         }
         if (selectedFile.exists()) {
-            int overwrite = JOptionPane.showConfirmDialog(boMeThongBao(),
+            int overwrite = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                     "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (overwrite != JOptionPane.YES_OPTION) {
@@ -879,17 +923,17 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
         try {
             ghiHoaDonPdf(selectedFile);
-            JOptionPane.showMessageDialog(boMeThongBao(), "Đã xuất hóa đơn PDF:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Đã xuất hóa đơn PDF:\n"
                     + selectedFile.getAbsolutePath(), "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException | DocumentException exception) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể xuất hóa đơn PDF:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Không thể xuất hóa đơn PDF:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void inHoaDonMayIn() {
         if (!invoiceSaved) {
-            JOptionPane.showMessageDialog(boMeThongBao(),
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Hãy lưu hóa đơn trước khi in bằng máy in.",
                     "Hóa đơn chưa được lưu", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -899,7 +943,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             BoInHoaDon.print(this, hoaDon,
                     hoaDonDao.getChiTietHoaDon(hoaDon.getMaHoaDon()));
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tải hóa đơn để in:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), "Không thể tải hóa đơn để in:\n"
                     + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -1136,6 +1180,9 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         btnThem.setEnabled(enabled);
         txtTimSanPham.setEnabled(enabled);
         lstSanPhamGoiY.setEnabled(enabled);
+        if (!enabled) {
+            popupSanPhamGoiY.setVisible(false);
+        }
         spnSoLuong.setEnabled(enabled);
         capNhatTrangThaiKhachHang(enabled);
         cboPhuongThuc.setEnabled(enabled);

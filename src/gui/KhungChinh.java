@@ -14,6 +14,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -136,6 +137,10 @@ public class KhungChinh extends JFrame {
         return true;
     }
 
+    static Window getActiveWindow() {
+        return khungDangHoatDong;
+    }
+
     public void moTrang(ThanhMenu.MenuItem item) {
         if (item == ThanhMenu.MenuItem.HOME) {
             pageContainer.removeAll();
@@ -235,14 +240,6 @@ public class KhungChinh extends JFrame {
     private static final class FullSizePanel extends JPanel {
         FullSizePanel() {
             super(new BorderLayout());
-        }
-
-        @Override
-        public void doLayout() {
-            super.doLayout();
-            for (Component component : getComponents()) {
-                component.setBounds(0, 0, getWidth(), getHeight());
-            }
         }
     }
 

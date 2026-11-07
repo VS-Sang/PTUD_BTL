@@ -2,6 +2,8 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -9,6 +11,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -130,7 +133,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
 
         add(content, BorderLayout.CENTER);
         cboLoaiXuLy.addActionListener(e -> capNhatCheDoXuLy());
-        napDanhSachHoaDon();
+        SwingUtilities.invokeLater(this::napDanhSachHoaDon);
     }
 
     private JPanel createTitleBar() {
@@ -476,6 +479,40 @@ public class TraHangPanel extends JFrame implements ActionListener {
         return label;
     }
 
+    private Component boMeThongBao() {
+        Window window = SwingUtilities.getWindowAncestor(getContentPane());
+        return window != null && window.isShowing() ? window : this;
+    }
+
+    private void hienThiThongBao(Object message, String title, int messageType) {
+        JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), message, title, messageType);
+        capNhatBoCucSauThongBao();
+    }
+
+    private int hienThiXacNhan(Object message, String title, int optionType, int messageType) {
+        int result = JOptionPane.showConfirmDialog(
+                UiDialogOwner.resolve(boMeThongBao()), message, title, optionType, messageType);
+        capNhatBoCucSauThongBao();
+        return result;
+    }
+
+    private void capNhatBoCucSauThongBao() {
+        getContentPane().revalidate();
+        getContentPane().repaint();
+
+        Container parent = getContentPane().getParent();
+        if (parent != null) {
+            parent.revalidate();
+            parent.repaint();
+        }
+
+        Window window = SwingUtilities.getWindowAncestor(getContentPane());
+        if (window != null) {
+            window.validate();
+            window.repaint();
+        }
+    }
+
     private void timHoaDon() {
         if (tableHangTra.isEditing()) {
             tableHangTra.getCellEditor().stopCellEditing();
@@ -486,7 +523,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
         pChiTiet.setVisible(false);
         HoaDonTuyChon hoaDonDuocChon = (HoaDonTuyChon) cboHoaDon.getSelectedItem();
         if (hoaDonDuocChon == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn gốc.",
+            hienThiThongBao("Vui lòng chọn hóa đơn gốc.",
                     "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
             cboHoaDon.requestFocusInWindow();
             return;
@@ -511,7 +548,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
             revalidate();
             repaint();
         } catch (SQLException | IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
+            hienThiThongBao(e.getMessage(),
                     "Không thể tìm hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -537,7 +574,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
             }
             cboHoaDon.setSelectedIndex(-1);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            hienThiThongBao(
                     "Không thể tải danh sách hóa đơn:\n" + exception.getMessage(),
                     "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
@@ -552,14 +589,14 @@ public class TraHangPanel extends JFrame implements ActionListener {
                 cboSanPhamDoi.addItem(sanPham);
             }
             if (sanPhamDoi.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                hienThiThongBao(
                         "Không có sản phẩm đang kinh doanh còn hàng để đổi.",
                         "Không có hàng đổi", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             capNhatGioiHanSoLuongDoi();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
+            hienThiThongBao(
                     "Không tải được danh sách sản phẩm đổi: " + e.getMessage(),
                     "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
@@ -595,7 +632,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
                 int tongSoLuong = (int) modelHangDoi.getValueAt(i, 2) + soLuongThem;
                 if (tongSoLuong > sanPham.getSoLuongTon()
                         + soLuongTraTheoMa(sanPham.getMaSanPham())) {
-                    JOptionPane.showMessageDialog(this, "Số lượng đổi vượt quá tồn kho.",
+                    hienThiThongBao("Số lượng đổi vượt quá tồn kho.",
                             "Không đủ hàng", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -607,7 +644,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
         }
         int tonCoTheDung = sanPham.getSoLuongTon() + soLuongTraTheoMa(sanPham.getMaSanPham());
         if (soLuongThem > tonCoTheDung) {
-            JOptionPane.showMessageDialog(this, "Số lượng đổi vượt quá tồn kho.",
+            hienThiThongBao("Số lượng đổi vượt quá tồn kho.",
                     "Không đủ hàng", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -673,7 +710,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
             return;
         }
         if (hoaDonDangXuLy == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng tìm hóa đơn gốc trước.",
+            hienThiThongBao("Vui lòng tìm hóa đơn gốc trước.",
                     "Thiếu hóa đơn", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -686,7 +723,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
             }
         }
         if (soLuongTra.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nhập số lượng trả lớn hơn 0 cho ít nhất một sản phẩm.",
+            hienThiThongBao("Nhập số lượng trả lớn hơn 0 cho ít nhất một sản phẩm.",
                     "Chưa chọn hàng trả", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -694,7 +731,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
         String loaiXuLy = (String) cboLoaiXuLy.getSelectedItem();
         Map<String, Integer> soLuongDoi = laySoLuongHangDoi();
         if (PhieuTraHang_DAO.DOI_HANG.equals(loaiXuLy) && soLuongDoi.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng thêm sản phẩm khách nhận để đổi.",
+            hienThiThongBao("Vui lòng thêm sản phẩm khách nhận để đổi.",
                     "Chưa chọn hàng đổi", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -717,7 +754,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
             xacNhan += "Tiền hoàn dự kiến: " + tien(giaTriTra)
                     + " đ\n(Phiếu ghi nhận số tiền; chưa thực hiện chuyển khoản/hoàn tiền thực tế.)";
         }
-        int confirm = JOptionPane.showConfirmDialog(this, xacNhan,
+        int confirm = hienThiXacNhan(xacNhan,
                 "Xác nhận xử lý", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) {
             return;
@@ -748,11 +785,11 @@ public class TraHangPanel extends JFrame implements ActionListener {
                     && PhieuTraHang_DAO.TRA_HOAN_TIEN.equals(loaiXuLy)) {
                 thongBao += "\nHóa đơn đã được cập nhật trạng thái Hoàn tiền.";
             }
-            JOptionPane.showMessageDialog(this, thongBao,
+            hienThiThongBao(thongBao,
                     "Thành công", JOptionPane.INFORMATION_MESSAGE);
             xoaForm();
         } catch (SQLException | IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
+            hienThiThongBao(e.getMessage(),
                     "Không thể lưu phiếu trả", JOptionPane.ERROR_MESSAGE);
         }
     }

@@ -337,7 +337,7 @@ public class DangNhapFrame extends JDialog {
         String username = usernameField.getText().trim();
         char[] password = passwordField.getPassword();
         if (username.isEmpty() || password.length == 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên đăng nhập và mật khẩu.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng nhập tên đăng nhập và mật khẩu.",
                     "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
             Arrays.fill(password, '\0');
             return;
@@ -410,7 +410,7 @@ public class DangNhapFrame extends JDialog {
             if (detail == null || detail.trim().isEmpty()) {
                 detail = exception.getClass().getSimpleName();
             }
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể xử lý đăng nhập với cơ sở dữ liệu:\n" + detail,
                     "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
@@ -420,7 +420,7 @@ public class DangNhapFrame extends JDialog {
 
         if (!authenticated || !"Hoạt động".equals(status)) {
             JOptionPane.showMessageDialog(
-                    this,
+                    UiDialogOwner.resolve(this),
                     "Tên đăng nhập, mật khẩu không chính xác hoặc tài khoản không hoạt động.",
                     "Đăng nhập thất bại",
                     JOptionPane.ERROR_MESSAGE);

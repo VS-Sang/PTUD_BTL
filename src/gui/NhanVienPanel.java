@@ -337,7 +337,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
             napDanhSach(connection, sqlChucVu, cboChucVu);
             napDanhSach(connection, sqlChucVu, cboDepartment);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể tải phòng ban và chức vụ:\n" + exception.getMessage(),
                     "Lỗi dữ liệu nhân viên", JOptionPane.ERROR_MESSAGE);
         }
@@ -419,19 +419,19 @@ public class NhanVienPanel extends JFrame implements ActionListener {
 
                 if (nv_dao.themNhanVien(nv)) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(this, "Thêm nhân viên mới thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Thêm nhân viên mới thành công!");
                     xoaRong();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Thêm thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Thêm thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(),
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), ex.getMessage(),
                         "Dữ liệu nhân viên không hợp lệ", JOptionPane.WARNING_MESSAGE);
             }
         } else if (o.equals(btnCapNhat)) {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn một nhân viên trên bảng để cập nhật!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn một nhân viên trên bảng để cập nhật!");
                 return;
             }
             String hoTen = txtHoTen.getText().trim();
@@ -458,29 +458,29 @@ public class NhanVienPanel extends JFrame implements ActionListener {
 
                 if (nv_dao.capNhatNhanVien(nv)) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật thông tin nhân viên thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật thất bại! Vui lòng kiểm tra CCCD/CMND, SĐT hoặc Email không bị trùng.");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(),
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), ex.getMessage(),
                         "Dữ liệu nhân viên không hợp lệ", JOptionPane.WARNING_MESSAGE);
             }
         } else if (o.equals(btnXoa)) {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần xóa!");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn nhân viên cần xóa!");
                 return;
             }
             String maNV = model.getValueAt(row, 0).toString();
-            if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa nhân viên " + maNV + "?", "Xác nhận",
+            if (JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Bạn có chắc muốn xóa nhân viên " + maNV + "?", "Xác nhận",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (nv_dao.xoaNhanVien(maNV)) {
                     docDuLieuDatabaseVaoTable();
                     xoaRong();
-                    JOptionPane.showMessageDialog(this, "Xóa nhân viên thành công!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Xóa nhân viên thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Không thể xóa nhân viên này (đang có dữ liệu liên quan trong hệ thống)!");
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xóa nhân viên này (đang có dữ liệu liên quan trong hệ thống)!");
                 }
             }
         }
