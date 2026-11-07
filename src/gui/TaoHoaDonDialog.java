@@ -34,6 +34,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -130,6 +131,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
     private final JLabel lblThueVAT = new JLabel("0 đ");
     private final JLabel lblTongThanhToan = new JLabel("0 đ");
     private final JLabel lblTienThoi = new JLabel("0 đ");
+    private final JButton btnDuTien = createButton("Trả đủ tiền", new Color(77, 145, 72), Color.WHITE);
+    private final JPanel panelQrChuyenKhoan = new JPanel(new BorderLayout(4, 4));
     private JPanel rowTienThoi;
     private final Map<String, Integer> soLuongDaChon = new LinkedHashMap<>();
     private final Map<String, SanPham> sanPhamTheoMa = new LinkedHashMap<>();
@@ -376,6 +379,18 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
 
         addFullWidthField(fields, c, "Phương thức thanh toán", cboPhuongThuc);
         addFullWidthField(fields, c, "Tiền khách đưa", txtTienKhachDua);
+        c.gridy++;
+        fields.add(btnDuTien, c);
+        JLabel lblQr = new JLabel();
+        lblQr.setHorizontalAlignment(SwingConstants.CENTER);
+        lblQr.setIcon(new ImageIcon("img\\qr-mbbank.png"));
+        panelQrChuyenKhoan.add(new JLabel("Quét mã QR để chuyển khoản", SwingConstants.CENTER),
+                BorderLayout.NORTH);
+        panelQrChuyenKhoan.add(lblQr, BorderLayout.CENTER);
+        panelQrChuyenKhoan.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+        panelQrChuyenKhoan.setVisible(false);
+        c.gridy++;
+        fields.add(panelQrChuyenKhoan, c);
         rowTienThoi = new JPanel(new BorderLayout(4, 4));
         rowTienThoi.setOpaque(false);
         JLabel lblTienThoiTitle = new JLabel("Tiền thối:");
@@ -532,6 +547,10 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         btnLuu.addActionListener(this);
         btnIn.addActionListener(this);
         btnMoi.addActionListener(this);
+        btnDuTien.addActionListener(event -> {
+            txtTienKhachDua.setText(String.valueOf(Math.round(tinhTongThanhToan())));
+            capNhatTienThoi();
+        });
         cboKhachHang.setSelectedIndex(0);
         txtTimSanPham.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -705,6 +724,9 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             rowTienThoi.getParent().revalidate();
             rowTienThoi.getParent().repaint();
         }
+        panelQrChuyenKhoan.setVisible(isChuyenKhoan);
+        panelQrChuyenKhoan.getParent().revalidate();
+        panelQrChuyenKhoan.getParent().repaint();
         double tongTien = tinhTongThanhToan();
         BigDecimal tienKhachDua = docTienKhachDua();
         BigDecimal tienThoi = tienKhachDua.subtract(BigDecimal.valueOf(tongTien));
@@ -816,6 +838,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
             setInvoiceInputsEnabled(false);
             if (owner != null) {
                 owner.docDuLieuDatabaseVaoTable();
+            } else {
+                KhungChinh.lamMoiTrangHoaDon();
             }
         } catch (SQLException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(boMeThongBao(), "Không thể tạo hóa đơn: " + ex.getMessage(),

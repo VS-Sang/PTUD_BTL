@@ -51,9 +51,10 @@ public class KhungChinh extends JFrame {
     private final JLabel clockLabel = new JLabel();
     private final JLabel dateLabel = new JLabel();
     private final DefaultTableModel invoiceTableModel;
-    private final JPanel pageContainer = new JPanel(new BorderLayout());
+    private final JPanel pageContainer = new FullSizePanel();
     private final Map<ThanhMenu.MenuItem, Component> pageCache =
             new EnumMap<>(ThanhMenu.MenuItem.class);
+    private HoaDonPanel hoaDonPage;
     private JPanel dashboard;
 
     public KhungChinh() {
@@ -138,7 +139,7 @@ public class KhungChinh extends JFrame {
     public void moTrang(ThanhMenu.MenuItem item) {
         if (item == ThanhMenu.MenuItem.HOME) {
             pageContainer.removeAll();
-            pageContainer.add(dashboard, BorderLayout.CENTER);
+            pageContainer.add(dashboard);
         } else {
             Component page = pageCache.get(item);
             if (page == null) {
@@ -146,10 +147,16 @@ public class KhungChinh extends JFrame {
                 pageCache.put(item, page);
             }
             pageContainer.removeAll();
-            pageContainer.add(page, BorderLayout.CENTER);
+            pageContainer.add(page);
         }
         pageContainer.revalidate();
         pageContainer.repaint();
+    }
+
+    public static void lamMoiTrangHoaDon() {
+        if (khungDangHoatDong != null && khungDangHoatDong.hoaDonPage != null) {
+            khungDangHoatDong.hoaDonPage.docDuLieuDatabaseVaoTable();
+        }
     }
 
     private Component taoTrang(ThanhMenu.MenuItem item) {
@@ -162,7 +169,8 @@ public class KhungChinh extends JFrame {
                 frame = new NhatKyHeThongPanel(currentUserName(), currentUserRole(), currentUsername());
                 break;
             case INVOICE:
-                frame = new HoaDonPanel(currentUserName(), currentUserRole());
+                hoaDonPage = new HoaDonPanel(currentUserName(), currentUserRole());
+                frame = hoaDonPage;
                 break;
             case CUSTOMER:
                 frame = new KhachHangPanel(currentUserName(), currentUserRole());
@@ -211,7 +219,31 @@ public class KhungChinh extends JFrame {
             }
         }
         content.revalidate();
-        return content;
+        content.setMinimumSize(new Dimension(0, 0));
+        content.setPreferredSize(new Dimension(0, 0));
+        content.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+        JPanel page = new FullSizePanel();
+        page.setOpaque(false);
+        page.setMinimumSize(new Dimension(0, 0));
+        page.setPreferredSize(new Dimension(0, 0));
+        page.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        page.add(content);
+        return page;
+    }
+
+    private static final class FullSizePanel extends JPanel {
+        FullSizePanel() {
+            super(new BorderLayout());
+        }
+
+        @Override
+        public void doLayout() {
+            super.doLayout();
+            for (Component component : getComponents()) {
+                component.setBounds(0, 0, getWidth(), getHeight());
+            }
+        }
     }
 
     private String currentUserName() {
