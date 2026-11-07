@@ -214,7 +214,7 @@ public class TaiKhoanPanel extends JFrame {
 
     private void toggleStatus(String accountId, String currentStatus) {
         String nextStatus = "Hoạt động".equals(currentStatus) ? "Bị khóa" : "Hoạt động";
-        int answer = JOptionPane.showConfirmDialog(this,
+        int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
                 ("Hoạt động".equals(nextStatus) ? "Mở khóa" : "Khóa") + " tài khoản này?",
                 "Xác nhận thao tác", JOptionPane.YES_NO_OPTION);
         if (answer != JOptionPane.YES_OPTION) return;
@@ -226,7 +226,7 @@ public class TaiKhoanPanel extends JFrame {
             showError("Không thể xóa tài khoản có vai trò Quản lý.");
             return;
         }
-        int answer = JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + username + "?",
+        int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Xóa tài khoản " + username + "?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (answer != JOptionPane.YES_OPTION) return;
         try (Connection connection = ConnectDB.getConnection();
@@ -266,7 +266,7 @@ public class TaiKhoanPanel extends JFrame {
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), message, "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
     private static class AccountData {
@@ -357,7 +357,7 @@ public class TaiKhoanPanel extends JFrame {
                     selectEmployeeForAccount(data.id, connection);
                 }
             } catch (SQLException exception) {
-                JOptionPane.showMessageDialog(this, "Không thể tải danh sách nhân viên.",
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải danh sách nhân viên.",
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -386,7 +386,7 @@ public class TaiKhoanPanel extends JFrame {
             char[] password = passwordField.getPassword();
             if (data == null && (employeeBox.getSelectedItem() == null
                     || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                         "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
                                 + "và mật khẩu ít nhất 6 ký tự.",
                         "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
@@ -411,14 +411,14 @@ public class TaiKhoanPanel extends JFrame {
                         NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
                                 "Tạo tài khoản " + username + " cho nhân viên " + employee.id);
                     } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(this,
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                                 "Tài khoản đã được tạo nhưng không ghi được Audit Trail:\n"
                                         + auditException.getMessage(), "Cảnh báo",
                                 JOptionPane.WARNING_MESSAGE);
                     }
                 } else {
                     if (!username.matches("[A-Za-z0-9._-]{3,50}")) {
-                        JOptionPane.showMessageDialog(this,
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                                 "Tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -).",
                                 "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                         return;
@@ -437,7 +437,7 @@ public class TaiKhoanPanel extends JFrame {
                         NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
                                 "Cập nhật vai trò/trạng thái tài khoản " + data.id);
                     } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(this,
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                                 "Tài khoản đã được cập nhật nhưng không ghi được Audit Trail:\n"
                                         + auditException.getMessage(), "Cảnh báo",
                                 JOptionPane.WARNING_MESSAGE);
@@ -446,7 +446,7 @@ public class TaiKhoanPanel extends JFrame {
                 saved = true;
                 dispose();
             } catch (SQLException exception) {
-                JOptionPane.showMessageDialog(this, "Không thể lưu tài khoản:\n" + exception.getMessage(),
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể lưu tài khoản:\n" + exception.getMessage(),
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             } finally {
                 java.util.Arrays.fill(password, '\0');

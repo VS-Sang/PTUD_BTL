@@ -35,7 +35,7 @@ final class BoInHoaDon {
         try {
             job.print();
         } catch (PrinterException exception) {
-            JOptionPane.showMessageDialog(parent, "Không thể in hóa đơn:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Không thể in hóa đơn:\n"
                     + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }

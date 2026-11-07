@@ -472,7 +472,7 @@ public class TaoKhuyenMaiPanel extends JPanel implements Scrollable {
         boolean success = dao.themKhuyenMai(km);
 
         if (success) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Tạo khuyến mãi \"" + tenCT + "\" thành công!\nMã: " + maKM,
                     "Thành công",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -489,7 +489,7 @@ public class TaoKhuyenMaiPanel extends JPanel implements Scrollable {
             }
 
         } else {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể tạo khuyến mãi. Vui lòng kiểm tra kết nối database và thử lại.",
                     "Lỗi",
                     JOptionPane.ERROR_MESSAGE);
@@ -545,7 +545,7 @@ public class TaoKhuyenMaiPanel extends JPanel implements Scrollable {
      * Hiện thông báo lỗi.
      */
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), message, "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
     }
 
     private JLabel createFieldLabel(String text) {

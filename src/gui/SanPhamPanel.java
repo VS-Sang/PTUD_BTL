@@ -157,7 +157,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                     try {
                         sp_dao.capNhatTrangThai(maSanPham, (String) value);
                     } catch (SQLException | IllegalArgumentException exception) {
-                        JOptionPane.showMessageDialog(SanPhamPanel.this,
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(SanPhamPanel.this),
                                 "Không thể cập nhật trạng thái sản phẩm:\n" + exception.getMessage(),
                                 "Lỗi cập nhật", JOptionPane.ERROR_MESSAGE);
                         return;
@@ -231,7 +231,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         try {
             new PhieuNhapKho_DAO().capNhatPhieuNhapDenHan();
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể cập nhật các phiếu nhập đã đến ngày:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể cập nhật các phiếu nhập đã đến ngày:\n"
                     + exception.getMessage(), "Lỗi cập nhật tồn kho", JOptionPane.ERROR_MESSAGE);
         }
         docDuLieuDatabaseVaoTable();
@@ -250,7 +250,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                 cboCategory.addItem(danhMuc);
             }
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải danh mục sản phẩm:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải danh mục sản phẩm:\n"
                     + exception.getMessage(), "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
         cboCategory.setRenderer((list, value, index, selected, focus) -> {
@@ -347,10 +347,10 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                 }
                 writer.newLine();
             }
-            JOptionPane.showMessageDialog(this, "Đã xuất danh sách sản phẩm ra tệp:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xuất danh sách sản phẩm ra tệp:\n"
                     + file.getAbsolutePath(), "Xuất Excel", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể xuất danh sách sản phẩm:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xuất danh sách sản phẩm:\n"
                     + exception.getMessage(), "Lỗi xuất tệp", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -367,12 +367,12 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         try {
             danhMucList = sp_dao.getAllDanhMuc();
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải danh mục sản phẩm:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải danh mục sản phẩm:\n"
                     + exception.getMessage(), "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (danhMucList.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Cần có ít nhất một danh mục đang hoạt động "
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cần có ít nhất một danh mục đang hoạt động "
                     + "trước khi tạo sản phẩm.", "Chưa có danh mục", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -447,7 +447,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
             String name = nameField.getText().trim();
             String unit = unitField.getText().trim();
             if (name.isEmpty() || unit.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Vui lòng nhập tên sản phẩm và đơn vị.",
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(dialog), "Vui lòng nhập tên sản phẩm và đơn vị.",
                         "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -472,16 +472,16 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                 sanPham.setSoLuongTon(stock);
                 sanPham.setTrangThai((String) statusField.getSelectedItem());
                 String maSanPham = sp_dao.themSanPham(sanPham);
-                JOptionPane.showMessageDialog(dialog, "Đã tạo sản phẩm " + maSanPham + ".",
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(dialog), "Đã tạo sản phẩm " + maSanPham + ".",
                         "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 dialog.dispose();
                 docDuLieuDatabaseVaoTable();
             } catch (NumberFormatException exception) {
-                JOptionPane.showMessageDialog(dialog,
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(dialog),
                         "Giá nhập, giá bán và tồn kho phải là số hợp lệ.",
                         "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
             } catch (SQLException | IllegalArgumentException exception) {
-                JOptionPane.showMessageDialog(dialog, "Không thể tạo sản phẩm:\n"
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(dialog), "Không thể tạo sản phẩm:\n"
                         + exception.getMessage(), "Lỗi tạo sản phẩm", JOptionPane.ERROR_MESSAGE);
             }
         });

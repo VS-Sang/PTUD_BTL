@@ -397,7 +397,7 @@ public class KhuyenMaiPanel extends JFrame {
      */
     private void deletePromotion(KhuyenMai km) {
         int choice = JOptionPane.showConfirmDialog(
-                this,
+                UiDialogOwner.resolve(this),
                 "Bạn có chắc chắn muốn xóa khuyến mãi:\n\"" + km.getTenKhuyenMai()
                         + "\" (" + km.getMaKhuyenMai() + ")?\n\n"
                         + "Liên kết khuyến mãi trên đơn hàng cũ sẽ bị gỡ; tổng tiền đơn hàng vẫn được giữ nguyên.",
@@ -409,19 +409,19 @@ public class KhuyenMaiPanel extends JFrame {
             try {
                 boolean result = khuyenMaiDAO.xoaKhuyenMai(km.getMaKhuyenMai());
                 if (result) {
-                    JOptionPane.showMessageDialog(this,
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                             "Đã xóa khuyến mãi. Các đơn hàng cũ vẫn giữ nguyên giá trị thanh toán "
                                     + "nhưng không còn liên kết với khuyến mãi này.",
                             "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     loadPromotionsFromDatabase();
                 } else {
-                    JOptionPane.showMessageDialog(this,
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                             "Không tìm thấy khuyến mãi để xóa. Danh sách sẽ được tải lại.",
                             "Không thể xóa", JOptionPane.WARNING_MESSAGE);
                     loadPromotionsFromDatabase();
                 }
             } catch (SQLException exception) {
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                         "Không thể xóa khuyến mãi:\n" + exception.getMessage(),
                         "Lỗi xóa", JOptionPane.ERROR_MESSAGE);
             }

@@ -141,7 +141,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             table.getColumnModel().getColumn(3).setCellEditor(
                     new ThuNganCellEditor(thuNganOptions));
         } else {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không tìm thấy nhân viên đang làm việc để chọn làm thu ngân.",
                     "Không thể đổi thu ngân", JOptionPane.WARNING_MESSAGE);
         }
@@ -228,7 +228,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
     private String layMaHoaDonDangChon() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn hóa đơn.",
                     "Chưa chọn hóa đơn", JOptionPane.INFORMATION_MESSAGE);
             return null;
         }
@@ -246,7 +246,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             new ChiTietHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải chi tiết hóa đơn:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải chi tiết hóa đơn:\n"
                     + exception.getMessage(), "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -260,7 +260,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
             BoInHoaDon.print(this, hoaDon, hd_dao.getChiTietHoaDon(maHoaDon));
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải hóa đơn để in:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải hóa đơn để in:\n"
                     + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -275,7 +275,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             new SuaHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể tải hóa đơn để sửa:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải hóa đơn để sửa:\n"
                     + exception.getMessage(), "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -293,13 +293,13 @@ public class HoaDonPanel extends JFrame implements ActionListener {
     private void xoaHoaDonDangChon() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn hóa đơn cần xóa.",
                     "Chưa chọn hóa đơn", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         String maHoaDon = String.valueOf(model.getValueAt(selectedRow, 0));
-        int confirmation = JOptionPane.showConfirmDialog(this,
+        int confirmation = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
                 "Bạn có chắc muốn xóa hẳn hóa đơn " + maHoaDon
                         + " và đơn hàng liên kết không?\nTồn kho và số liệu khách hàng sẽ được cập nhật lại.",
                 "Xác nhận xóa hóa đơn", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -310,10 +310,10 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         try {
             hd_dao.xoaHoaDon(maHoaDon);
             docDuLieuDatabaseVaoTable();
-            JOptionPane.showMessageDialog(this, "Đã xóa hóa đơn " + maHoaDon + ".",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xóa hóa đơn " + maHoaDon + ".",
                     "Xóa hóa đơn", JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException | IllegalArgumentException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể xóa hóa đơn:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xóa hóa đơn:\n"
                     + exception.getMessage(), "Lỗi xóa hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -349,7 +349,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
                 hd_dao.capNhatThuNganHoaDon(maHoaDon, selectedOption.maNhanVien);
                 return super.stopCellEditing();
             } catch (SQLException | IllegalArgumentException exception) {
-                JOptionPane.showMessageDialog(HoaDonPanel.this,
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(HoaDonPanel.this),
                         "Không thể cập nhật thu ngân:\n" + exception.getMessage(),
                         "Lỗi cập nhật hóa đơn", JOptionPane.ERROR_MESSAGE);
                 return false;

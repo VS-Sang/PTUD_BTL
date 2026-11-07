@@ -415,7 +415,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                 int row = tableHangs.rowAtPoint(e.getPoint());
                 int col = tableHangs.columnAtPoint(e.getPoint());
                 if (!phieuDaLuu && row >= 0 && col == 5) {
-                    int confirm = JOptionPane.showConfirmDialog(NhapHangPanel.this,
+                    int confirm = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(NhapHangPanel.this),
                             "Bạn có chắc muốn xóa sản phẩm này khỏi danh sách nhập?",
                             "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
@@ -480,7 +480,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         try {
             phieuNhapKhoDao.capNhatPhieuNhapDenHan();
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể cập nhật các phiếu nhập đã đến ngày:\n" + exception.getMessage(),
                     "Lỗi cập nhật tồn kho", JOptionPane.ERROR_MESSAGE);
         }
@@ -545,7 +545,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         }
 
         if (tableModel.getRowCount() > 0) {
-            int choice = JOptionPane.showConfirmDialog(this,
+            int choice = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
                     "Đổi nhà cung cấp sẽ xóa các sản phẩm đã thêm vào phiếu. Bạn có muốn tiếp tục?",
                     "Đổi nhà cung cấp", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (choice != JOptionPane.YES_OPTION) {
@@ -575,7 +575,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             }
             btnThem.setEnabled(!listSanPham.isEmpty());
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể tải sản phẩm của nhà cung cấp:\n" + exception.getMessage(),
                     "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
@@ -615,14 +615,14 @@ public class NhapHangPanel extends JFrame implements ActionListener {
     private void themSanPhamVaoBang() {
         SanPham sp = (SanPham) cboSanPham.getSelectedItem();
         if (sp == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần nhập!", "Chưa chọn sản phẩm", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm cần nhập!", "Chưa chọn sản phẩm", JOptionPane.WARNING_MESSAGE);
             cboSanPham.requestFocus();
             return;
         }
 
         int soLuong = (int) spnSoLuong.getValue();
         if (soLuong <= 0) {
-            JOptionPane.showMessageDialog(this, "Số lượng nhập phải lớn hơn 0!", "Số lượng không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Số lượng nhập phải lớn hơn 0!", "Số lượng không hợp lệ", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -678,13 +678,13 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             return;
         }
         if (cboNhaCungCap.getSelectedIndex() <= 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhà cung cấp!", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn Nhà cung cấp!", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
             cboNhaCungCap.requestFocus();
             return;
         }
 
         if (tableModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Danh sách hàng nhập không được để trống!", "Chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Danh sách hàng nhập không được để trống!", "Chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             cboSanPham.requestFocus();
             return;
         }
@@ -742,7 +742,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         try {
             boolean success = phieuNhapKhoDao.themPhieuNhap(pnk, chiTietList);
             if (success) {
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                         "Lưu phiếu nhập kho " + maPhieu + " thành công!\n"
                                 + "Tổng số lượng: " + tongSoLuong + "\n"
                                 + "Tổng tiền nhập: " + MONEY_FORMAT.format(tongTienNhap) + "đ"
@@ -755,10 +755,10 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                 btnIn.setEnabled(true);
                 setPhieuInputsEnabled(false);
             } else {
-                JOptionPane.showMessageDialog(this, "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException | IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -775,7 +775,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
 
     private void inPhieuNhap() {
         if (!phieuDaLuu) {
-            JOptionPane.showMessageDialog(this, "Vui lòng lưu phiếu nhập trước khi in.",
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng lưu phiếu nhập trước khi in.",
                     "Phiếu nhập chưa được lưu", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -795,7 +795,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             file = new File(file.getParentFile(), file.getName() + ".pdf");
         }
         if (file.exists()
-                && JOptionPane.showConfirmDialog(this,
+                && JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
                         "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                         "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION)
                         != JOptionPane.YES_OPTION) {
@@ -833,11 +833,11 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                             "ĐƠN GIÁ", "THÀNH TIỀN"),
                     rows, new double[]{0.12, 0.36, 0.12, 0.18, 0.22},
                     totals, "Ghi chú: " + txtGhiChu.getText().trim());
-            JOptionPane.showMessageDialog(this, "Đã xuất phiếu nhập PDF:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xuất phiếu nhập PDF:\n"
                     + file.getAbsolutePath(), "Xuất phiếu nhập",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể xuất phiếu nhập:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xuất phiếu nhập:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
     }

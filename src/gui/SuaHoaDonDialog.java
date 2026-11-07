@@ -228,7 +228,7 @@ final class SuaHoaDonDialog extends JDialog {
     private void themSanPham() {
         SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
         if (sanPham == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm.");
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm.");
             return;
         }
         String maSanPham = sanPham.getMaSanPham();
@@ -236,7 +236,7 @@ final class SuaHoaDonDialog extends JDialog {
         int soLuongCu = item == null ? 0 : item.getSoLuong();
         int soLuongMoi = ((Number) spnSoLuong.getValue()).intValue();
         if (soLuongMoi > (long) sanPham.getSoLuongTon() + soLuongCu) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Số lượng vượt quá tồn kho hiện có.", "Không đủ tồn kho",
                     JOptionPane.WARNING_MESSAGE);
             return;
@@ -251,7 +251,7 @@ final class SuaHoaDonDialog extends JDialog {
     private void xoaSanPhamChon() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm cần xóa.");
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm cần xóa.");
             return;
         }
         chiTietTheoMa.remove(String.valueOf(model.getValueAt(row, 0)));
@@ -277,7 +277,7 @@ final class SuaHoaDonDialog extends JDialog {
 
     private void luuThayDoi() {
         if (chiTietTheoMa.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Hóa đơn phải có ít nhất một sản phẩm.");
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Hóa đơn phải có ít nhất một sản phẩm.");
             return;
         }
         double tienKhachDua;
@@ -285,7 +285,7 @@ final class SuaHoaDonDialog extends JDialog {
             tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().trim()
                     .replace(",", "").replace(" ", ""));
         } catch (NumberFormatException exception) {
-            JOptionPane.showMessageDialog(this, "Tiền khách đưa không hợp lệ.");
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Tiền khách đưa không hợp lệ.");
             txtTienKhachDua.requestFocusInWindow();
             return;
         }
@@ -297,11 +297,11 @@ final class SuaHoaDonDialog extends JDialog {
                     chiTiet, (String) cboPhuongThuc.getSelectedItem(),
                     tienKhachDua, txtGhiChu.getText().trim());
             owner.docDuLieuDatabaseVaoTable();
-            JOptionPane.showMessageDialog(this, "Đã cập nhật hóa đơn "
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã cập nhật hóa đơn "
                     + hoaDon.getMaHoaDon() + ".");
             dispose();
         } catch (java.sql.SQLException | IllegalArgumentException exception) {
-            JOptionPane.showMessageDialog(this, "Không thể cập nhật hóa đơn:\n"
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể cập nhật hóa đơn:\n"
                     + exception.getMessage(), "Lỗi cập nhật", JOptionPane.ERROR_MESSAGE);
         }
     }

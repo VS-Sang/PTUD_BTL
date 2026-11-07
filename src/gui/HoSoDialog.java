@@ -74,7 +74,7 @@ public class HoSoDialog extends JDialog {
                 }
             }
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể tải thông tin cá nhân:\n" + exception.getMessage(),
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
@@ -322,7 +322,7 @@ public class HoSoDialog extends JDialog {
             try {
                 if (current.length == 0 || next.length < 6
                         || !java.util.Arrays.equals(next, confirmation)) {
-                    JOptionPane.showMessageDialog(this,
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                             "Mật khẩu mới phải có ít nhất 6 ký tự và hai ô mật khẩu phải giống nhau.",
                             "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                     return;
@@ -330,7 +330,7 @@ public class HoSoDialog extends JDialog {
                 String currentText = new String(current);
                 String nextText = new String(next);
                 if (currentText.equals(nextText)) {
-                    JOptionPane.showMessageDialog(this, "Mật khẩu mới phải khác mật khẩu hiện tại.",
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Mật khẩu mới phải khác mật khẩu hiện tại.",
                             "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -344,7 +344,7 @@ public class HoSoDialog extends JDialog {
                     statement.setString(3, currentText);
                     statement.setString(4, DangNhapFrame.toMD5(currentText));
                     if (statement.executeUpdate() == 0) {
-                        JOptionPane.showMessageDialog(this, "Mật khẩu hiện tại không chính xác.",
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Mật khẩu hiện tại không chính xác.",
                                 "Đổi mật khẩu thất bại", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
@@ -352,16 +352,16 @@ public class HoSoDialog extends JDialog {
                         NhatKyHeThong_DAO.ghiTheoTenDangNhap(username, "ĐỔI MẬT KHẨU",
                                 "Tài khoản", "Đổi mật khẩu thành công");
                     } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(this,
+                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                                 "Đổi mật khẩu thành công nhưng không ghi được Audit Trail:\n"
                                         + auditException.getMessage(),
                                 "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công.");
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đổi mật khẩu thành công.");
                 dispose();
             } catch (java.sql.SQLException exception) {
-                JOptionPane.showMessageDialog(this, "Không thể đổi mật khẩu:\n" + exception.getMessage(),
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể đổi mật khẩu:\n" + exception.getMessage(),
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             } finally {
                 java.util.Arrays.fill(current, '\0');

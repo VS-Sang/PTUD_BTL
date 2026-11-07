@@ -323,7 +323,7 @@ public class ThanhMenu extends JPanel {
                     dongCuaSoHienTai();
                     new DoanhThuThangPanel(currentUserName, currentUserRole).setVisible(true);
                 } else {
-                    JOptionPane.showMessageDialog(this,
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                             "Tài khoản hiện tại không có quyền xem báo cáo thống kê.",
                             "Phân quyền hệ thống", JOptionPane.WARNING_MESSAGE);
                 }
@@ -369,7 +369,7 @@ public class ThanhMenu extends JPanel {
         try {
             return VaiTroQuyen_DAO.layMaQuyenTheoVaiTro(role);
         } catch (java.sql.SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể tải quyền theo vai trò:\n" + exception.getMessage(),
                     "Lỗi phân quyền", JOptionPane.ERROR_MESSAGE);
             return Collections.emptySet();
@@ -380,7 +380,7 @@ public class ThanhMenu extends JPanel {
         try {
             NhatKyHeThong_DAO.ghiDangXuat(currentUsername);
         } catch (java.sql.SQLException exception) {
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
                     "Không thể ghi Audit Trail khi đăng xuất:\n" + exception.getMessage(),
                     "Cảnh báo", JOptionPane.WARNING_MESSAGE);
         }
