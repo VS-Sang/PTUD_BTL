@@ -184,6 +184,61 @@ public class PhieuNhapKho_DAO {
         return sanPhamList;
     }
 
+    public List<SanPham> getSanPhamTheoNhaCungCap(String maNhaCungCap) throws SQLException {
+        if (maNhaCungCap == null || maNhaCungCap.trim().isEmpty()) {
+            return getSanPhamNhapKho();
+        }
+        List<SanPham> sanPhamList = new ArrayList<>();
+        String sql = "SELECT DISTINCT sp.*, dm.tenDanhMuc FROM SanPham sp "
+                + "JOIN DanhMuc dm ON dm.maDanhMuc = sp.maDanhMuc "
+                + "LEFT JOIN NhaCungCap ncc ON ncc.maNhaCungCap = ? "
+                + "WHERE sp.trangThai IN (N'Đang kinh doanh', N'Hết hàng') "
+                + "AND ("
+                + "  sp.maSanPham IN ("
+                + "    SELECT ctpn.maSanPham FROM ChiTietPhieuNhap ctpn "
+                + "    JOIN PhieuNhapKho pnk ON pnk.maPhieuNhap = ctpn.maPhieuNhap "
+                + "    WHERE pnk.maNhaCungCap = ?"
+                + "  ) "
+                + "  OR (ncc.tenNhaCungCap IS NOT NULL AND sp.thuongHieu IS NOT NULL AND sp.thuongHieu <> '' "
+                + "      AND (CHARINDEX(LOWER(sp.thuongHieu), LOWER(ncc.tenNhaCungCap)) > 0 "
+                + "           OR CHARINDEX(LOWER(ncc.tenNhaCungCap), LOWER(sp.thuongHieu)) > 0)) "
+                + "  OR (ncc.maNhaCungCap IN ('NCC003', 'NCC004') AND sp.thuongHieu NOT IN ('Apple', 'Samsung', 'Xiaomi')) "
+                + ") ORDER BY sp.maSanPham";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, maNhaCungCap);
+            stmt.setString(2, maNhaCungCap);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    sanPhamList.add(new SanPham(
+                            rs.getString("maSanPham"),
+                            rs.getString("tenSanPham"),
+                            new entity.DanhMuc(rs.getString("maDanhMuc")),
+                            rs.getString("moTa"),
+                            rs.getString("thuongHieu"),
+                            rs.getString("xuatXu"),
+                            rs.getString("donViTinh"),
+                            rs.getDouble("giaNhap"),
+                            rs.getDouble("giaBan"),
+                            rs.getInt("soLuongTon"),
+                            rs.getInt("soLuongToiThieu"),
+                            rs.getString("maSKU"),
+                            rs.getString("maVach"),
+                            rs.getDouble("trongLuong"),
+                            rs.getString("kichThuoc"),
+                            rs.getString("hinhAnh"),
+                            rs.getString("trangThai"),
+                            rs.getTimestamp("ngayTao"),
+                            rs.getTimestamp("ngayCapNhat")));
+                }
+            }
+        }
+        if (sanPhamList.isEmpty()) {
+            return getSanPhamNhapKho();
+        }
+        return sanPhamList;
+    }
+
     public int capNhatPhieuNhapDenHan() throws SQLException {
         String sql = "DECLARE @PhieuDenHan TABLE (maPhieuNhap NVARCHAR(20) PRIMARY KEY); "
                 + "UPDATE PhieuNhapKho SET trangThai = N'Đã nhập', ngayCapNhat = GETDATE() "

@@ -569,7 +569,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         }
 
         try {
-            listSanPham.addAll(phieuNhapKhoDao.getSanPhamNhapKho());
+            listSanPham.addAll(phieuNhapKhoDao.getSanPhamTheoNhaCungCap(nhaCungCapMoi.getMaNhaCungCap()));
             for (SanPham sanPham : listSanPham) {
                 cboSanPham.addItem(sanPham);
             }

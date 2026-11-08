@@ -86,6 +86,9 @@ final class XuatTaiLieuPdf {
         try {
             BufferedImage src = null;
             File file = new File(QR_IMAGE_PATH);
+            if (!file.isFile()) {
+                file = new File("src/" + QR_IMAGE_PATH);
+            }
             if (file.isFile()) {
                 src = ImageIO.read(file);
             } else {
@@ -144,6 +147,30 @@ final class XuatTaiLieuPdf {
                       List<String> columnHeaders, List<String[]> itemRows,
                       double[] columnWeights, List<String[]> totals,
                       String note) throws IOException {
+        boolean showPaymentQr = false;
+        if (safe(title).toUpperCase(Locale.ROOT).contains("HÓA ĐƠN")) {
+            if (metadataRows != null) {
+                for (String[] r : metadataRows) {
+                    if (r != null) {
+                        for (String c : r) {
+                            if (c != null && c.toLowerCase(Locale.ROOT).contains("chuyển khoản")) {
+                                showPaymentQr = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        write(target, title, documentNumber, metadataRows, sectionTitle,
+                columnHeaders, itemRows, columnWeights, totals, note, showPaymentQr);
+    }
+
+    static void write(File target, String title, String documentNumber,
+                      List<String[]> metadataRows, String sectionTitle,
+                      List<String> columnHeaders, List<String[]> itemRows,
+                      double[] columnWeights, List<String[]> totals,
+                      String note, boolean showPaymentQr) throws IOException {
         // --- Chuẩn hóa bảng: tự thêm cột STT nếu chưa có ---
         List<String> headers = new ArrayList<>(columnHeaders);
         double[] weights = normalizeWeights(columnWeights, headers.size());
@@ -196,7 +223,7 @@ final class XuatTaiLieuPdf {
         for (int i = 0; i < rows.size(); i++) {
             heights[i] = rowHeight(rows.get(i), widths);
         }
-        boolean showPaymentQr = safe(title).toUpperCase(Locale.ROOT).contains("HÓA ĐƠN");
+
         QrImage qr = showPaymentQr ? loadQr() : null;
         double tailHeight = totalsHeight(totals) + noteHeight(note)
                 + (showPaymentQr ? qrBlockHeight(qr) : 0);
@@ -398,7 +425,7 @@ final class XuatTaiLieuPdf {
     private static int alignOf(String header) {
         String h = safe(header).toUpperCase(Locale.ROOT);
         if (h.equals("STT") || h.equals("SL") || h.contains("SỐ LƯỢNG")
-                || h.contains("SỐ ĐÊM")) {
+                || h.contains("SỐ ĐÊM") || h.contains("MÃ SP")) {
             return CENTER;
         }
         if (h.contains("TÊN") || h.contains("SẢN PHẨM") || h.startsWith("MÃ")
