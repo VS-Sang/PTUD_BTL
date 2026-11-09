@@ -97,6 +97,7 @@ public class ThanhMenu extends JPanel {
 
     public ThanhMenu(String userName, String userRole, String username) {
         super(new BorderLayout());
+        ButtonTooltips.install(this);
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Chưa đăng nhập";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole.trim() : "";
         this.currentUsername = username == null ? "" : username.trim();
@@ -116,6 +117,7 @@ public class ThanhMenu extends JPanel {
         JLabel userLabel = new JLabel("👤 " + userName);
         userLabel.setForeground(Color.WHITE);
         JButton roleButton = new JButton(userRole);
+        roleButton.setToolTipText("Vai trò tài khoản hiện tại: " + currentUserRole);
         roleButton.setMargin(new Insets(2, 5, 2, 5));
         roleButton.setFocusable(false);
         roleButton.setForeground(HEADER_COLOR);

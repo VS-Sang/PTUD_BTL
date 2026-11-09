@@ -62,6 +62,7 @@ public class TaoKhuyenMaiPanel extends JPanel implements Scrollable {
         this.onSuccess = onSuccess;
         this.onCancel = onCancel;
         setLayout(new BorderLayout());
+        ButtonTooltips.install(this);
         setBackground(new Color(238, 238, 238));
 
         if (!embedded) {

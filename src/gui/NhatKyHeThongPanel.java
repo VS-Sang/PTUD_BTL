@@ -40,6 +40,7 @@ public class NhatKyHeThongPanel extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setExtendedState(MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
+        ButtonTooltips.install(this);
         add(new ThanhMenu(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAuditTrail();

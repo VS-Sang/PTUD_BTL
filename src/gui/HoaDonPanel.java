@@ -59,6 +59,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
+        ButtonTooltips.install(this);
 
         add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
 

@@ -161,6 +161,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         setLocationRelativeTo(owner);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
+        ButtonTooltips.install(this);
         txtMaHoaDon.setEditable(false);
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
@@ -188,7 +189,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         loadCustomersAndProducts();
         resetInvoice();
         wireActions();
-        btnIn.setToolTipText("in hóa đơn đã lưu trực tiếp qua máy in mặc định");
+        btnIn.setToolTipText("in hóa đơn");
     }
 
     private JPanel createWorkspace() {

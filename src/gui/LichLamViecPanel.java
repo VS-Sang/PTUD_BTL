@@ -67,6 +67,7 @@ public class LichLamViecPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        ButtonTooltips.install(this);
 
         menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
