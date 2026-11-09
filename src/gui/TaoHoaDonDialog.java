@@ -403,8 +403,12 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         lblTienThoi.setHorizontalAlignment(SwingConstants.RIGHT);
         lblTienThoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
         rowTienThoi.add(lblTienThoi, BorderLayout.EAST);
+        JPanel rowTienThoiSlot = new JPanel(new BorderLayout());
+        rowTienThoiSlot.setOpaque(false);
+        rowTienThoiSlot.setPreferredSize(new Dimension(0, 22));
+        rowTienThoiSlot.add(rowTienThoi, BorderLayout.CENTER);
         c.gridy++;
-        fields.add(rowTienThoi, c);
+        fields.add(rowTienThoiSlot, c);
         rowTienThoi.setVisible(false);
         lblTienThoi.setFont(new Font("Segoe UI", Font.BOLD, 13));
         addFullWidthField(fields, c, "Ghi chú", new JScrollPane(txtGhiChu));
