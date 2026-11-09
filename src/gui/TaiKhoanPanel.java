@@ -73,6 +73,7 @@ public class TaiKhoanPanel extends JFrame {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
+        ButtonTooltips.ganTooltip(this);
         add(new ThanhMenu(userName, userRole, username), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         loadAccounts();
@@ -301,6 +302,7 @@ public class TaiKhoanPanel extends JFrame {
             setResizable(false);
             setLocationRelativeTo(owner);
             setLayout(new BorderLayout(0, 8));
+            ButtonTooltips.ganTooltip(this);
             JPanel form = new JPanel(new GridLayout(5, 2, 8, 8));
             form.setBorder(BorderFactory.createEmptyBorder(14, 18, 4, 18));
             form.add(new JLabel("Nhân viên:"));
@@ -522,6 +524,7 @@ public class TaiKhoanPanel extends JFrame {
 
         private JButton actionButton(String text, Color color) {
             JButton button = new JButton(text);
+            ButtonTooltips.ganTooltipNut(button);
             button.setBackground(color);
             button.setForeground(Color.WHITE);
             button.setPreferredSize(new java.awt.Dimension(34, 25));

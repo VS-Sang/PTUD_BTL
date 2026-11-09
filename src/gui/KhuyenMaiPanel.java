@@ -32,6 +32,7 @@ public class KhuyenMaiPanel extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        ButtonTooltips.ganTooltip(this);
 
         khuyenMaiDAO = new KhuyenMai_DAO();
 
@@ -286,6 +287,7 @@ public class KhuyenMaiPanel extends JFrame {
         dialog.setSize(520, 500);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
+        ButtonTooltips.ganTooltip(dialog);
 
         // Header
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));

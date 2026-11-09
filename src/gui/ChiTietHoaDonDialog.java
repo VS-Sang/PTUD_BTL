@@ -33,6 +33,7 @@ final class ChiTietHoaDonDialog extends JDialog {
         setSize(820, 600);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(8, 8));
+        ButtonTooltips.ganTooltip(this);
 
         JPanel information = new JPanel(new GridLayout(0, 4, 8, 6));
         information.setBorder(BorderFactory.createEmptyBorder(12, 12, 4, 12));

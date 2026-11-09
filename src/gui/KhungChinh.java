@@ -76,6 +76,7 @@ public class KhungChinh extends JFrame {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
+        ButtonTooltips.ganTooltip(this);
 
         ThanhMenu menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);

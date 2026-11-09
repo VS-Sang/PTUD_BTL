@@ -52,6 +52,7 @@ public class DangNhapFrame extends JDialog {
         background.setBackground(BRAND_RED);
         background.setBorder(new EmptyBorder(16, 16, 16, 16));
         setContentPane(background);
+        ButtonTooltips.ganTooltip(this);
 
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);

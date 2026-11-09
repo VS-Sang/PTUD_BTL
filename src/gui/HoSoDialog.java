@@ -54,6 +54,7 @@ public class HoSoDialog extends JDialog {
         setUndecorated(true);
         setContentPane(createContent(profile.fullName, profile.role, username,
                 profile.email, profile.phone, profile.status));
+        ButtonTooltips.ganTooltip(this);
     }
 
     private ProfileData loadProfile(String username, String fallbackName, String fallbackRole,
@@ -280,6 +281,7 @@ public class HoSoDialog extends JDialog {
 
         ChangePasswordDialog(Window owner, String username) {
             super(owner, "Đổi mật khẩu", Dialog.ModalityType.APPLICATION_MODAL);
+            ButtonTooltips.ganTooltip(this);
             this.username = username;
             setSize(340, 230);
             setResizable(false);

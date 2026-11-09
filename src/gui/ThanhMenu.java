@@ -8,17 +8,21 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -26,6 +30,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import DAO.NhatKyHeThong_DAO;
 import DAO.VaiTroQuyen_DAO;
@@ -85,6 +91,10 @@ public class ThanhMenu extends JPanel {
     private JMenuItem mnuDoanhThu;
     private JMenuItem mnuBanChay;
     private JMenuItem mnuTongHop;
+    private JRootPane shortcutRootPane;
+
+    private static final Map<MenuItem, Integer> NAVIGATION_SHORTCUTS =
+            taoDanhSachPhimTat();
 
     public ThanhMenu() {
         this(DangNhapFrame.getCurrentFullName(), DangNhapFrame.getCurrentRole(),
@@ -97,6 +107,7 @@ public class ThanhMenu extends JPanel {
 
     public ThanhMenu(String userName, String userRole, String username) {
         super(new BorderLayout());
+        ButtonTooltips.ganTooltip(this);
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Chưa đăng nhập";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole.trim() : "";
         this.currentUsername = username == null ? "" : username.trim();
@@ -116,6 +127,7 @@ public class ThanhMenu extends JPanel {
         JLabel userLabel = new JLabel("👤 " + userName);
         userLabel.setForeground(Color.WHITE);
         JButton roleButton = new JButton(userRole);
+        roleButton.setToolTipText("Vai trò tài khoản hiện tại: " + currentUserRole);
         roleButton.setMargin(new Insets(2, 5, 2, 5));
         roleButton.setFocusable(false);
         roleButton.setForeground(HEADER_COLOR);
@@ -188,6 +200,72 @@ public class ThanhMenu extends JPanel {
 
         // Thiết lập menu điều hướng mặc định
         caiDatDieuHuongMacDinh();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        ganPhimTatDieuHuong();
+    }
+
+    private void ganPhimTatDieuHuong() {
+        JRootPane rootPane = SwingUtilities.getRootPane(this);
+        if (rootPane == null || rootPane == shortcutRootPane) {
+            return;
+        }
+        if (shortcutRootPane != null) {
+            goPhimTatDieuHuong(shortcutRootPane);
+        }
+        shortcutRootPane = rootPane;
+
+        for (Map.Entry<MenuItem, Integer> entry : NAVIGATION_SHORTCUTS.entrySet()) {
+            JMenuItem menuItem = menuItemMap.get(entry.getKey());
+            if (menuItem == null || !menuItem.isEnabled()) {
+                continue;
+            }
+
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(
+                    entry.getValue(), KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+            String actionKey = "navigate." + entry.getKey().name();
+            rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, actionKey);
+            rootPane.getActionMap().put(actionKey, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    menuItem.doClick();
+                }
+            });
+        }
+    }
+
+    private void goPhimTatDieuHuong(JRootPane rootPane) {
+        for (Map.Entry<MenuItem, Integer> entry : NAVIGATION_SHORTCUTS.entrySet()) {
+            String actionKey = "navigate." + entry.getKey().name();
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(
+                    entry.getValue(), KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+            rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(keyStroke);
+            rootPane.getActionMap().remove(actionKey);
+        }
+    }
+
+    private static Map<MenuItem, Integer> taoDanhSachPhimTat() {
+        Map<MenuItem, Integer> shortcuts = new EnumMap<>(MenuItem.class);
+        shortcuts.put(MenuItem.HOME, KeyEvent.VK_G);
+        shortcuts.put(MenuItem.INVOICE, KeyEvent.VK_H);
+        shortcuts.put(MenuItem.CUSTOMER, KeyEvent.VK_K);
+        shortcuts.put(MenuItem.EMPLOYEE, KeyEvent.VK_N);
+        shortcuts.put(MenuItem.WORK_SCHEDULE, KeyEvent.VK_C);
+        shortcuts.put(MenuItem.PRODUCT, KeyEvent.VK_S);
+        shortcuts.put(MenuItem.PROMOTION, KeyEvent.VK_M);
+        shortcuts.put(MenuItem.INVOICING, KeyEvent.VK_L);
+        shortcuts.put(MenuItem.IMPORT_GOODS, KeyEvent.VK_I);
+        shortcuts.put(MenuItem.RETURN, KeyEvent.VK_R);
+        shortcuts.put(MenuItem.ASSIGNMENT, KeyEvent.VK_P);
+        shortcuts.put(MenuItem.MONTHLY_REVENUE, KeyEvent.VK_D);
+        shortcuts.put(MenuItem.BEST_SELLERS, KeyEvent.VK_B);
+        shortcuts.put(MenuItem.SUMMARY_REPORT, KeyEvent.VK_T);
+        shortcuts.put(MenuItem.LIST_ACCOUNT, KeyEvent.VK_A);
+        shortcuts.put(MenuItem.AUDIT_TRAIL, KeyEvent.VK_J);
+        return Collections.unmodifiableMap(shortcuts);
     }
 
     private void caiDatDieuHuongMacDinh() {

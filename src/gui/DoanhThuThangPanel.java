@@ -69,6 +69,7 @@ public class DoanhThuThangPanel extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
+        ButtonTooltips.ganTooltip(this);
         add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
         add(createContent(), BorderLayout.CENTER);
         add(createStatusBar(), BorderLayout.SOUTH);
