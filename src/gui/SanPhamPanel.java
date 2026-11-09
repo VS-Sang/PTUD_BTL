@@ -68,7 +68,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
 
         // ThanhMenu tích hợp chuyển màn hình từ nhánh thuy
         menuPanel = new ThanhMenu();
@@ -503,7 +503,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         header.add(title, BorderLayout.CENTER);
         header.add(closeButton, BorderLayout.EAST);
         dialog.setLayout(new BorderLayout());
-        ButtonTooltips.install(dialog);
+        ButtonTooltips.ganTooltip(dialog);
         dialog.getContentPane().setBackground(Color.WHITE);
         dialog.add(header, BorderLayout.NORTH);
         dialog.add(form, BorderLayout.CENTER);

@@ -17,9 +17,9 @@ final class ButtonTooltips {
     private ButtonTooltips() {
     }
 
-    static void install(Container root) {
+    static void ganTooltip(Container root) {
         if (root instanceof AbstractButton) {
-            apply((AbstractButton) root);
+            ganTooltipNut((AbstractButton) root);
         }
 
         synchronized (INSTALLED_CONTAINERS) {
@@ -30,9 +30,9 @@ final class ButtonTooltips {
 
         for (Component child : root.getComponents()) {
             if (child instanceof Container) {
-                install((Container) child);
+                ganTooltip((Container) child);
             } else if (child instanceof AbstractButton) {
-                apply((AbstractButton) child);
+                ganTooltipNut((AbstractButton) child);
             }
         }
 
@@ -41,15 +41,15 @@ final class ButtonTooltips {
             public void componentAdded(ContainerEvent event) {
                 Component child = event.getChild();
                 if (child instanceof Container) {
-                    install((Container) child);
+                    ganTooltip((Container) child);
                 } else if (child instanceof AbstractButton) {
-                    apply((AbstractButton) child);
+                    ganTooltipNut((AbstractButton) child);
                 }
             }
         });
     }
 
-    static void apply(AbstractButton button) {
+    static void ganTooltipNut(AbstractButton button) {
         if (button instanceof JMenuItem) {
             return;
         }
@@ -62,10 +62,10 @@ final class ButtonTooltips {
         if (label == null || label.trim().isEmpty()) {
             label = button.getAccessibleContext().getAccessibleName();
         }
-        button.setToolTipText(describe(label));
+        button.setToolTipText(moTaTooltip(label));
     }
 
-    private static String describe(String label) {
+    private static String moTaTooltip(String label) {
         if (label == null || label.trim().isEmpty()) {
             return "Thao tác";
         }

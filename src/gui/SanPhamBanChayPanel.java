@@ -86,7 +86,7 @@ public class SanPhamBanChayPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
 
         // 1. MENU CHÍNH
         add(new ThanhMenu(currentUserName, currentUserRole), BorderLayout.NORTH);

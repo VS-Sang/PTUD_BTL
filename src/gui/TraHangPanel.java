@@ -106,7 +106,7 @@ public class TraHangPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
         add(new ThanhMenu(currentUserName, currentUserRole), BorderLayout.NORTH);
 
         JPanel content = new JPanel(new BorderLayout());

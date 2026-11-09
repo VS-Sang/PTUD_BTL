@@ -81,7 +81,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
 
         menuPanel = new ThanhMenu(currentUserName, currentUserRole);
         add(menuPanel, BorderLayout.NORTH);
@@ -393,7 +393,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         colModel.getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             private final JButton btnTrash = new JButton("🗑");
             {
-                ButtonTooltips.apply(btnTrash);
+                ButtonTooltips.ganTooltipNut(btnTrash);
                 btnTrash.setBackground(BRAND_RED);
                 btnTrash.setForeground(Color.WHITE);
                 btnTrash.setFont(new Font("Segoe UI Emoji", Font.BOLD, 12));

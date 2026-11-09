@@ -76,7 +76,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
 
         menuPanel = new ThanhMenu(userName, userRole, username);
         add(menuPanel, BorderLayout.NORTH);
@@ -645,7 +645,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
         dialog.setSize(560, 460);
         dialog.setLocationRelativeTo(ownerComp);
         dialog.setLayout(new BorderLayout(0, 10));
-        ButtonTooltips.install(dialog);
+        ButtonTooltips.ganTooltip(dialog);
 
         JPanel pRoot = new JPanel(new BorderLayout(0, 10));
         pRoot.setBackground(new Color(245, 245, 245));

@@ -65,7 +65,7 @@ public class KhachHangPanel extends JFrame implements ActionListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
 
         add(new ThanhMenu(userName, userRole), BorderLayout.NORTH);
 

@@ -75,7 +75,7 @@ final class SuaHoaDonDialog extends JDialog {
         setSize(900, 650);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(8, 8));
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
         add(createInvoiceFields(), BorderLayout.NORTH);
         add(createSanPhamPanel(), BorderLayout.CENTER);
         add(createActions(), BorderLayout.SOUTH);

@@ -161,7 +161,7 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         setLocationRelativeTo(owner);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLayout(new BorderLayout());
-        ButtonTooltips.install(this);
+        ButtonTooltips.ganTooltip(this);
         txtMaHoaDon.setEditable(false);
         txtNgayLap.setEditable(false);
         txtNhanVien.setEditable(false);
