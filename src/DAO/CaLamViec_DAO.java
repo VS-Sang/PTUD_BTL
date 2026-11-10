@@ -13,71 +13,28 @@ import entity.CaLamViec;
 
 public class CaLamViec_DAO {
 
-    private CaLamViec docCaLamViecTuResultSet(ResultSet rs) throws SQLException {
-        return new CaLamViec(
-                rs.getString("maCa"),
-                rs.getString("tenCa"),
-                rs.getTime("gioVao"),
-                rs.getTime("gioRa"),
-                rs.getString("moTa"),
-                rs.getString("trangThai"),
-                rs.getTimestamp("ngayTao")
-        );
-    }
-
-    // Lấy toàn bộ danh sách ca làm việc
     public ArrayList<CaLamViec> getAllCaLamViec() {
-        ArrayList<CaLamViec> dsCaLam = new ArrayList<>();
+        ArrayList<CaLamViec> ds = new ArrayList<>();
         String sql = "SELECT * FROM CaLamViec ORDER BY maCa";
         try (Connection con = ConnectDB.getConnection();
-             Statement statement = con.createStatement();
-             ResultSet rs = statement.executeQuery(sql)) {
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                dsCaLam.add(docCaLamViecTuResultSet(rs));
+                ds.add(new CaLamViec(
+                        rs.getString("maCa"),
+                        rs.getString("tenCa"),
+                        rs.getTime("gioVao"),
+                        rs.getTime("gioRa"),
+                        rs.getString("moTa"),
+                        rs.getString("trangThai")
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return dsCaLam;
+        return ds;
     }
 
-    // Thêm ca làm việc mới
-    public boolean themCaLamViec(CaLamViec ca) {
-        String sql = "INSERT INTO CaLamViec (maCa, tenCa, gioVao, gioRa, moTa, trangThai) VALUES(?, ?, ?, ?, ?, ?)";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, ca.getMaCa());
-            stmt.setString(2, ca.getTenCa());
-            stmt.setTime(3, ca.getGioVao() != null ? new Time(ca.getGioVao().getTime()) : null);
-            stmt.setTime(4, ca.getGioRa() != null ? new Time(ca.getGioRa().getTime()) : null);
-            stmt.setString(5, ca.getMoTa());
-            stmt.setString(6, ca.getTrangThai());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // Cập nhật thông tin ca làm việc
-    public boolean capNhatCaLamViec(CaLamViec ca) {
-        String sql = "UPDATE CaLamViec SET tenCa = ?, gioVao = ?, gioRa = ?, moTa = ?, trangThai = ? WHERE maCa = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, ca.getTenCa());
-            stmt.setTime(2, ca.getGioVao() != null ? new Time(ca.getGioVao().getTime()) : null);
-            stmt.setTime(3, ca.getGioRa() != null ? new Time(ca.getGioRa().getTime()) : null);
-            stmt.setString(4, ca.getMoTa());
-            stmt.setString(5, ca.getTrangThai());
-            stmt.setString(6, ca.getMaCa());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // Phát sinh mã ca làm việc tiếp theo (VD: CA005)
     public String phatSinhMaCa() {
         String sql = "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maCa, 3, 18))), 0) + 1 "
                 + "FROM CaLamViec WHERE maCa LIKE 'CA[0-9]%'";
@@ -87,13 +44,43 @@ public class CaLamViec_DAO {
             if (rs.next()) {
                 return String.format("CA%03d", rs.getInt(1));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         return "CA001";
     }
 
-    // Xóa ca làm việc theo mã
+    public boolean themCaLamViec(CaLamViec ca) {
+        String sql = "INSERT INTO CaLamViec (maCa, tenCa, gioVao, gioRa, moTa, trangThai) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, ca.getMaCa());
+            stmt.setString(2, ca.getTenCa());
+            stmt.setTime(3, new Time(ca.getGioVao().getTime()));
+            stmt.setTime(4, new Time(ca.getGioRa().getTime()));
+            stmt.setString(5, ca.getMoTa());
+            stmt.setString(6, ca.getTrangThai());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public boolean capNhatCaLamViec(CaLamViec ca) {
+        String sql = "UPDATE CaLamViec SET tenCa = ?, gioVao = ?, gioRa = ?, moTa = ?, trangThai = ? WHERE maCa = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, ca.getTenCa());
+            stmt.setTime(2, new Time(ca.getGioVao().getTime()));
+            stmt.setTime(3, new Time(ca.getGioRa().getTime()));
+            stmt.setString(4, ca.getMoTa());
+            stmt.setString(5, ca.getTrangThai());
+            stmt.setString(6, ca.getMaCa());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     public boolean xoaCaLamViec(String maCa) {
         String sql = "DELETE FROM CaLamViec WHERE maCa = ?";
         try (Connection con = ConnectDB.getConnection();
@@ -103,25 +90,5 @@ public class CaLamViec_DAO {
         } catch (SQLException e) {
             return false;
         }
-    }
-
-    // Tìm kiếm ca làm việc theo từ khóa (mã ca, tên ca)
-    public ArrayList<CaLamViec> timKiemCaLamViec(String tuKhoa) {
-        ArrayList<CaLamViec> dsCaLam = new ArrayList<>();
-        String sql = "SELECT * FROM CaLamViec WHERE maCa LIKE ? OR tenCa LIKE ? ORDER BY maCa";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            String key = "%" + tuKhoa + "%";
-            stmt.setString(1, key);
-            stmt.setString(2, key);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    dsCaLam.add(docCaLamViecTuResultSet(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return dsCaLam;
     }
 }
