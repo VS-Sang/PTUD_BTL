@@ -12,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -46,23 +45,19 @@ import entity.PhanCongCaLam;
 
 public class PhanCongCaPanel extends JFrame implements ActionListener {
 
-    private ThanhMenu menuPanel;
-    private String currentUserName;
-    private String currentUserRole;
-    private String currentUsername;
+    private final String currentUserName, currentUserRole, currentUsername;
     private JTextField txtMaPC, txtGhiChu, txtSearch;
-    private JDatePickerImpl datePickerNgayLamViec;
     private UtilDateModel modelNgayLamViec;
     private JComboBox<String> cboNhanVien, cboCaLamViec, cboTrangThai, cboFilterShift, cboFilterStatus;
     private JButton btnThem, btnCapNhat, btnXoa, btnLamMoi, btnQuanLyCa, btnTim;
     private DefaultTableModel model;
     private JTable table;
 
-    private PhanCongCaLam_DAO pc_dao = new PhanCongCaLam_DAO();
-    private NhanVien_DAO nv_dao = new NhanVien_DAO();
-    private CaLamViec_DAO ca_dao = new CaLamViec_DAO();
-    private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-    private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
+    private final PhanCongCaLam_DAO pc_dao = new PhanCongCaLam_DAO();
+    private final NhanVien_DAO nv_dao = new NhanVien_DAO();
+    private final CaLamViec_DAO ca_dao = new CaLamViec_DAO();
+    private final SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
     public PhanCongCaPanel() {
         this(null, null, null);
@@ -85,15 +80,13 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
         ButtonTooltips.ganTooltip(this);
 
-        menuPanel = new ThanhMenu(userName, userRole, username);
-        add(menuPanel, BorderLayout.NORTH);
+        add(new ThanhMenu(userName, userRole, username), BorderLayout.NORTH);
 
         JPanel pMain = new JPanel(new BorderLayout(0, 10));
         pMain.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
 
-        // 1. TIÊU ĐỀ PHỤ + FORM PHÂN CÔNG CA LÀM
+        // 1. Tiêu đề + Form phân công ca làm
         JPanel pTop = new JPanel(new BorderLayout(0, 10));
-
         JPanel pSubHeader = new JPanel(new BorderLayout());
         pSubHeader.setBackground(new Color(245, 245, 245));
         pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
@@ -103,18 +96,10 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
 
-        JPanel pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        pSubActions.setOpaque(false);
-        btnQuanLyCa = new JButton("🕒 Quản lý Ca làm việc");
-        btnQuanLyCa.setBackground(new Color(180, 40, 40));
-        btnQuanLyCa.setForeground(Color.WHITE);
-        btnQuanLyCa.setFocusPainted(false);
-
-        pSubActions.add(btnQuanLyCa);
-        pSubHeader.add(pSubActions, BorderLayout.EAST);
+        btnQuanLyCa = taoNut("🕒 Quản lý Ca làm việc", new Color(180, 40, 40), Color.WHITE);
+        pSubHeader.add(btnQuanLyCa, BorderLayout.EAST);
         pTop.add(pSubHeader, BorderLayout.NORTH);
 
-        // Form nhập phân công
         JPanel pFormCard = new JPanel(new BorderLayout(0, 8));
         pFormCard.setBackground(Color.WHITE);
         pFormCard.setBorder(BorderFactory.createTitledBorder("📋 Thông tin phân công ca làm"));
@@ -123,95 +108,58 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         pGrid.setBackground(Color.WHITE);
         pGrid.setBorder(BorderFactory.createEmptyBorder(8, 12, 5, 12));
 
-        pGrid.add(new JLabel("Mã phân công:"));
         txtMaPC = new JTextField();
         txtMaPC.setEditable(false);
         txtMaPC.setBackground(new Color(242, 242, 242));
-        pGrid.add(txtMaPC);
-
-        pGrid.add(new JLabel("Nhân viên (*):"));
         cboNhanVien = new JComboBox<>();
-        pGrid.add(cboNhanVien);
-
-        pGrid.add(new JLabel("Ca làm việc (*):"));
         cboCaLamViec = new JComboBox<>();
-        pGrid.add(cboCaLamViec);
-
-        pGrid.add(new JLabel("Ngày làm việc (*):"));
-        modelNgayLamViec = new UtilDateModel();
-        datePickerNgayLamViec = taoDatePicker(modelNgayLamViec, new Date());
-        pGrid.add(datePickerNgayLamViec);
-
-        pGrid.add(new JLabel("Trạng thái:"));
-        cboTrangThai = new JComboBox<>(new String[]{
-                "Đã lên lịch", "Đã điểm danh", "Vắng mặt", "Nghỉ phép", "Đã hủy"
-        });
-        pGrid.add(cboTrangThai);
-
-        pGrid.add(new JLabel("Ghi chú:"));
+        modelNgayLamViec = new UtilDateModel(new Date());
+        modelNgayLamViec.setSelected(true);
+        cboTrangThai = new JComboBox<>(new String[]{"Đã lên lịch", "Đã điểm danh", "Vắng mặt", "Nghỉ phép", "Đã hủy"});
         txtGhiChu = new JTextField();
-        pGrid.add(txtGhiChu);
 
+        pGrid.add(new JLabel("Mã phân công:"));       pGrid.add(txtMaPC);
+        pGrid.add(new JLabel("Nhân viên (*):"));      pGrid.add(cboNhanVien);
+        pGrid.add(new JLabel("Ca làm việc (*):"));    pGrid.add(cboCaLamViec);
+        pGrid.add(new JLabel("Ngày làm việc (*):"));  pGrid.add(taoDatePicker(modelNgayLamViec));
+        pGrid.add(new JLabel("Trạng thái:"));         pGrid.add(cboTrangThai);
+        pGrid.add(new JLabel("Ghi chú:"));            pGrid.add(txtGhiChu);
         pFormCard.add(pGrid, BorderLayout.CENTER);
 
         JPanel pButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pButtons.setBackground(Color.WHITE);
-
-        btnThem = new JButton("+ Phân công");
-        btnThem.setBackground(new Color(180, 40, 40));
-        btnThem.setForeground(Color.WHITE);
-        btnThem.setFocusPainted(false);
-
-        btnCapNhat = new JButton("💾 Cập nhật");
-        btnCapNhat.setBackground(new Color(24, 119, 242));
-        btnCapNhat.setForeground(Color.WHITE);
-        btnCapNhat.setFocusPainted(false);
-
-        btnXoa = new JButton("🗑 Xóa");
-        btnXoa.setBackground(new Color(205, 32, 38));
-        btnXoa.setForeground(Color.WHITE);
-        btnXoa.setFocusPainted(false);
-
-        btnLamMoi = new JButton("↻ Làm mới");
-        btnLamMoi.setBackground(new Color(235, 235, 235));
-        btnLamMoi.setFocusPainted(false);
-
+        btnThem = taoNut("+ Phân công", new Color(180, 40, 40), Color.WHITE);
+        btnCapNhat = taoNut("💾 Cập nhật", new Color(24, 119, 242), Color.WHITE);
+        btnXoa = taoNut("🗑 Xóa", new Color(205, 32, 38), Color.WHITE);
+        btnLamMoi = taoNut("↻ Làm mới", new Color(235, 235, 235), Color.BLACK);
         pButtons.add(btnThem);
         pButtons.add(btnCapNhat);
         pButtons.add(btnXoa);
         pButtons.add(btnLamMoi);
         pFormCard.add(pButtons, BorderLayout.SOUTH);
-
         pTop.add(pFormCard, BorderLayout.CENTER);
 
-        // 2. THANH TÌM KIẾM VÀ LỌC
+        // 2. Thanh tìm kiếm và lọc
         JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         txtSearch = new JTextField(25);
         txtSearch.setToolTipText("Tìm mã PC, tên nhân viên, ngày...");
-        btnTim = new JButton("🔍 Tìm");
-        btnTim.setBackground(Color.WHITE);
-        btnTim.setFocusPainted(false);
-
+        btnTim = taoNut("🔍 Tìm", Color.WHITE, Color.BLACK);
         cboFilterShift = new JComboBox<>();
         cboFilterStatus = new JComboBox<>(new String[]{
                 "Tất cả trạng thái", "Đã lên lịch", "Đã điểm danh", "Vắng mặt", "Nghỉ phép", "Đã hủy"
         });
-
         pSearch.add(txtSearch);
         pSearch.add(btnTim);
         pSearch.add(cboFilterShift);
         pSearch.add(cboFilterStatus);
         pTop.add(pSearch, BorderLayout.SOUTH);
-
         pMain.add(pTop, BorderLayout.NORTH);
 
-        // 3. BẢNG DANH SÁCH PHÂN CÔNG
+        // 3. Bảng danh sách phân công
         String[] columns = {"Mã PC", "Nhân viên", "Ca làm việc", "Ngày làm việc", "Trạng thái", "Ghi chú"};
         model = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int r, int c) { return false; }
         };
         table = new JTable(model);
         table.setRowHeight(34);
@@ -220,23 +168,15 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        // Đổi màu chữ cột Trạng thái
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                                           boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean focus, int r, int c) {
+                super.getTableCellRendererComponent(t, val, sel, focus, r, c);
                 setHorizontalAlignment(SwingConstants.CENTER);
-                String val = value != null ? value.toString() : "";
-                if ("Đã điểm danh".equals(val)) {
-                    setForeground(new Color(46, 125, 50));
-                } else if ("Đã lên lịch".equals(val)) {
-                    setForeground(new Color(24, 119, 242));
-                } else if ("Nghỉ phép".equals(val)) {
-                    setForeground(new Color(230, 81, 0));
-                } else {
-                    setForeground(new Color(205, 32, 38));
-                }
+                String s = val != null ? val.toString() : "";
+                setForeground("Đã điểm danh".equals(s) ? new Color(46, 125, 50)
+                        : "Đã lên lịch".equals(s) ? new Color(24, 119, 242)
+                        : "Nghỉ phép".equals(s) ? new Color(230, 81, 0) : new Color(205, 32, 38));
                 return this;
             }
         });
@@ -244,18 +184,13 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         pMain.add(new JScrollPane(table), BorderLayout.CENTER);
         add(pMain, BorderLayout.CENTER);
 
-        // Nạp ComboBox và bảng dữ liệu từ Database
         napDuLieuComboBox();
         docDuLieuDatabaseVaoTable();
         xoaRong();
 
-        // Đăng ký sự kiện
-        btnThem.addActionListener(this);
-        btnCapNhat.addActionListener(this);
-        btnXoa.addActionListener(this);
-        btnLamMoi.addActionListener(this);
-        btnQuanLyCa.addActionListener(this);
-        btnTim.addActionListener(this);
+        for (JButton b : new JButton[]{btnThem, btnCapNhat, btnXoa, btnLamMoi, btnQuanLyCa, btnTim}) {
+            b.addActionListener(this);
+        }
         txtSearch.addActionListener(this);
         cboFilterShift.addActionListener(this);
         cboFilterStatus.addActionListener(this);
@@ -269,10 +204,7 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
                     chonItemTheoMa(cboNhanVien, model.getValueAt(row, 1).toString());
                     chonItemTheoMa(cboCaLamViec, model.getValueAt(row, 2).toString());
                     try {
-                        Date ngay = sdfDate.parse(model.getValueAt(row, 3).toString());
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(ngay);
-                        modelNgayLamViec.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                        modelNgayLamViec.setValue(sdfDate.parse(model.getValueAt(row, 3).toString()));
                         modelNgayLamViec.setSelected(true);
                     } catch (Exception ignored) {
                     }
@@ -283,40 +215,33 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         });
     }
 
-    private JDatePickerImpl taoDatePicker(UtilDateModel model, Date defaultDate) {
-        if (defaultDate != null) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(defaultDate);
-            model.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-            model.setSelected(true);
-        }
+    private JButton taoNut(String text, Color bg, Color fg) {
+        JButton b = new JButton(text);
+        b.setBackground(bg);
+        b.setForeground(fg);
+        b.setFocusPainted(false);
+        return b;
+    }
+
+    private JDatePickerImpl taoDatePicker(UtilDateModel dateModel) {
         Properties p = new Properties();
         p.put("text.today", "Hôm nay");
         p.put("text.month", "Tháng");
         p.put("text.year", "Năm");
-        JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
-        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new JFormattedTextField.AbstractFormatter() {
+        return new JDatePickerImpl(new JDatePanelImpl(dateModel, p), new JFormattedTextField.AbstractFormatter() {
             @Override
             public Object stringToValue(String text) throws ParseException {
-                if (text == null || text.trim().isEmpty()) {
-                    return null;
-                }
+                if (text == null || text.trim().isEmpty()) return null;
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(sdfDate.parse(text.trim()));
                 return cal;
             }
 
             @Override
-            public String valueToString(Object value) throws ParseException {
-                if (value != null) {
-                    Calendar cal = (Calendar) value;
-                    return sdfDate.format(cal.getTime());
-                }
-                return "";
+            public String valueToString(Object value) {
+                return value != null ? sdfDate.format(((Calendar) value).getTime()) : "";
             }
         });
-        datePicker.setBackground(Color.WHITE);
-        return datePicker;
     }
 
     private void chonItemTheoMa(JComboBox<String> cbo, String fullLabel) {
@@ -341,17 +266,14 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
 
         cboCaLamViec.removeAllItems();
         String currentShiftFilter = cboFilterShift.getSelectedItem() != null
-                ? cboFilterShift.getSelectedItem().toString()
-                : "Tất cả ca làm";
+                ? cboFilterShift.getSelectedItem().toString() : "Tất cả ca làm";
         cboFilterShift.removeAllItems();
         cboFilterShift.addItem("Tất cả ca làm");
         for (CaLamViec ca : ca_dao.getAllCaLamViec()) {
             String gio = (ca.getGioVao() != null && ca.getGioRa() != null)
-                    ? " (" + sdfTime.format(ca.getGioVao()) + "-" + sdfTime.format(ca.getGioRa()) + ")"
-                    : "";
-            String label = ca.getMaCa() + " - " + ca.getTenCa() + gio;
+                    ? " (" + sdfTime.format(ca.getGioVao()) + "-" + sdfTime.format(ca.getGioRa()) + ")" : "";
             if ("Hoạt động".equalsIgnoreCase(ca.getTrangThai())) {
-                cboCaLamViec.addItem(label);
+                cboCaLamViec.addItem(ca.getMaCa() + " - " + ca.getTenCa() + gio);
             }
             cboFilterShift.addItem(ca.getMaCa() + " - " + ca.getTenCa());
         }
@@ -364,12 +286,10 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         String filterShift = cboFilterShift.getSelectedItem() != null ? cboFilterShift.getSelectedItem().toString() : "Tất cả ca làm";
         String filterStatus = cboFilterStatus.getSelectedItem() != null ? cboFilterStatus.getSelectedItem().toString() : "Tất cả trạng thái";
 
-        ArrayList<PhanCongCaLam> ds = pc_dao.getAllPhanCongCaLam();
-        for (PhanCongCaLam pc : ds) {
+        for (PhanCongCaLam pc : pc_dao.getAllPhanCongCaLam()) {
             String nvText = pc.getNhanVien().getMaNhanVien() + " - " + pc.getNhanVien().getHoTen();
             String gio = (pc.getCaLamViec().getGioVao() != null && pc.getCaLamViec().getGioRa() != null)
-                    ? " (" + sdfTime.format(pc.getCaLamViec().getGioVao()) + "-" + sdfTime.format(pc.getCaLamViec().getGioRa()) + ")"
-                    : "";
+                    ? " (" + sdfTime.format(pc.getCaLamViec().getGioVao()) + "-" + sdfTime.format(pc.getCaLamViec().getGioRa()) + ")" : "";
             String caText = pc.getCaLamViec().getMaCa() + " - " + pc.getCaLamViec().getTenCa() + gio;
             String ngayText = pc.getNgayLamViec() != null ? sdfDate.format(pc.getNgayLamViec()) : "";
             String trangThaiText = pc.getTrangThai() != null ? pc.getTrangThai() : "Đã lên lịch";
@@ -378,18 +298,12 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
                     || pc.getMaPhanCong().toLowerCase().contains(tuKhoa)
                     || nvText.toLowerCase().contains(tuKhoa)
                     || ngayText.contains(tuKhoa);
-            boolean matchShift = "Tất cả ca làm".equals(filterShift)
-                    || caText.startsWith(filterShift);
-            boolean matchStatus = "Tất cả trạng thái".equals(filterStatus)
-                    || filterStatus.equalsIgnoreCase(trangThaiText);
+            boolean matchShift = "Tất cả ca làm".equals(filterShift) || caText.startsWith(filterShift);
+            boolean matchStatus = "Tất cả trạng thái".equals(filterStatus) || filterStatus.equalsIgnoreCase(trangThaiText);
 
             if (matchKey && matchShift && matchStatus) {
                 model.addRow(new Object[]{
-                        pc.getMaPhanCong(),
-                        nvText,
-                        caText,
-                        ngayText,
-                        trangThaiText,
+                        pc.getMaPhanCong(), nvText, caText, ngayText, trangThaiText,
                         pc.getGhiChu() != null ? pc.getGhiChu() : ""
                 });
             }
@@ -401,109 +315,75 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
         txtMaPC.setText(pc_dao.phatSinhMaPhanCong());
         if (cboNhanVien.getItemCount() > 0) cboNhanVien.setSelectedIndex(0);
         if (cboCaLamViec.getItemCount() > 0) cboCaLamViec.setSelectedIndex(0);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        modelNgayLamViec.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        modelNgayLamViec.setValue(new Date());
         modelNgayLamViec.setSelected(true);
         cboTrangThai.setSelectedIndex(0);
         txtGhiChu.setText("");
         table.clearSelection();
     }
 
+    private PhanCongCaLam layPhanCongTuForm(String maPC) {
+        Date ngay = modelNgayLamViec.getValue();
+        if (ngay == null || cboNhanVien.getSelectedItem() == null || cboCaLamViec.getSelectedItem() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn đầy đủ Nhân viên, Ca làm và Ngày làm việc!");
+        }
+        String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
+        String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
+        String maNguoiPC = pc_dao.getMaNhanVienTheoTenDangNhap(currentUsername);
+        return new PhanCongCaLam(
+                maPC, new NhanVien(maNV), new CaLamViec(maCa), ngay,
+                cboTrangThai.getSelectedItem().toString(), txtGhiChu.getText().trim(), new NhanVien(maNguoiPC)
+        );
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
+        Component owner = UiDialogOwner.resolve(this);
+
         if (o.equals(btnLamMoi)) {
             xoaRong();
         } else if (o.equals(btnTim) || o.equals(txtSearch) || o.equals(cboFilterShift) || o.equals(cboFilterStatus)) {
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnThem)) {
-            Date ngay = (Date) modelNgayLamViec.getValue();
-            if (ngay == null || cboNhanVien.getSelectedItem() == null || cboCaLamViec.getSelectedItem() == null) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn đầy đủ Ngày làm việc!");
-                return;
-            }
             try {
-                String ma = pc_dao.phatSinhMaPhanCong();
-                String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
-                String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
-                String trangThai = cboTrangThai.getSelectedItem().toString();
-                String maNguoiPC = pc_dao.getMaNhanVienTheoTenDangNhap(currentUsername);
-
-                PhanCongCaLam pc = new PhanCongCaLam(
-                        ma,
-                        new NhanVien(maNV),
-                        new CaLamViec(maCa),
-                        ngay,
-                        trangThai,
-                        null, null, 0,
-                        txtGhiChu.getText().trim(),
-                        new NhanVien(maNguoiPC),
-                        new Date(), new Date()
-                );
-                if (pc_dao.themPhanCongCaLam(pc)) {
+                if (pc_dao.themPhanCongCaLam(layPhanCongTuForm(pc_dao.phatSinhMaPhanCong()))) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Phân công ca làm việc thành công!");
                     xoaRong();
+                    JOptionPane.showMessageDialog(owner, "Phân công ca làm việc thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Thêm thất bại (Nhân viên đã có ca này trong ngày)!");
+                    JOptionPane.showMessageDialog(owner, "Thêm thất bại (Nhân viên đã có ca này trong ngày)!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lỗi khi phân công ca làm việc: " + ex.getMessage());
+                JOptionPane.showMessageDialog(owner, ex.getMessage());
             }
         } else if (o.equals(btnCapNhat)) {
-            int row = table.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn một dòng phân công để cập nhật!");
-                return;
-            }
-            Date ngay = (Date) modelNgayLamViec.getValue();
-            if (ngay == null) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn Ngày làm việc!");
+            if (table.getSelectedRow() < 0) {
+                JOptionPane.showMessageDialog(owner, "Vui lòng chọn một dòng phân công để cập nhật!");
                 return;
             }
             try {
-                String maNV = cboNhanVien.getSelectedItem().toString().split(" - ")[0];
-                String maCa = cboCaLamViec.getSelectedItem().toString().split(" - ")[0];
-                String trangThai = cboTrangThai.getSelectedItem().toString();
-                String maNguoiPC = pc_dao.getMaNhanVienTheoTenDangNhap(currentUsername);
-
-                PhanCongCaLam pc = new PhanCongCaLam(
-                        txtMaPC.getText().trim(),
-                        new NhanVien(maNV),
-                        new CaLamViec(maCa),
-                        ngay,
-                        trangThai,
-                        null, null, 0,
-                        txtGhiChu.getText().trim(),
-                        new NhanVien(maNguoiPC),
-                        new Date(), new Date()
-                );
-                if (pc_dao.capNhatPhanCongCaLam(pc)) {
+                if (pc_dao.capNhatPhanCongCaLam(layPhanCongTuForm(txtMaPC.getText().trim()))) {
                     docDuLieuDatabaseVaoTable();
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật phân công thành công!");
+                    JOptionPane.showMessageDialog(owner, "Cập nhật phân công thành công!");
                 } else {
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Cập nhật thất bại (Nhân viên đã có ca này trong ngày)!");
+                    JOptionPane.showMessageDialog(owner, "Cập nhật thất bại (Nhân viên đã có ca này trong ngày)!");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lỗi khi cập nhật phân công: " + ex.getMessage());
+                JOptionPane.showMessageDialog(owner, ex.getMessage());
             }
         } else if (o.equals(btnXoa)) {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn phân công cần xóa!");
+                JOptionPane.showMessageDialog(owner, "Vui lòng chọn phân công cần xóa!");
                 return;
             }
             String maPC = model.getValueAt(row, 0).toString();
-            if (JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Bạn có chắc muốn xóa phân công " + maPC + "?", "Xác nhận",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (pc_dao.xoaPhanCongCaLam(maPC)) {
-                    docDuLieuDatabaseVaoTable();
-                    xoaRong();
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Xóa phân công thành công!");
-                } else {
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Xóa phân công thất bại!");
-                }
+            if (JOptionPane.showConfirmDialog(owner, "Bạn có chắc muốn xóa phân công " + maPC + "?", "Xác nhận",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION && pc_dao.xoaPhanCongCaLam(maPC)) {
+                docDuLieuDatabaseVaoTable();
+                xoaRong();
+                JOptionPane.showMessageDialog(owner, "Xóa phân công thành công!");
             }
         } else if (o.equals(btnQuanLyCa)) {
             if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.WORK_SCHEDULE)) {

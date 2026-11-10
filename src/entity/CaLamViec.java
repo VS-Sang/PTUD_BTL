@@ -9,7 +9,6 @@ public class CaLamViec {
     private Date gioRa;
     private String moTa;
     private String trangThai;
-    private Date ngayTao;
 
     public CaLamViec() {
     }
@@ -18,14 +17,13 @@ public class CaLamViec {
         this.maCa = maCa;
     }
 
-    public CaLamViec(String maCa, String tenCa, Date gioVao, Date gioRa, String moTa, String trangThai, Date ngayTao) {
+    public CaLamViec(String maCa, String tenCa, Date gioVao, Date gioRa, String moTa, String trangThai) {
         this.maCa = maCa;
         this.tenCa = tenCa;
         this.gioVao = gioVao;
         this.gioRa = gioRa;
         this.moTa = moTa;
         this.trangThai = trangThai;
-        this.ngayTao = ngayTao;
     }
 
     public String getMaCa() { return maCa; }
@@ -45,12 +43,4 @@ public class CaLamViec {
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-
-    public Date getNgayTao() { return ngayTao; }
-    public void setNgayTao(Date ngayTao) { this.ngayTao = ngayTao; }
-
-    @Override
-    public String toString() {
-        return tenCa;
-    }
 }
