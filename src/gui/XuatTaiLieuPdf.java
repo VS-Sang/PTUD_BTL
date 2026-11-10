@@ -32,7 +32,7 @@ final class XuatTaiLieuPdf {
 
     // ====== THÔNG TIN CỬA HÀNG (sửa lại cho đúng) ======
     private static final String STORE_NAME = "ĐIỆN MÁY ĐỎ";
-    private static final String STORE_ADDRESS = "Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM";
+    private static final String STORE_ADDRESS = "Địa chỉ: 123, Nguyễn Văn Nghi, Gò Vấp, TP HCM";
     private static final String STORE_HOTLINE = "Hotline: 1900 0000";
     private static final String FOOTER_THANKS = "Cảm ơn quý khách đã mua hàng tại Điện Máy Đỏ";
     // ====== THANH TOÁN CHUYỂN KHOẢN ======
@@ -82,33 +82,40 @@ final class XuatTaiLieuPdf {
         }
     }
 
-    private static QrImage loadQr() {
-        try {
-            BufferedImage src = null;
-            File file = new File(QR_IMAGE_PATH);
-            if (!file.isFile()) {
-                file = new File("src/" + QR_IMAGE_PATH);
-            }
-            if (file.isFile()) {
-                src = ImageIO.read(file);
-            } else {
-                try (InputStream in = XuatTaiLieuPdf.class.getResourceAsStream(
-                        "/" + QR_IMAGE_PATH)) {
-                    if (in != null) {
-                        src = ImageIO.read(in);
-                    }
+    static BufferedImage loadPaymentQrImage() throws IOException {
+        BufferedImage src = null;
+        File file = new File(QR_IMAGE_PATH);
+        if (!file.isFile()) {
+            file = new File("src/" + QR_IMAGE_PATH);
+        }
+        if (file.isFile()) {
+            src = ImageIO.read(file);
+        } else {
+            try (InputStream in = XuatTaiLieuPdf.class.getResourceAsStream(
+                    "/" + QR_IMAGE_PATH)) {
+                if (in != null) {
+                    src = ImageIO.read(in);
                 }
             }
-            if (src == null) {
-                return null;
-            }
-            BufferedImage rgb = new BufferedImage(src.getWidth(), src.getHeight(),
-                    BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = rgb.createGraphics();
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, rgb.getWidth(), rgb.getHeight());
-            g.drawImage(src, 0, 0, null);
-            g.dispose();
+        }
+        if (src == null) {
+            throw new IOException("Không tìm thấy hoặc không đọc được ảnh QR chuyển khoản: "
+                    + QR_IMAGE_PATH);
+        }
+
+        BufferedImage rgb = new BufferedImage(src.getWidth(), src.getHeight(),
+                BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = rgb.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, rgb.getWidth(), rgb.getHeight());
+        g.drawImage(src, 0, 0, null);
+        g.dispose();
+        return rgb;
+    }
+
+    private static QrImage loadQr() {
+        try {
+            BufferedImage rgb = loadPaymentQrImage();
             ByteArrayOutputStream raw = new ByteArrayOutputStream();
             try (DeflaterOutputStream deflater = new DeflaterOutputStream(raw)) {
                 for (int y = 0; y < rgb.getHeight(); y++) {

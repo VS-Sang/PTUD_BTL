@@ -12,6 +12,7 @@ import entity.DanhMuc;
 import entity.SanPham;
 
 public class SanPham_DAO {
+    public static final int GIOI_HAN_KET_QUA_TIM_KIEM = 50;
 
     private SanPham docSanPhamTuResultSet(ResultSet rs) throws SQLException {
         DanhMuc dm = new DanhMuc(rs.getString("maDanhMuc"));
@@ -78,6 +79,54 @@ public class SanPham_DAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        return ds;
+    }
+
+    public ArrayList<SanPham> timKiemSanPham(String tuKhoa, String maDanhMuc,
+                                             String trangThai) throws SQLException {
+        String keyword = tuKhoa == null ? "" : tuKhoa.trim();
+        String category = maDanhMuc == null ? "" : maDanhMuc.trim();
+        if (keyword.isEmpty() && category.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String sql = "SELECT TOP (" + GIOI_HAN_KET_QUA_TIM_KIEM + ") sp.*, dm.tenDanhMuc "
+                + "FROM SanPham sp JOIN DanhMuc dm ON sp.maDanhMuc = dm.maDanhMuc WHERE 1 = 1";
+        if (!keyword.isEmpty()) {
+            sql += " AND (sp.maSanPham LIKE ? OR sp.tenSanPham LIKE ? "
+                    + "OR sp.thuongHieu LIKE ? OR dm.tenDanhMuc LIKE ?)";
+        }
+        if (!category.isEmpty()) {
+            sql += " AND sp.maDanhMuc = ?";
+        }
+        if (trangThai != null && !trangThai.trim().isEmpty()) {
+            sql += " AND sp.trangThai = ?";
+        }
+        sql += " ORDER BY sp.maSanPham";
+
+        ArrayList<SanPham> ds = new ArrayList<>();
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            int parameterIndex = 1;
+            if (!keyword.isEmpty()) {
+                String tuKhoaLike = "%" + keyword + "%";
+                stmt.setString(parameterIndex++, tuKhoaLike);
+                stmt.setString(parameterIndex++, tuKhoaLike);
+                stmt.setString(parameterIndex++, tuKhoaLike);
+                stmt.setString(parameterIndex++, tuKhoaLike);
+            }
+            if (!category.isEmpty()) {
+                stmt.setString(parameterIndex++, category);
+            }
+            if (trangThai != null && !trangThai.trim().isEmpty()) {
+                stmt.setString(parameterIndex++, trangThai);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ds.add(docSanPhamTuResultSet(rs));
+                }
+            }
         }
         return ds;
     }

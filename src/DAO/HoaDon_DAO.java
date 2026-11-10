@@ -31,9 +31,8 @@ public class HoaDon_DAO {
         KhachHang kh = null;
         if (maKH != null) {
             kh = new KhachHang(maKH);
-            try {
-                kh.setHoTen(rs.getString("tenKhachHang"));
-            } catch (Exception ignored) {}
+            kh.setHoTen(rs.getString("tenKhachHang"));
+            kh.setSoDienThoai(rs.getString("soDienThoaiKhachHang"));
         }
 
         String maNV = rs.getString("maNhanVien");
@@ -72,7 +71,8 @@ public class HoaDon_DAO {
 
     public ArrayList<HoaDon> getAllHoaDon() {
         ArrayList<HoaDon> ds = new ArrayList<>();
-        String sql = "SELECT hd.*, kh.hoTen AS tenKhachHang, nv.hoTen AS tenNhanVien "
+        String sql = "SELECT hd.*, kh.hoTen AS tenKhachHang, "
+                + "kh.soDienThoai AS soDienThoaiKhachHang, nv.hoTen AS tenNhanVien "
                 + "FROM HoaDon hd "
                 + "LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang "
                 + "JOIN NhanVien nv ON hd.maNhanVien = nv.maNhanVien "
@@ -90,7 +90,8 @@ public class HoaDon_DAO {
     }
 
     public HoaDon getHoaDonByMa(String maHoaDon) throws SQLException {
-        String sql = "SELECT hd.*, kh.hoTen AS tenKhachHang, nv.hoTen AS tenNhanVien "
+        String sql = "SELECT hd.*, kh.hoTen AS tenKhachHang, "
+                + "kh.soDienThoai AS soDienThoaiKhachHang, nv.hoTen AS tenNhanVien "
                 + "FROM HoaDon hd LEFT JOIN KhachHang kh ON hd.maKhachHang = kh.maKhachHang "
                 + "JOIN NhanVien nv ON hd.maNhanVien = nv.maNhanVien WHERE hd.maHoaDon = ?";
         try (Connection con = ConnectDB.getConnection();
@@ -108,8 +109,11 @@ public class HoaDon_DAO {
     public ArrayList<ChiTietHoaDon> getChiTietHoaDon(String maHoaDon) throws SQLException {
         ArrayList<ChiTietHoaDon> chiTiet = new ArrayList<>();
         String sql = "SELECT ct.maHoaDon, ct.maDonHang, ct.maSanPham, sp.tenSanPham, "
-                + "ct.soLuong, ct.donGia, ct.giamGia, ct.thanhTien, ct.ghiChu "
+                + "ct.soLuong, CASE WHEN ct.donGia = 0 THEN dhct.donGia ELSE ct.donGia END AS donGia, "
+                + "ct.giamGia, ct.thanhTien, ct.ghiChu "
                 + "FROM ChiTietHoaDon ct JOIN SanPham sp ON sp.maSanPham = ct.maSanPham "
+                + "LEFT JOIN ChiTietDonHang dhct ON dhct.maDonHang = ct.maDonHang "
+                + "AND dhct.maSanPham = ct.maSanPham "
                 + "WHERE ct.maHoaDon = ? ORDER BY ct.maSanPham";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -856,14 +860,15 @@ public class HoaDon_DAO {
 
                 String sqlChiTietHoaDon = "INSERT INTO ChiTietHoaDon "
                         + "(maHoaDon, maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
-                        + "VALUES (?, ?, ?, ?, 0, 0, ?, NULL)";
+                        + "VALUES (?, ?, ?, ?, ?, 0, ?, NULL)";
                 try (PreparedStatement stmt = con.prepareStatement(sqlChiTietHoaDon)) {
                     for (ChiTietDonHang item : chiTietDaXacNhan) {
                         stmt.setString(1, maHoaDon);
                         stmt.setString(2, maDonHang);
                         stmt.setString(3, item.getSanPham().getMaSanPham());
                         stmt.setInt(4, item.getSoLuong());
-                        stmt.setDouble(5, item.getThanhTien());
+                        stmt.setDouble(5, item.getDonGia());
+                        stmt.setDouble(6, item.getThanhTien());
                         stmt.addBatch();
                     }
                     stmt.executeBatch();

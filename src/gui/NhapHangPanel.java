@@ -1,7 +1,18 @@
 package gui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -11,10 +22,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.swing.*;
-import javax.swing.border.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
 import DAO.NhaCungCap_DAO;
 import DAO.NhanVien_DAO;
@@ -75,12 +108,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         this.currentUserName = (userName != null && !userName.trim().isEmpty()) ? userName : "Nguyễn Văn An";
         this.currentUserRole = (userRole != null && !userRole.trim().isEmpty()) ? userRole : "Quản lý";
 
-        setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
-        setSize(1200, 750);
-        setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setupWindow();
         ButtonTooltips.ganTooltip(this);
 
         menuPanel = new ThanhMenu(currentUserName, currentUserRole);
@@ -96,11 +124,11 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         pContent.setLayout(new BoxLayout(pContent, BoxLayout.Y_AXIS));
         pContent.setOpaque(false);
 
-        pContent.add(createCardThongTin());
+        pContent.add(createInfoCard());
         pContent.add(Box.createRigidArea(new Dimension(0, 10)));
-        pContent.add(createCardDanhSachHang());
+        pContent.add(createGoodsListCard());
         pContent.add(Box.createRigidArea(new Dimension(0, 10)));
-        pContent.add(createCardGhiChu());
+        pContent.add(createNoteCard());
 
         JScrollPane scrollPane = new JScrollPane(pContent);
         scrollPane.setBorder(null);
@@ -111,9 +139,18 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         pMain.add(scrollPane, BorderLayout.CENTER);
         add(pMain, BorderLayout.CENTER);
 
-        loadDataCombobox();
-        cboNhaCungCap.addActionListener(event -> thayDoiNhaCungCap());
-        lamMoiForm();
+        loadComboboxData();
+        cboNhaCungCap.addActionListener(event -> handleSupplierChange());
+        resetForm();
+    }
+
+    private void setupWindow() {
+        setTitle("Điện Máy Đỏ — Hệ Thống Quản Lý");
+        setSize(1200, 750);
+        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
     }
 
     private JPanel createTopTitleBar() {
@@ -135,38 +172,17 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         JPanel pRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         pRight.setOpaque(false);
 
-        btnLuuPhieu = new JButton("💾 Lưu phiếu nhập");
-        btnLuuPhieu.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnLuuPhieu.setForeground(Color.WHITE);
-        btnLuuPhieu.setBackground(BRAND_RED);
-        btnLuuPhieu.setFocusPainted(false);
-        btnLuuPhieu.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BRAND_RED, 1),
-                new EmptyBorder(6, 14, 6, 14)));
-        btnLuuPhieu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLuuPhieu = createButton("💾 Lưu phiếu nhập", BRAND_RED, Color.WHITE);
         btnLuuPhieu.addActionListener(this);
 
-        btnIn = new JButton("Xuất PDF");
-        btnIn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnIn.setForeground(Color.WHITE);
-        btnIn.setBackground(new Color(54, 103, 193));
-        btnIn.setFocusPainted(false);
-        btnIn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(54, 103, 193), 1),
-                new EmptyBorder(6, 14, 6, 14)));
-        btnIn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnIn = createButton("Xuất PDF", new Color(54, 103, 193), Color.WHITE);
         btnIn.setEnabled(false);
         btnIn.addActionListener(this);
 
-        btnLamMoi = new JButton("↻ Làm mới");
-        btnLamMoi.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnLamMoi.setForeground(new Color(50, 50, 50));
-        btnLamMoi.setBackground(Color.WHITE);
-        btnLamMoi.setFocusPainted(false);
+        btnLamMoi = createButton("↻ Làm mới", Color.WHITE, new Color(50, 50, 50));
         btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(BORDER_GRAY, 1),
                 new EmptyBorder(6, 14, 6, 14)));
-        btnLamMoi.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLamMoi.addActionListener(this);
 
         pRight.add(btnLuuPhieu);
@@ -178,161 +194,80 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         return bar;
     }
 
-    private JPanel createCardHeader(String icon, String title) {
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 7));
-        header.setBackground(HEADER_GRAY);
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_GRAY));
+    private JPanel createInfoCard() {
+        JPanel card = createTitledPanel("🚚 Thông tin phiếu nhập");
 
-        JLabel lblIcon = new JLabel(icon);
-        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
-        lblIcon.setForeground(BRAND_RED);
-
-        JLabel lblText = new JLabel(title);
-        lblText.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblText.setForeground(BRAND_RED);
-
-        header.add(lblIcon);
-        header.add(lblText);
-        return header;
-    }
-
-    private JPanel createCardThongTin() {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(new LineBorder(BORDER_GRAY, 1));
-
-        card.add(createCardHeader("🚚", "Thông tin phiếu nhập"), BorderLayout.NORTH);
-
-        JPanel body = new JPanel(new GridBagLayout());
+        JPanel body = new JPanel();
+        body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setOpaque(false);
         body.setBorder(new EmptyBorder(12, 16, 14, 16));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(3, 8, 3, 8);
-
-        // Row 0: Labels for Row 1
-        gbc.gridy = 0;
-
-        gbc.gridx = 0;
-        gbc.weightx = 0.35;
-        body.add(createLabel("Mã phiếu nhập"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.35;
-        body.add(createLabel("Ngày nhập"), gbc);
-
-        gbc.gridx = 2;
-        gbc.weightx = 0.30;
-        body.add(createLabel("Người lập phiếu"), gbc);
-
-        // Row 1: Inputs
-        gbc.gridy = 1;
-
-        gbc.gridx = 0;
         txtMaPhieuNhap = new JTextField();
         txtMaPhieuNhap.setEditable(false);
         txtMaPhieuNhap.setFont(new Font("Segoe UI", Font.BOLD, 12));
         txtMaPhieuNhap.setBackground(new Color(245, 245, 245));
-        txtMaPhieuNhap.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BORDER_GRAY, 1),
-                new EmptyBorder(5, 8, 5, 8)));
-        body.add(txtMaPhieuNhap, gbc);
 
-        gbc.gridx = 1;
         txtNgayNhap = new JTextField(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
         txtNgayNhap.setEditable(false);
         txtNgayNhap.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         txtNgayNhap.setBackground(new Color(245, 245, 245));
-        txtNgayNhap.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BORDER_GRAY, 1),
-                new EmptyBorder(5, 8, 5, 8)));
-        body.add(txtNgayNhap, gbc);
 
-        gbc.gridx = 2;
         txtNguoiLap = new JTextField(currentUserName);
         txtNguoiLap.setEditable(false);
         txtNguoiLap.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         txtNguoiLap.setBackground(new Color(245, 245, 245));
-        txtNguoiLap.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(BORDER_GRAY, 1),
-                new EmptyBorder(5, 8, 5, 8)));
-        body.add(txtNguoiLap, gbc);
 
-        // Row 2: Labels for Row 3
-        gbc.gridy = 2;
-        gbc.insets = new Insets(8, 8, 3, 8);
+        JPanel hang1 = createTransparentRow(new GridLayout(1, 3, 16, 0));
+        hang1.add(createInputField(createFieldLabel("Mã phiếu nhập"), txtMaPhieuNhap));
+        hang1.add(createInputField(createFieldLabel("Ngày nhập"), txtNgayNhap));
+        hang1.add(createInputField(createFieldLabel("Người lập phiếu"), txtNguoiLap));
 
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        body.add(createLabel("Nhà cung cấp *"), gbc);
-
-        gbc.gridx = 2;
-        gbc.gridwidth = 1;
-        body.add(createLabel("Kho nhập"), gbc);
-
-        // Row 3: Inputs
-        gbc.gridy = 3;
-        gbc.insets = new Insets(3, 8, 3, 8);
-
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
         cboNhaCungCap = new JComboBox<>();
         cboNhaCungCap.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         cboNhaCungCap.setBackground(Color.WHITE);
         cboNhaCungCap.setPreferredSize(new Dimension(cboNhaCungCap.getPreferredSize().width, 30));
-        body.add(cboNhaCungCap, gbc);
 
-        gbc.gridx = 2;
-        gbc.gridwidth = 1;
         cboKhoNhap = new JComboBox<>(new String[]{
                 "Kho chính Q.1", "Kho Thủ Đức", "Kho Bình Thạnh", "Kho Tân Bình"
         });
         cboKhoNhap.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         cboKhoNhap.setBackground(Color.WHITE);
         cboKhoNhap.setPreferredSize(new Dimension(cboKhoNhap.getPreferredSize().width, 30));
-        body.add(cboKhoNhap, gbc);
+
+        JPanel hang2 = createTransparentRow(new BorderLayout(16, 0));
+        JPanel nuaTraiHang2 = createInputField(createFieldLabel("Nhà cung cấp *"), cboNhaCungCap);
+        JPanel nuaPhaiHang2 = createInputField(createFieldLabel("Kho nhập"), cboKhoNhap);
+        nuaPhaiHang2.setPreferredSize(new Dimension(320, 0));
+
+        hang2.add(nuaTraiHang2, BorderLayout.CENTER);
+        hang2.add(nuaPhaiHang2, BorderLayout.EAST);
+
+        body.add(hang1);
+        body.add(Box.createRigidArea(new Dimension(0, 8)));
+        body.add(hang2);
 
         card.add(body, BorderLayout.CENTER);
         return card;
     }
 
-    private JPanel createCardDanhSachHang() {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(new LineBorder(BORDER_GRAY, 1));
-
-        card.add(createCardHeader("📋", "Danh sách hàng nhập"), BorderLayout.NORTH);
+    private JPanel createGoodsListCard() {
+        JPanel card = createTitledPanel("📋 Danh sách hàng nhập");
 
         JPanel pInner = new JPanel(new BorderLayout(0, 10));
         pInner.setOpaque(false);
         pInner.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        // Action row: Select product + Quantity + Add button
-        JPanel pActionRow = new JPanel(new GridBagLayout());
-        pActionRow.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 0, 0, 8);
+        JPanel pActionRow = createTransparentRow(new BorderLayout(8, 0));
 
-        gbc.gridx = 0;
-        gbc.weightx = 0.82;
         cboSanPham = new JComboBox<>();
         cboSanPham.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         cboSanPham.setBackground(Color.WHITE);
         cboSanPham.setPreferredSize(new Dimension(100, 32));
-        pActionRow.add(cboSanPham, gbc);
 
-        gbc.gridx = 1;
-        gbc.weightx = 0.08;
         spnSoLuong = new JSpinner(new SpinnerNumberModel(10, 1, 99999, 1));
         spnSoLuong.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        spnSoLuong.setPreferredSize(new Dimension(70, 32));
-        pActionRow.add(spnSoLuong, gbc);
+        spnSoLuong.setPreferredSize(new Dimension(80, 32));
 
-        gbc.gridx = 2;
-        gbc.weightx = 0.10;
-        gbc.insets = new Insets(0, 0, 0, 0);
         btnThem = new JButton("+ Thêm");
         btnThem.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnThem.setForeground(Color.WHITE);
@@ -341,11 +276,16 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         btnThem.setBorder(new EmptyBorder(7, 16, 7, 16));
         btnThem.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnThem.addActionListener(this);
-        pActionRow.add(btnThem, gbc);
+
+        JPanel pRightAction = createTransparentPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        pRightAction.add(spnSoLuong);
+        pRightAction.add(btnThem);
+
+        pActionRow.add(cboSanPham, BorderLayout.CENTER);
+        pActionRow.add(pRightAction, BorderLayout.EAST);
 
         pInner.add(pActionRow, BorderLayout.NORTH);
 
-        // Table
         String[] columnNames = {"Mã SP", "Tên sản phẩm", "Giá nhập", "SL", "Thành tiền", "Xóa"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -362,7 +302,6 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         tableHangs.setShowGrid(true);
         tableHangs.setGridColor(new Color(235, 235, 235));
 
-        // Header style
         JTableHeader header = tableHangs.getTableHeader();
         header.setBackground(BRAND_RED);
         header.setForeground(Color.WHITE);
@@ -370,14 +309,13 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         header.setReorderingAllowed(false);
         header.setPreferredSize(new Dimension(0, 32));
 
-        // Set column alignments and widths
         TableColumnModel colModel = tableHangs.getColumnModel();
-        colModel.getColumn(0).setPreferredWidth(90);  // Mã SP
-        colModel.getColumn(1).setPreferredWidth(320); // Tên SP
-        colModel.getColumn(2).setPreferredWidth(140); // Giá nhập
-        colModel.getColumn(3).setPreferredWidth(70);  // SL
-        colModel.getColumn(4).setPreferredWidth(150); // Thành tiền
-        colModel.getColumn(5).setPreferredWidth(60);  // Xóa
+        colModel.getColumn(0).setPreferredWidth(90);
+        colModel.getColumn(1).setPreferredWidth(320);
+        colModel.getColumn(2).setPreferredWidth(140);
+        colModel.getColumn(3).setPreferredWidth(70);
+        colModel.getColumn(4).setPreferredWidth(150);
+        colModel.getColumn(5).setPreferredWidth(60);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
@@ -389,40 +327,20 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         colModel.getColumn(2).setCellRenderer(rightRenderer);
         colModel.getColumn(4).setCellRenderer(rightRenderer);
 
-        // Delete button renderer
-        colModel.getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
-            private final JButton btnTrash = new JButton("🗑");
-            {
-                ButtonTooltips.ganTooltipNut(btnTrash);
-                btnTrash.setBackground(BRAND_RED);
-                btnTrash.setForeground(Color.WHITE);
-                btnTrash.setFont(new Font("Segoe UI Emoji", Font.BOLD, 12));
-                btnTrash.setBorder(new EmptyBorder(3, 8, 3, 8));
-                btnTrash.setFocusPainted(false);
-            }
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int column) {
-                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
-                p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
-                p.add(btnTrash);
-                return p;
-            }
-        });
+        colModel.getColumn(5).setCellRenderer(new DeleteCellRenderer());
 
-        // Click delete on row
         tableHangs.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = tableHangs.rowAtPoint(e.getPoint());
                 int col = tableHangs.columnAtPoint(e.getPoint());
                 if (!phieuDaLuu && row >= 0 && col == 5) {
-                    int confirm = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(NhapHangPanel.this),
+                    int confirm = JOptionPane.showConfirmDialog(getDialogOwnerWindow(),
                             "Bạn có chắc muốn xóa sản phẩm này khỏi danh sách nhập?",
                             "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         tableModel.removeRow(row);
-                        capNhatTongGiaTri();
+                        updateTotalValue();
                     }
                 }
             }
@@ -433,9 +351,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         scrollTable.setBorder(new LineBorder(BORDER_GRAY, 1));
         pInner.add(scrollTable, BorderLayout.CENTER);
 
-        // Bottom row: Total value
-        JPanel pTotalRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        pTotalRow.setOpaque(false);
+        JPanel pTotalRow = createTransparentPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         lblTongGiaTri = new JLabel("Tổng giá trị nhập: 0đ");
         lblTongGiaTri.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblTongGiaTri.setForeground(BRAND_RED);
@@ -446,12 +362,29 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         return card;
     }
 
-    private JPanel createCardGhiChu() {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(new LineBorder(BORDER_GRAY, 1));
+    private static class DeleteCellRenderer extends DefaultTableCellRenderer {
+        private final JButton btnTrash = new JButton("🗑");
+        {
+            ButtonTooltips.ganTooltipNut(btnTrash);
+            btnTrash.setBackground(BRAND_RED);
+            btnTrash.setForeground(Color.WHITE);
+            btnTrash.setFont(new Font("Segoe UI Emoji", Font.BOLD, 12));
+            btnTrash.setBorder(new EmptyBorder(3, 8, 3, 8));
+            btnTrash.setFocusPainted(false);
+        }
 
-        card.add(createCardHeader("📝", "Ghi chú"), BorderLayout.NORTH);
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
+            p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+            p.add(btnTrash);
+            return p;
+        }
+    }
+
+    private JPanel createNoteCard() {
+        JPanel card = createTitledPanel("📝 Ghi chú");
 
         JPanel pInner = new JPanel(new BorderLayout());
         pInner.setOpaque(false);
@@ -471,19 +404,72 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         return card;
     }
 
-    private JLabel createLabel(String text) {
+    private JPanel createInputField(Component label, Component inputField) {
+        JPanel container = createTransparentPanel(new BorderLayout(0, 4));
+        container.add(label, BorderLayout.NORTH);
+        container.add(inputField, BorderLayout.CENTER);
+        return container;
+    }
+
+    private JPanel createTitledPanel(String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+
+        JLabel label = new JLabel(title);
+        label.setOpaque(true);
+        label.setBackground(HEADER_GRAY);
+        label.setForeground(BRAND_RED);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_GRAY),
+                BorderFactory.createEmptyBorder(8, 11, 8, 11)));
+        panel.add(label, BorderLayout.NORTH);
+        return panel;
+    }
+
+    private static JPanel createTransparentPanel(LayoutManager layout) {
+        JPanel panel = new JPanel(layout);
+        panel.setOpaque(false);
+        return panel;
+    }
+
+    private static JPanel createTransparentRow(LayoutManager layout) {
+        JPanel row = new JPanel(layout) {
+            @Override
+            public Dimension getMaximumSize() {
+                return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+            }
+        };
+        row.setOpaque(false);
+        return row;
+    }
+
+    private JLabel createFieldLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lbl.setForeground(new Color(60, 60, 60));
         return lbl;
     }
 
-    private void loadDataCombobox() {
+    private static JButton createButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setForeground(fg);
+        btn.setBackground(bg);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(bg, 1),
+                new EmptyBorder(6, 14, 6, 14)));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private void loadComboboxData() {
         try {
             phieuNhapKhoDao.capNhatPhieuNhapDenHan();
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                    "Không thể cập nhật các phiếu nhập đã đến ngày:\n" + exception.getMessage(),
+            showMessage("Không thể cập nhật các phiếu nhập đã đến ngày:\n" + exception.getMessage(),
                     "Lỗi cập nhật tồn kho", JOptionPane.ERROR_MESSAGE);
         }
 
@@ -512,12 +498,12 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         cboSanPham.setRenderer((list, value, index, selected, focus) -> {
             String text = value == null
                     ? (cboNhaCungCap.getSelectedItem() == null
-                            ? "-- Chọn nhà cung cấp trước --"
-                            : listSanPham.isEmpty()
-                                    ? "-- Chưa có sản phẩm trong danh mục --"
-                                    : "-- Chọn sản phẩm --")
+                    ? "-- Chọn nhà cung cấp trước --"
+                    : listSanPham.isEmpty()
+                    ? "-- Chưa có sản phẩm trong danh mục --"
+                    : "-- Chọn sản phẩm --")
                     : value.getMaSanPham() + " - " + value.getTenSanPham()
-                            + " (Giá nhập: " + MONEY_FORMAT.format(value.getGiaNhap()) + "đ)";
+                    + " (Giá nhập: " + MONEY_FORMAT.format(value.getGiaNhap()) + "đ)";
             JLabel label = new JLabel(text);
             label.setOpaque(true);
             label.setBorder(new EmptyBorder(3, 5, 3, 5));
@@ -533,7 +519,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         cboSanPham.setEnabled(false);
     }
 
-    private void thayDoiNhaCungCap() {
+    private void handleSupplierChange() {
         if (dangCapNhatNhaCungCap) {
             return;
         }
@@ -541,13 +527,13 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         boolean cungNhaCungCap = nhaCungCapDaChon == null
                 ? nhaCungCapMoi == null
                 : nhaCungCapMoi != null && nhaCungCapDaChon.getMaNhaCungCap()
-                        .equals(nhaCungCapMoi.getMaNhaCungCap());
+                .equals(nhaCungCapMoi.getMaNhaCungCap());
         if (cungNhaCungCap) {
             return;
         }
 
         if (tableModel.getRowCount() > 0) {
-            int choice = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
+            int choice = JOptionPane.showConfirmDialog(getDialogOwnerWindow(),
                     "Đổi nhà cung cấp sẽ xóa các sản phẩm đã thêm vào phiếu. Bạn có muốn tiếp tục?",
                     "Đổi nhà cung cấp", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (choice != JOptionPane.YES_OPTION) {
@@ -557,7 +543,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                 return;
             }
             tableModel.setRowCount(0);
-            capNhatTongGiaTri();
+            updateTotalValue();
         }
 
         nhaCungCapDaChon = nhaCungCapMoi;
@@ -577,17 +563,16 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             }
             btnThem.setEnabled(!listSanPham.isEmpty());
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                    "Không thể tải sản phẩm của nhà cung cấp:\n" + exception.getMessage(),
+            showMessage("Không thể tải sản phẩm của nhà cung cấp:\n" + exception.getMessage(),
                     "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void lamMoiForm() {
+    private void resetForm() {
         phieuDaLuu = false;
         btnLuuPhieu.setEnabled(true);
         btnIn.setEnabled(false);
-        setPhieuInputsEnabled(true);
+        setFormInputsEnabled(true);
         nhaCungCapDaChon = null;
         dangCapNhatNhaCungCap = true;
         txtMaPhieuNhap.setText(phieuNhapKhoDao.sinhMaPhieuNhap());
@@ -611,26 +596,25 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         spnSoLuong.setValue(10);
         tableModel.setRowCount(0);
         txtGhiChu.setText("");
-        capNhatTongGiaTri();
+        updateTotalValue();
     }
 
-    private void themSanPhamVaoBang() {
+    private void addProductToTable() {
         SanPham sp = (SanPham) cboSanPham.getSelectedItem();
         if (sp == null) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm cần nhập!", "Chưa chọn sản phẩm", JOptionPane.WARNING_MESSAGE);
+            showMessage("Vui lòng chọn sản phẩm cần nhập!", "Chưa chọn sản phẩm", JOptionPane.WARNING_MESSAGE);
             cboSanPham.requestFocus();
             return;
         }
 
         int soLuong = (int) spnSoLuong.getValue();
         if (soLuong <= 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Số lượng nhập phải lớn hơn 0!", "Số lượng không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            showMessage("Số lượng nhập phải lớn hơn 0!", "Số lượng không hợp lệ", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         double donGia = sp.getGiaNhap();
 
-        // Check if already in table
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             String ma = (String) tableModel.getValueAt(i, 0);
             if (ma.equals(sp.getMaSanPham())) {
@@ -639,14 +623,13 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                 double ttMoi = slMoi * donGia;
                 tableModel.setValueAt(slMoi, i, 3);
                 tableModel.setValueAt(MONEY_FORMAT.format(ttMoi) + "đ", i, 4);
-                capNhatTongGiaTri();
+                updateTotalValue();
                 cboSanPham.setSelectedItem(null);
                 spnSoLuong.setValue(10);
                 return;
             }
         }
 
-        // Add new row
         double thanhTien = soLuong * donGia;
         tableModel.addRow(new Object[]{
                 sp.getMaSanPham(),
@@ -657,12 +640,12 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                 "Xóa"
         });
 
-        capNhatTongGiaTri();
+        updateTotalValue();
         cboSanPham.setSelectedIndex(0);
         spnSoLuong.setValue(10);
     }
 
-    private void capNhatTongGiaTri() {
+    private void updateTotalValue() {
         double tong = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             int sl = (int) tableModel.getValueAt(i, 3);
@@ -675,32 +658,25 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         lblTongGiaTri.setText("Tổng giá trị nhập: " + MONEY_FORMAT.format(tong) + "đ");
     }
 
-    private void luuPhieuNhap() {
+    private void savePurchaseOrder() {
         if (phieuDaLuu) {
             return;
         }
         if (cboNhaCungCap.getSelectedIndex() <= 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn Nhà cung cấp!", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
+            showMessage("Vui lòng chọn Nhà cung cấp!", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
             cboNhaCungCap.requestFocus();
             return;
         }
 
         if (tableModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Danh sách hàng nhập không được để trống!", "Chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
+            showMessage("Danh sách hàng nhập không được để trống!", "Chưa có sản phẩm", JOptionPane.WARNING_MESSAGE);
             cboSanPham.requestFocus();
             return;
         }
 
         NhaCungCap ncc = (NhaCungCap) cboNhaCungCap.getSelectedItem();
 
-        // Find logged-in NhanVien
-        NhanVien nv = null;
-        for (NhanVien n : nhanVienDao.getAllNhanVien()) {
-            if (n.getHoTen() != null && n.getHoTen().trim().equalsIgnoreCase(currentUserName.trim())) {
-                nv = n;
-                break;
-            }
-        }
+        NhanVien nv = findLoggedInEmployee();
         if (nv == null) {
             List<NhanVien> listNV = nhanVienDao.getAllNhanVien();
             if (!listNV.isEmpty()) {
@@ -744,28 +720,36 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         try {
             boolean success = phieuNhapKhoDao.themPhieuNhap(pnk, chiTietList);
             if (success) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                        "Lưu phiếu nhập kho " + maPhieu + " thành công!\n"
+                showMessage("Lưu phiếu nhập kho " + maPhieu + " thành công!\n"
                                 + "Tổng số lượng: " + tongSoLuong + "\n"
                                 + "Tổng tiền nhập: " + MONEY_FORMAT.format(tongTienNhap) + "đ"
                                 + (ngayNhap.after(new Date())
-                                        ? "\nPhiếu đang chờ đến ngày nhập; tồn kho chưa được cộng."
-                                        : ""),
+                                ? "\nPhiếu đang chờ đến ngày nhập; tồn kho chưa được cộng."
+                                : ""),
                         "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 phieuDaLuu = true;
                 btnLuuPhieu.setEnabled(false);
                 btnIn.setEnabled(true);
-                setPhieuInputsEnabled(false);
+                setFormInputsEnabled(false);
             } else {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                showMessage("Lưu phiếu nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException | IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            showMessage("Lỗi cơ sở dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
 
-    private void setPhieuInputsEnabled(boolean enabled) {
+    private NhanVien findLoggedInEmployee() {
+        for (NhanVien n : nhanVienDao.getAllNhanVien()) {
+            if (n.getHoTen() != null && n.getHoTen().trim().equalsIgnoreCase(currentUserName.trim())) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    private void setFormInputsEnabled(boolean enabled) {
         cboNhaCungCap.setEnabled(enabled);
         cboKhoNhap.setEnabled(enabled);
         cboSanPham.setEnabled(enabled);
@@ -775,9 +759,9 @@ public class NhapHangPanel extends JFrame implements ActionListener {
         txtGhiChu.setEnabled(enabled);
     }
 
-    private void inPhieuNhap() {
+    private void exportPurchaseOrderPdf() {
         if (!phieuDaLuu) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng lưu phiếu nhập trước khi in.",
+            showMessage("Vui lòng lưu phiếu nhập trước khi in.",
                     "Phiếu nhập chưa được lưu", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -797,10 +781,10 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             file = new File(file.getParentFile(), file.getName() + ".pdf");
         }
         if (file.exists()
-                && JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
-                        "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
-                        "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION)
-                        != JOptionPane.YES_OPTION) {
+                && JOptionPane.showConfirmDialog(getDialogOwnerWindow(),
+                "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
+                "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION)
+                != JOptionPane.YES_OPTION) {
             return;
         }
         try {
@@ -822,7 +806,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             List<String[]> metadata = Arrays.asList(
                     new String[]{"Ngày nhập", ngayNhap,
                             "Nhà cung cấp", nhaCungCap == null
-                                    ? "" : nhaCungCap.getTenNhaCungCap()},
+                            ? "" : nhaCungCap.getTenNhaCungCap()},
                     new String[]{"Người lập", txtNguoiLap.getText().trim(),
                             "Kho nhập", String.valueOf(cboKhoNhap.getSelectedItem())});
             List<String[]> totals = Arrays.asList(
@@ -835,26 +819,34 @@ public class NhapHangPanel extends JFrame implements ActionListener {
                             "ĐƠN GIÁ", "THÀNH TIỀN"),
                     rows, new double[]{0.12, 0.36, 0.12, 0.18, 0.22},
                     totals, "Ghi chú: " + txtGhiChu.getText().trim());
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xuất phiếu nhập PDF:\n"
-                    + file.getAbsolutePath(), "Xuất phiếu nhập",
+            showMessage("Đã xuất phiếu nhập PDF:\n"
+                            + file.getAbsolutePath(), "Xuất phiếu nhập",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xuất phiếu nhập:\n"
+            showMessage("Không thể xuất phiếu nhập:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void showMessage(String message, String title, int messageType) {
+        JOptionPane.showMessageDialog(getDialogOwnerWindow(), message, title, messageType);
+    }
+
+    private Component getDialogOwnerWindow() {
+        return UiDialogOwner.resolve(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == btnThem) {
-            themSanPhamVaoBang();
+            addProductToTable();
         } else if (source == btnLuuPhieu) {
-            luuPhieuNhap();
+            savePurchaseOrder();
         } else if (source == btnIn) {
-            inPhieuNhap();
+            exportPurchaseOrderPdf();
         } else if (source == btnLamMoi) {
-            lamMoiForm();
+            resetForm();
         }
     }
 

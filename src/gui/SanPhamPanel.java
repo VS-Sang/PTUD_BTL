@@ -3,13 +3,12 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Dimension;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -23,6 +22,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -34,22 +35,31 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
-import DAO.SanPham_DAO;
 import DAO.PhieuNhapKho_DAO;
+import DAO.SanPham_DAO;
 import entity.DanhMuc;
 import entity.SanPham;
 
 public class SanPhamPanel extends JFrame implements ActionListener {
+    private static final Color BRAND_RED = new Color(180, 40, 40);
+    private static final Color HEADER_GRAY = new Color(238, 238, 238);
+    private static final Color BORDER_GRAY = new Color(215, 215, 215);
+    private static final Color BG_LIGHT = new Color(245, 246, 248);
+    private static final String FONT_FAMILY = "Segoe UI";
+
     private DefaultTableModel model;
     private JTable table;
     private ThanhMenu menuPanel;
@@ -58,6 +68,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
     private JComboBox<String> cboStatus;
     private JButton btnExport;
     private JButton btnAdd;
+    private Timer searchTimer;
     private final SanPham_DAO sp_dao = new SanPham_DAO();
     private final DecimalFormat df = new DecimalFormat("#,##0.## VNĐ");
 
@@ -70,7 +81,6 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
         ButtonTooltips.ganTooltip(this);
 
-        // ThanhMenu tích hợp chuyển màn hình từ nhánh thuy
         menuPanel = new ThanhMenu();
         menuPanel.setShortcutAction(ThanhMenu.Shortcut.HOME, e -> {
             if (!KhungChinh.moTrangHienTai(ThanhMenu.MenuItem.HOME)) {
@@ -99,35 +109,44 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         add(menuPanel, BorderLayout.NORTH);
 
         JPanel pCenterContainer = new JPanel(new BorderLayout());
+        pCenterContainer.setBackground(BG_LIGHT);
 
         JPanel pSubHeader = new JPanel(new BorderLayout());
-        pSubHeader.setBackground(new Color(245, 245, 245));
-        pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        pSubHeader.setOpaque(false);
+        pSubHeader.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
         JLabel lblSubTitle = new JLabel("🧾 Quản lý sản phẩm / Dịch vụ");
-        lblSubTitle.setForeground(new Color(150, 30, 30));
-        lblSubTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblSubTitle.setForeground(BRAND_RED);
+        lblSubTitle.setFont(new Font(FONT_FAMILY, Font.BOLD, 16));
         pSubHeader.add(lblSubTitle, BorderLayout.WEST);
 
-        JPanel pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel pSubActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         pSubActions.setOpaque(false);
 
-        btnExport = new JButton("Xuất Excel");
-        btnAdd = new JButton("Thêm mới");
+        btnExport = createButton("Xuất Excel", new Color(54, 103, 193), Color.WHITE);
+        btnAdd = createButton("+ Thêm mới", BRAND_RED, Color.WHITE);
         pSubActions.add(btnExport);
         pSubActions.add(btnAdd);
         pSubHeader.add(pSubActions, BorderLayout.EAST);
 
         JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        pSearch.setOpaque(false);
         txtSearch = new JTextField(25);
-        txtSearch.setToolTipText("Tìm tên SP, mã SP, thương hiệu...");
+        styleInput(txtSearch);
+        txtSearch.setToolTipText("Nhập mã, tên, thương hiệu hoặc danh mục rồi nhấn Enter");
+        
         cboCategory = new JComboBox<>();
+        styleInput(cboCategory);
+        
         cboStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đang kinh doanh", "Ngừng kinh doanh", "Hết hàng"});
-        pSearch.add(txtSearch);
-        pSearch.add(cboCategory);
-        pSearch.add(cboStatus);
+        styleInput(cboStatus);
+        
+        pSearch.add(createInputField(createFieldLabel("Tìm kiếm:"), txtSearch));
+        pSearch.add(createInputField(createFieldLabel("Danh mục:"), cboCategory));
+        pSearch.add(createInputField(createFieldLabel("Trạng thái:"), cboStatus));
 
         JPanel pNorthCenter = new JPanel(new BorderLayout());
+        pNorthCenter.setOpaque(false);
         pNorthCenter.add(pSubHeader, BorderLayout.NORTH);
         pNorthCenter.add(pSearch, BorderLayout.CENTER);
         pCenterContainer.add(pNorthCenter, BorderLayout.NORTH);
@@ -174,9 +193,9 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         table.setRowHeight(36);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
         table.getTableHeader().setReorderingAllowed(false);
-        table.getTableHeader().setBackground(new Color(180, 40, 40));
+        table.getTableHeader().setBackground(BRAND_RED);
         table.getTableHeader().setForeground(Color.WHITE);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        table.getTableHeader().setFont(new Font(FONT_FAMILY, Font.BOLD, 12));
         table.getColumnModel().getColumn(0).setHeaderRenderer(new TableCellRenderer() {
             private final JCheckBox selectAll = new JCheckBox();
 
@@ -189,7 +208,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                 }
                 selectAll.setSelected(allSelected);
                 selectAll.setHorizontalAlignment(JCheckBox.CENTER);
-                selectAll.setBackground(new Color(180, 40, 40));
+                selectAll.setBackground(BRAND_RED);
                 selectAll.setOpaque(true);
                 selectAll.setToolTipText("Chọn hoặc bỏ chọn tất cả sản phẩm");
                 return selectAll;
@@ -225,10 +244,10 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                 table,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
         pCenterContainer.add(scrollPane, BorderLayout.CENTER);
         add(pCenterContainer, BorderLayout.CENTER);
 
-        // Đọc dữ liệu từ Database
         try {
             new PhieuNhapKho_DAO().capNhatPhieuNhapDenHan();
         } catch (SQLException exception) {
@@ -237,7 +256,28 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         }
         docDuLieuDatabaseVaoTable();
 
-        txtSearch.addActionListener(this);
+        searchTimer = new Timer(250, event -> docDuLieuDatabaseVaoTable());
+        searchTimer.setRepeats(false);
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                scheduleProductSearch();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                scheduleProductSearch();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                scheduleProductSearch();
+            }
+        });
+        txtSearch.addActionListener(event -> {
+            searchTimer.stop();
+            docDuLieuDatabaseVaoTable();
+        });
         cboCategory.addActionListener(this);
         cboStatus.addActionListener(this);
         btnExport.addActionListener(this);
@@ -254,6 +294,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải danh mục sản phẩm:\n"
                     + exception.getMessage(), "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
+        cboCategory.setSelectedIndex(-1);
         cboCategory.setRenderer((list, value, index, selected, focus) -> {
             JLabel label = new JLabel(value == null ? "Tất cả danh mục" : value.getTenDanhMuc());
             label.setOpaque(true);
@@ -269,26 +310,27 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         });
     }
 
+    private void scheduleProductSearch() {
+        searchTimer.restart();
+    }
+
     public void docDuLieuDatabaseVaoTable() {
         model.setRowCount(0);
-        String tuKhoa = txtSearch.getText().trim().toLowerCase();
-        String trangThai = (String) cboStatus.getSelectedItem();
+        String tuKhoa = txtSearch.getText().trim();
         DanhMuc danhMucChon = (DanhMuc) cboCategory.getSelectedItem();
+        if (tuKhoa.isEmpty() && cboCategory.getSelectedIndex() < 0) {
+            return;
+        }
 
-        ArrayList<SanPham> ds = sp_dao.getAllSanPham();
-        for (SanPham sp : ds) {
-            boolean matchKey = tuKhoa.isEmpty()
-                    || sp.getMaSanPham().toLowerCase().contains(tuKhoa)
-                    || sp.getTenSanPham().toLowerCase().contains(tuKhoa)
-                    || (sp.getThuongHieu() != null && sp.getThuongHieu().toLowerCase().contains(tuKhoa))
-                    || (sp.getDanhMuc() != null && sp.getDanhMuc().getTenDanhMuc() != null
-                            && sp.getDanhMuc().getTenDanhMuc().toLowerCase().contains(tuKhoa));
-            boolean matchStatus = "Tất cả trạng thái".equals(trangThai)
-                    || trangThai.equalsIgnoreCase(sp.getTrangThai());
-            boolean matchCategory = danhMucChon == null || (sp.getDanhMuc() != null
-                    && danhMucChon.getMaDanhMuc().equals(sp.getDanhMuc().getMaDanhMuc()));
+        String trangThai = (String) cboStatus.getSelectedItem();
+        String maDanhMuc = danhMucChon == null ? null : danhMucChon.getMaDanhMuc();
+        if ("Tất cả trạng thái".equals(trangThai)) {
+            trangThai = null;
+        }
 
-            if (matchKey && matchStatus && matchCategory) {
+        try {
+            ArrayList<SanPham> ds = sp_dao.timKiemSanPham(tuKhoa, maDanhMuc, trangThai);
+            for (SanPham sp : ds) {
                 String tenDM = sp.getDanhMuc() != null ? sp.getDanhMuc().getTenDanhMuc() : "";
                 model.addRow(new Object[]{
                         false,
@@ -303,13 +345,23 @@ public class SanPhamPanel extends JFrame implements ActionListener {
                         sp.getTrangThai()
                 });
             }
+        } catch (SQLException exception) {
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                    "Không thể tìm sản phẩm:\n" + exception.getMessage(),
+                    "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
-        if (o.equals(txtSearch) || o.equals(cboCategory) || o.equals(cboStatus)) {
+        if (o.equals(txtSearch)) {
+            searchTimer.stop();
+            docDuLieuDatabaseVaoTable();
+        } else if (o.equals(cboCategory) && cboCategory.getSelectedIndex() == 0) {
+            cboCategory.setSelectedIndex(-1);
+        } else if (o.equals(cboCategory) || o.equals(cboStatus)) {
+            searchTimer.stop();
             docDuLieuDatabaseVaoTable();
         } else if (o.equals(btnExport)) {
             exportProducts();
@@ -319,6 +371,12 @@ public class SanPhamPanel extends JFrame implements ActionListener {
     }
 
     private void exportProducts() {
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                    "Hãy tìm sản phẩm trước khi xuất danh sách.",
+                    "Chưa có dữ liệu", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Xuất danh sách sản phẩm");
         chooser.setSelectedFile(new java.io.File("danh-sach-san-pham.csv"));
@@ -381,7 +439,7 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         JDialog dialog = new JDialog(this, "Thêm mới sản phẩm", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        JTextField nameField = new JTextField(20);
+        JTextField nameField = new JTextField();
         JComboBox<DanhMuc> categoryField = new JComboBox<>();
         for (DanhMuc danhMuc : danhMucList) {
             categoryField.addItem(danhMuc);
@@ -393,57 +451,77 @@ public class SanPhamPanel extends JFrame implements ActionListener {
         JTextField unitField = new JTextField("Cái");
         JComboBox<String> statusField = new JComboBox<>(
                 new String[]{"Đang kinh doanh", "Ngừng kinh doanh", "Hết hàng"});
-        JTextArea descriptionField = new JTextArea(4, 20);
+        JTextArea descriptionField = new JTextArea(3, 20);
         descriptionField.setLineWrap(true);
         descriptionField.setWrapStyleWord(true);
 
-        styleProductInput(nameField);
-        styleProductInput(categoryField);
-        styleProductInput(brandField);
-        styleProductInput(importPriceField);
-        styleProductInput(salePriceField);
-        styleProductInput(stockField);
-        styleProductInput(unitField);
-        styleProductInput(statusField);
-        descriptionField.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        descriptionField.setBorder(new EmptyBorder(10, 12, 10, 12));
+        styleInput(nameField);
+        styleInput(categoryField);
+        styleInput(brandField);
+        styleInput(importPriceField);
+        styleInput(salePriceField);
+        styleInput(stockField);
+        styleInput(unitField);
+        styleInput(statusField);
+        descriptionField.setFont(new Font(FONT_FAMILY, Font.PLAIN, 12));
+        descriptionField.setBorder(new EmptyBorder(5, 8, 5, 8));
 
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
-        form.setBorder(new EmptyBorder(10, 26, 20, 26));
-        GridBagConstraints fields = new GridBagConstraints();
-        fields.insets = new Insets(8, 0, 8, 12);
-        fields.fill = GridBagConstraints.HORIZONTAL;
-        fields.weightx = 1;
-        addProductField(form, fields, 0, 0, 2, "Tên sản phẩm", nameField, 0);
-        addProductField(form, fields, 1, 0, 1, "Danh mục", categoryField, 0);
-        addProductField(form, fields, 1, 1, 1, "Thương hiệu", brandField, 0);
-        addProductField(form, fields, 2, 0, 1, "Giá nhập", importPriceField, 0);
-        addProductField(form, fields, 2, 1, 1, "Giá bán", salePriceField, 0);
-        addProductField(form, fields, 3, 0, 1, "Tồn kho", stockField, 0);
-        addProductField(form, fields, 3, 1, 1, "Đơn vị", unitField, 0);
-        addProductField(form, fields, 4, 0, 2, "Trạng thái", statusField, 0);
-        addProductField(form, fields, 5, 0, 2, "Mô tả",
-                new JScrollPane(descriptionField), 1);
+        JPanel formCard = createTitledPanel("📦 Thông tin sản phẩm mới");
+        
+        JPanel formBody = new JPanel();
+        formBody.setLayout(new BoxLayout(formBody, BoxLayout.Y_AXIS));
+        formBody.setOpaque(false);
+        formBody.setBorder(new EmptyBorder(12, 16, 14, 16));
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
-        buttons.setBackground(Color.WHITE);
-        buttons.setBorder(new EmptyBorder(12, 20, 20, 26));
-        JButton addButton = new JButton("Thêm mới  +");
-        addButton.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        addButton.setForeground(Color.WHITE);
-        addButton.setBackground(new Color(190, 40, 40));
-        addButton.setFocusPainted(false);
-        addButton.setBorder(new EmptyBorder(11, 22, 11, 22));
-        addButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        JButton cancelButton = new JButton("Hủy");
-        cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        cancelButton.setForeground(new Color(55, 55, 55));
-        cancelButton.setBackground(new Color(240, 240, 240));
-        cancelButton.setFocusPainted(false);
-        cancelButton.setBorder(new EmptyBorder(11, 24, 11, 24));
+        JPanel hang1 = createTransparentRow(new BorderLayout(12, 0));
+        hang1.add(createInputField(createFieldLabel("Tên sản phẩm *"), nameField), BorderLayout.CENTER);
+
+        JPanel hang2 = createTransparentRow(new GridLayout(1, 2, 12, 0));
+        hang2.add(createInputField(createFieldLabel("Danh mục"), categoryField));
+        hang2.add(createInputField(createFieldLabel("Thương hiệu"), brandField));
+
+        JPanel hang3 = createTransparentRow(new GridLayout(1, 2, 12, 0));
+        hang3.add(createInputField(createFieldLabel("Giá nhập (VNĐ) *"), importPriceField));
+        hang3.add(createInputField(createFieldLabel("Giá bán (VNĐ) *"), salePriceField));
+
+        JPanel hang4 = createTransparentRow(new GridLayout(1, 2, 12, 0));
+        hang4.add(createInputField(createFieldLabel("Tồn kho ban đầu"), stockField));
+        hang4.add(createInputField(createFieldLabel("Đơn vị tính *"), unitField));
+
+        JPanel hang5 = createTransparentRow(new BorderLayout(12, 0));
+        hang5.add(createInputField(createFieldLabel("Trạng thái"), statusField), BorderLayout.CENTER);
+
+        JPanel hang6 = createTransparentRow(new BorderLayout(12, 0));
+        JScrollPane scrollDesc = new JScrollPane(descriptionField);
+        scrollDesc.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+        hang6.add(createInputField(createFieldLabel("Mô tả sản phẩm"), scrollDesc), BorderLayout.CENTER);
+
+        formBody.add(hang1);
+        formBody.add(Box.createRigidArea(new Dimension(0, 8)));
+        formBody.add(hang2);
+        formBody.add(Box.createRigidArea(new Dimension(0, 8)));
+        formBody.add(hang3);
+        formBody.add(Box.createRigidArea(new Dimension(0, 8)));
+        formBody.add(hang4);
+        formBody.add(Box.createRigidArea(new Dimension(0, 8)));
+        formBody.add(hang5);
+        formBody.add(Box.createRigidArea(new Dimension(0, 8)));
+        formBody.add(hang6);
+
+        formCard.add(formBody, BorderLayout.CENTER);
+
+        JPanel buttons = createTransparentPanel(new FlowLayout(FlowLayout.RIGHT, 8, 12));
+        buttons.setBorder(new EmptyBorder(0, 12, 8, 12));
+        
+        JButton addButton = createButton("💾 Thêm mới", BRAND_RED, Color.WHITE);
+        JButton cancelButton = createButton("Hủy", Color.WHITE, new Color(50, 50, 50));
+        cancelButton.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_GRAY, 1),
+                new EmptyBorder(6, 14, 6, 14)));
+
         buttons.add(addButton);
         buttons.add(cancelButton);
+
         addButton.addActionListener(event -> {
             String name = nameField.getText().trim();
             String unit = unitField.getText().trim();
@@ -487,64 +565,89 @@ public class SanPhamPanel extends JFrame implements ActionListener {
             }
         });
         cancelButton.addActionListener(event -> dialog.dispose());
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(Color.WHITE);
-        header.setBorder(new EmptyBorder(22, 26, 0, 20));
-        JLabel title = new JLabel("Thêm mới sản phẩm");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 23));
-        title.setForeground(new Color(35, 45, 60));
-        JButton closeButton = new JButton("×");
-        closeButton.setFont(new Font("Segoe UI", Font.PLAIN, 28));
-        closeButton.setForeground(new Color(105, 110, 120));
-        closeButton.setBackground(Color.WHITE);
-        closeButton.setBorderPainted(false);
-        closeButton.setFocusPainted(false);
-        closeButton.addActionListener(event -> dialog.dispose());
-        header.add(title, BorderLayout.CENTER);
-        header.add(closeButton, BorderLayout.EAST);
+
         dialog.setLayout(new BorderLayout());
         ButtonTooltips.ganTooltip(dialog);
-        dialog.getContentPane().setBackground(Color.WHITE);
-        dialog.add(header, BorderLayout.NORTH);
-        dialog.add(form, BorderLayout.CENTER);
-        dialog.add(buttons, BorderLayout.SOUTH);
-        Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        dialog.setSize(Math.min(780, screen.width - 60), Math.min(780, screen.height - 60));
+        
+        JPanel pDialogContent = new JPanel(new BorderLayout());
+        pDialogContent.setBackground(BG_LIGHT);
+        pDialogContent.setBorder(new EmptyBorder(10, 12, 10, 12));
+        pDialogContent.add(formCard, BorderLayout.CENTER);
+        pDialogContent.add(buttons, BorderLayout.SOUTH);
+
+        dialog.add(pDialogContent, BorderLayout.CENTER);
+        dialog.setSize(650, 620);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
-    private void addProductField(JPanel form, GridBagConstraints constraints,
-                                 int row, int column, int span, String labelText,
-                                 Component input, double verticalWeight) {
-        JPanel field = new JPanel(new BorderLayout(0, 8));
-        field.setBackground(Color.WHITE);
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        label.setForeground(new Color(45, 50, 60));
-        field.add(label, BorderLayout.NORTH);
-        if (input instanceof JScrollPane) {
-            ((JScrollPane) input).setBorder(new LineBorder(new Color(175, 180, 187), 1));
-            ((JScrollPane) input).setPreferredSize(new Dimension(100, 145));
-        }
-        field.add(input, BorderLayout.CENTER);
-        constraints.gridx = column;
-        constraints.gridy = row;
-        constraints.gridwidth = span;
-        constraints.weighty = verticalWeight;
-        constraints.fill = verticalWeight > 0
-                ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(8, column == 1 ? 12 : 0, 8, 12);
-        form.add(field, constraints);
+    private JPanel createInputField(Component label, Component inputField) {
+        JPanel container = createTransparentPanel(new BorderLayout(0, 4));
+        container.add(label, BorderLayout.NORTH);
+        container.add(inputField, BorderLayout.CENTER);
+        return container;
     }
 
-    private void styleProductInput(JComponent input) {
-        input.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+    private JPanel createTitledPanel(String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+
+        JLabel label = new JLabel(title);
+        label.setOpaque(true);
+        label.setBackground(HEADER_GRAY);
+        label.setForeground(BRAND_RED);
+        label.setFont(new Font(FONT_FAMILY, Font.BOLD, 13));
+        label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_GRAY),
+                BorderFactory.createEmptyBorder(8, 11, 8, 11)));
+        panel.add(label, BorderLayout.NORTH);
+        return panel;
+    }
+
+    private static JPanel createTransparentPanel(LayoutManager layout) {
+        JPanel panel = new JPanel(layout);
+        panel.setOpaque(false);
+        return panel;
+    }
+
+    private static JPanel createTransparentRow(LayoutManager layout) {
+        JPanel row = new JPanel(layout) {
+            @Override
+            public Dimension getMaximumSize() {
+                return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+            }
+        };
+        row.setOpaque(false);
+        return row;
+    }
+
+    private JLabel createFieldLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font(FONT_FAMILY, Font.PLAIN, 12));
+        lbl.setForeground(new Color(60, 60, 60));
+        return lbl;
+    }
+
+    private static JButton createButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font(FONT_FAMILY, Font.BOLD, 12));
+        btn.setForeground(fg);
+        btn.setBackground(bg);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(bg, 1),
+                new EmptyBorder(6, 14, 6, 14)));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private void styleInput(JComponent input) {
+        input.setFont(new Font(FONT_FAMILY, Font.PLAIN, 12));
         input.setBackground(Color.WHITE);
         input.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(175, 180, 187), 1),
-                new EmptyBorder(8, 12, 8, 12)));
-        input.setPreferredSize(new Dimension(100, 48));
+                new LineBorder(BORDER_GRAY, 1),
+                new EmptyBorder(5, 8, 5, 8)));
     }
 
     public static void main(String[] args) {
