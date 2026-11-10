@@ -906,6 +906,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                     tienGiam,
                     10,
                     txtGhiChu.getText().trim());
+            txtMaHoaDon.setText(maHoaDon);
+            invoiceSaved = true;
             int confirm = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(boMeThongBao()),
                     "Tạo hóa đơn " + maHoaDon + " thành công.\nBạn có muốn in/xuất hóa đơn ngay không?",
                     "Hoàn tất", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -913,8 +915,6 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
                 xuatHoaDonPdf();
             }
 
-            txtMaHoaDon.setText(maHoaDon);
-            invoiceSaved = true;
             btnLuu.setEnabled(false);
             setInvoiceInputsEnabled(false);
             if (owner != null) {
@@ -939,7 +939,8 @@ public class TaoHoaDonDialog extends JFrame implements ActionListener {
         chooser.setDialogTitle("Lưu hóa đơn thành PDF");
         chooser.setFileFilter(new FileNameExtensionFilter("Tệp PDF (*.pdf)", "pdf"));
         chooser.setSelectedFile(new File("hoa-don-"
-                + (invoiceSaved ? txtMaHoaDon.getText().trim() : "ban-nhap") + ".pdf"));
+                + (invoiceSaved ? txtMaHoaDon.getText().trim() : "ban-nhap") + "-"
+                + new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss-SSS").format(new Date()) + ".pdf"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }

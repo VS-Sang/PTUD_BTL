@@ -739,25 +739,9 @@ public class TraHangPanel extends JFrame implements ActionListener {
 
         double giaTriTra = tinhGiaTriHangTra(soLuongTra);
         double giaTriDoi = tinhGiaTriHangDoi();
-        double chenhLech = giaTriDoi - giaTriTra;
-        String xacNhan = "Lập phiếu " + loaiXuLy + " cho hóa đơn "
-                + hoaDonDangXuLy.getMaHoaDon() + "?\n"
-                + "Giá trị hàng trả: " + tien(giaTriTra) + " đ\n";
-        if (PhieuTraHang_DAO.DOI_HANG.equals(loaiXuLy)) {
-            xacNhan += "Giá trị hàng đổi: " + tien(giaTriDoi) + " đ\n"
-                    + (chenhLech > 0
-                    ? "Khách cần trả thêm: " + tien(chenhLech) + " đ"
-                    : chenhLech < 0
-                    ? "Cần hoàn/đối trừ: " + tien(-chenhLech) + " đ"
-                    : "Hai bên không cần thanh toán chênh lệch.");
-            xacNhan += "\n(Giao dịch chênh lệch được ghi nhận trên phiếu; cần thu/hoàn tiền thực tế riêng.)";
-        } else {
-            xacNhan += "Tiền hoàn dự kiến: " + tien(giaTriTra)
-                    + " đ\n(Phiếu ghi nhận số tiền; chưa thực hiện chuyển khoản/hoàn tiền thực tế.)";
-        }
-        int confirm = hienThiXacNhan(xacNhan,
-                "Xác nhận xử lý", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        if (confirm != JOptionPane.YES_OPTION) {
+        if (hienThiXacNhan(taoNoiDungXacNhan(loaiXuLy, giaTriTra, giaTriDoi),
+                "Xác nhận xử lý", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)
+                != JOptionPane.YES_OPTION) {
             return;
         }
 
@@ -765,34 +749,67 @@ public class TraHangPanel extends JFrame implements ActionListener {
             KetQuaTraHang ketQua = phieuTraHangDao.taoPhieuTra(
                     hoaDonDangXuLy.getMaHoaDon(), currentUserName,
                     loaiXuLy, soLuongTra, soLuongDoi, txtGhiChu.getText());
-            String thongBao = "Đã lưu phiếu trả hàng số " + ketQua.getMaPhieuTra() + ".\n"
-                    + "Giá trị hàng nhận lại: " + tien(ketQua.getTongGiaTriHangTra()) + " đ.";
-            if (PhieuTraHang_DAO.DOI_HANG.equals(loaiXuLy)) {
-                thongBao += "\nGiá trị hàng giao đổi: "
-                        + tien(ketQua.getTongGiaTriHangDoi()) + " đ.\n"
-                        + (ketQua.getChenhLechThuThem() > 0
-                        ? "Khách cần thanh toán thêm: "
-                        + tien(ketQua.getChenhLechThuThem()) + " đ."
-                        : ketQua.getChenhLechThuThem() < 0
-                        ? "Cần hoàn/đối trừ: "
-                        + tien(-ketQua.getChenhLechThuThem()) + " đ."
-                        : "Không phát sinh chênh lệch thanh toán.");
-                thongBao += "\nLưu ý: hệ thống ghi nhận chênh lệch; thu/hoàn tiền thực tế cần thực hiện riêng.";
-            } else {
-                thongBao += "\nTiền hoàn ghi nhận: " + tien(ketQua.getTienHoan())
-                        + " đ (chưa thực hiện chuyển khoản/hoàn tiền thực tế).";
-            }
-            if (ketQua.isDaHoanTat()
-                    && PhieuTraHang_DAO.TRA_HOAN_TIEN.equals(loaiXuLy)) {
-                thongBao += "\nHóa đơn đã được cập nhật trạng thái Hoàn tiền.";
-            }
-            hienThiThongBao(thongBao,
+            hienThiThongBao(taoThongBaoThanhCong(ketQua, loaiXuLy),
                     "Thành công", JOptionPane.INFORMATION_MESSAGE);
             xoaForm();
         } catch (SQLException | IllegalArgumentException e) {
             hienThiThongBao(e.getMessage(),
                     "Không thể lưu phiếu trả", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private String taoNoiDungXacNhan(String loaiXuLy, double giaTriTra, double giaTriDoi) {
+        StringBuilder noiDung = new StringBuilder("Lập phiếu ")
+                .append(loaiXuLy).append(" cho hóa đơn ")
+                .append(hoaDonDangXuLy.getMaHoaDon()).append("?\n")
+                .append("Giá trị hàng trả: ").append(tien(giaTriTra)).append(" đ\n");
+        if (PhieuTraHang_DAO.DOI_HANG.equals(loaiXuLy)) {
+            double chenhLech = giaTriDoi - giaTriTra;
+            noiDung.append("Giá trị hàng đổi: ").append(tien(giaTriDoi)).append(" đ\n")
+                    .append(moTaChenhLech(chenhLech, "Khách cần trả thêm: %s đ",
+                            "Cần hoàn/đối trừ: %s đ", "Hai bên không cần thanh toán chênh lệch."))
+                    .append("\n(Giao dịch chênh lệch được ghi nhận trên phiếu; "
+                            + "cần thu/hoàn tiền thực tế riêng.)");
+        } else {
+            noiDung.append("Tiền hoàn dự kiến: ").append(tien(giaTriTra))
+                    .append(" đ\n(Phiếu ghi nhận số tiền; chưa thực hiện chuyển khoản/hoàn tiền thực tế.)");
+        }
+        return noiDung.toString();
+    }
+
+    private String taoThongBaoThanhCong(KetQuaTraHang ketQua, String loaiXuLy) {
+        StringBuilder thongBao = new StringBuilder("Đã lưu phiếu trả hàng số ")
+                .append(ketQua.getMaPhieuTra()).append(".\n")
+                .append("Giá trị hàng nhận lại: ")
+                .append(tien(ketQua.getTongGiaTriHangTra())).append(" đ.");
+        if (PhieuTraHang_DAO.DOI_HANG.equals(loaiXuLy)) {
+            double chenhLech = ketQua.getChenhLechThuThem();
+            thongBao.append("\nGiá trị hàng giao đổi: ")
+                    .append(tien(ketQua.getTongGiaTriHangDoi())).append(" đ.\n")
+                    .append(moTaChenhLech(chenhLech, "Khách cần thanh toán thêm: %s đ.",
+                            "Cần hoàn/đối trừ: %s đ.", "Không phát sinh chênh lệch thanh toán."))
+                    .append("\nLưu ý: hệ thống ghi nhận chênh lệch; "
+                            + "thu/hoàn tiền thực tế cần thực hiện riêng.");
+        } else {
+            thongBao.append("\nTiền hoàn ghi nhận: ").append(tien(ketQua.getTienHoan()))
+                    .append(" đ (chưa thực hiện chuyển khoản/hoàn tiền thực tế).");
+        }
+        if (ketQua.isDaHoanTat()
+                && PhieuTraHang_DAO.TRA_HOAN_TIEN.equals(loaiXuLy)) {
+            thongBao.append("\nHóa đơn đã được cập nhật trạng thái Hoàn tiền.");
+        }
+        return thongBao.toString();
+    }
+
+    private String moTaChenhLech(double chenhLech, String moTaThuThem,
+                                 String moTaHoan, String moTaCanBang) {
+        if (chenhLech > 0) {
+            return String.format(moTaThuThem, tien(chenhLech));
+        }
+        if (chenhLech < 0) {
+            return String.format(moTaHoan, tien(-chenhLech));
+        }
+        return moTaCanBang;
     }
 
     private Map<String, Integer> laySoLuongHangDoi() {
