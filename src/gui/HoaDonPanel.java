@@ -89,7 +89,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         btnExport.setBackground(Color.WHITE);
         btnExport.setFocusPainted(false);
         btnPrint = new JButton("In máy in");
-        btnPrint.setToolTipText("in hóa đơn đang chọn qua máy in mặc định");
+        btnPrint.setToolTipText("in hóa đơn");
         btnPrint.setBackground(new Color(55, 105, 190));
         btnPrint.setForeground(Color.WHITE);
         btnPrint.setFocusPainted(false);
