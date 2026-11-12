@@ -39,15 +39,15 @@ import java.util.List;
 
 public class TaiKhoanPanel extends JFrame {
     private static final Color BRAND_RED = new Color(180, 40, 40);
-    private static final String[] ROLES = {"Quản lý", "Nhân viên"};
-    private static final String[] STATUSES = {"Hoạt động", "Bị khóa", "Chưa kích hoạt"};
+    private static final String[] ROLES = { "Quản lý", "Nhân viên" };
+    private static final String[] STATUSES = { "Hoạt động", "Bị khóa", "Chưa kích hoạt" };
 
     private final JTextField searchField = new JTextField(22);
-    private final JComboBox<String> roleFilter = new JComboBox<>(new String[]{"Tất cả vai trò",
-            "Quản lý", "Nhân viên"});
-    private final JComboBox<String> statusFilter = new JComboBox<>(new String[]{"Tất cả trạng thái",
-            "Hoạt động", "Bị khóa", "Chưa kích hoạt"});
-    private final DefaultTableModel tableModel = new DefaultTableModel(new Object[]{
+    private final JComboBox<String> roleFilter = new JComboBox<>(new String[] { "Tất cả vai trò",
+            "Quản lý", "Nhân viên" });
+    private final JComboBox<String> statusFilter = new JComboBox<>(new String[] { "Tất cả trạng thái",
+            "Hoạt động", "Bị khóa", "Chưa kích hoạt" });
+    private final DefaultTableModel tableModel = new DefaultTableModel(new Object[] {
             "Tên đăng nhập", "Họ tên đầy đủ", "Vai trò", "Trạng thái",
             "Đăng nhập gần nhất", "Thao tác", "Mã tài khoản"
     }, 0) {
@@ -126,7 +126,8 @@ public class TaiKhoanPanel extends JFrame {
         accountTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent event) {
-                if (event.getClickCount() != 1) return;
+                if (event.getClickCount() != 1)
+                    return;
                 int row = accountTable.rowAtPoint(event.getPoint());
                 int column = accountTable.columnAtPoint(event.getPoint());
                 if (row >= 0 && column == 5) {
@@ -138,9 +139,17 @@ public class TaiKhoanPanel extends JFrame {
         content.add(new JScrollPane(accountTable), BorderLayout.CENTER);
 
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent event) { applyFilter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent event) { applyFilter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent event) { applyFilter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent event) {
+                applyFilter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent event) {
+                applyFilter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent event) {
+                applyFilter();
+            }
         });
         roleFilter.addActionListener(event -> applyFilter());
         statusFilter.addActionListener(event -> applyFilter());
@@ -153,10 +162,10 @@ public class TaiKhoanPanel extends JFrame {
                 + "tk.lanDangNhapCuoi FROM TaiKhoan tk JOIN NhanVien nv ON nv.maNhanVien = tk.maNhanVien "
                 + "ORDER BY tk.maTaiKhoan";
         try (Connection connection = ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                tableModel.addRow(new Object[]{
+                tableModel.addRow(new Object[] {
                         resultSet.getString("tenDangNhap"),
                         resultSet.getString("hoTen"),
                         resultSet.getString("vaiTro"),
@@ -202,7 +211,8 @@ public class TaiKhoanPanel extends JFrame {
     private void openCreateDialog() {
         AccountDialog dialog = new AccountDialog(this, null, currentUsername);
         dialog.setVisible(true);
-        if (dialog.saved) loadAccounts();
+        if (dialog.saved)
+            loadAccounts();
     }
 
     private void openEditDialog(String accountId, int modelRow) {
@@ -210,7 +220,8 @@ public class TaiKhoanPanel extends JFrame {
                 tableModel.getValueAt(modelRow, 2).toString(), tableModel.getValueAt(modelRow, 3).toString());
         AccountDialog dialog = new AccountDialog(this, data, currentUsername);
         dialog.setVisible(true);
-        if (dialog.saved) loadAccounts();
+        if (dialog.saved)
+            loadAccounts();
     }
 
     private void toggleStatus(String accountId, String currentStatus) {
@@ -218,7 +229,8 @@ public class TaiKhoanPanel extends JFrame {
         int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
                 ("Hoạt động".equals(nextStatus) ? "Mở khóa" : "Khóa") + " tài khoản này?",
                 "Xác nhận thao tác", JOptionPane.YES_NO_OPTION);
-        if (answer != JOptionPane.YES_OPTION) return;
+        if (answer != JOptionPane.YES_OPTION)
+            return;
         updateAccount("trangThai", nextStatus, accountId);
     }
 
@@ -229,9 +241,11 @@ public class TaiKhoanPanel extends JFrame {
         }
         int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Xóa tài khoản " + username + "?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (answer != JOptionPane.YES_OPTION) return;
+        if (answer != JOptionPane.YES_OPTION)
+            return;
         try (Connection connection = ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM TaiKhoan WHERE maTaiKhoan = ?")) {
+                PreparedStatement statement = connection
+                        .prepareStatement("DELETE FROM TaiKhoan WHERE maTaiKhoan = ?")) {
             statement.setString(1, accountId);
             if (statement.executeUpdate() == 0) {
                 showError("Không tìm thấy tài khoản để xóa.");
@@ -253,7 +267,7 @@ public class TaiKhoanPanel extends JFrame {
     private boolean updateAccount(String column, String value, String accountId) {
         String sql = "UPDATE TaiKhoan SET " + column + " = ?, ngayCapNhat = GETDATE() WHERE maTaiKhoan = ?";
         try (Connection connection = ConnectDB.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, value);
             statement.setString(2, accountId);
             if (statement.executeUpdate() > 0) {
@@ -345,15 +359,14 @@ public class TaiKhoanPanel extends JFrame {
                                     + "OR NOT EXISTS (SELECT 1 FROM TaiKhoan tk WHERE tk.maNhanVien = nv.maNhanVien)) ")
                     + "ORDER BY nv.hoTen";
             try (Connection connection = ConnectDB.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql);
-                 ) {
+                    PreparedStatement statement = connection.prepareStatement(sql);) {
                 if (data != null) {
                     statement.setString(1, data.id);
                 }
                 try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    employeeBox.addItem(new EmployeeOption(resultSet.getString(1), resultSet.getString(2)));
-                }
+                    while (resultSet.next()) {
+                        employeeBox.addItem(new EmployeeOption(resultSet.getString(1), resultSet.getString(2)));
+                    }
                 }
                 if (data != null) {
                     selectEmployeeForAccount(data.id, connection);
@@ -386,72 +399,68 @@ public class TaiKhoanPanel extends JFrame {
         private void saveAccount() {
             String username = usernameField.getText().trim();
             char[] password = passwordField.getPassword();
-            if (data == null && (employeeBox.getSelectedItem() == null
-                    || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                        "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
-                                + "và mật khẩu ít nhất 6 ký tự.",
-                        "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                java.util.Arrays.fill(password, '\0');
-                return;
-            }
-            try (Connection connection = ConnectDB.getConnection()) {
-                if (data == null) {
-                    EmployeeOption employee = (EmployeeOption) employeeBox.getSelectedItem();
-                    String sql = "INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai) "
-                            + "VALUES (?, ?, ?, ?, ?, ?)";
-                    try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                        statement.setString(1, nextAccountId(connection));
-                        statement.setString(2, username);
-                        statement.setString(3, DangNhapFrame.toMD5(new String(password)));
-                        statement.setString(4, (String) roleBox.getSelectedItem());
-                        statement.setString(5, employee.id);
-                        statement.setString(6, (String) statusBox.getSelectedItem());
-                        statement.executeUpdate();
-                    }
-                    try {
-                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
-                                "Tạo tài khoản " + username + " cho nhân viên " + employee.id);
-                    } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                                "Tài khoản đã được tạo nhưng không ghi được Audit Trail:\n"
-                                        + auditException.getMessage(), "Cảnh báo",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
-                } else {
-                    if (!username.matches("[A-Za-z0-9._-]{3,50}")) {
-                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                                "Tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -).",
-                                "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
-                    String sql = "UPDATE TaiKhoan SET tenDangNhap = ?, vaiTro = ?, trangThai = ?, "
-                            + "ngayCapNhat = GETDATE() "
-                            + "WHERE maTaiKhoan = ?";
-                    try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                        statement.setString(1, username);
-                        statement.setString(2, (String) roleBox.getSelectedItem());
-                        statement.setString(3, (String) statusBox.getSelectedItem());
-                        statement.setString(4, data.id);
-                        statement.executeUpdate();
-                    }
-                    try {
-                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
-                                "Cập nhật vai trò/trạng thái tài khoản " + data.id);
-                    } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
-                                "Tài khoản đã được cập nhật nhưng không ghi được Audit Trail:\n"
-                                        + auditException.getMessage(), "Cảnh báo",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
+            boolean isCreate = (data == null);
+
+            try {
+                boolean validUsername = username.matches("[A-Za-z0-9._-]{3,50}");
+                boolean validPassword = (!isCreate || password.length >= 6);
+                boolean validEmployee = (!isCreate || employeeBox.getSelectedItem() != null);
+
+                if (!validUsername || !validPassword || !validEmployee) {
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                            "Vui lòng kiểm tra lại: Chọn nhân viên, Tên đăng nhập (3-50 ký tự), Mật khẩu (ít nhất 6 ký tự).",
+                            "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
-                saved = true;
-                dispose();
-            } catch (SQLException exception) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể lưu tài khoản:\n" + exception.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+                try (Connection conn = ConnectDB.getConnection()) {
+                    String role = (String) roleBox.getSelectedItem();
+                    String status = (String) statusBox.getSelectedItem();
+
+                    if (isCreate) {
+                        EmployeeOption emp = (EmployeeOption) employeeBox.getSelectedItem();
+                        String sql = "INSERT INTO TaiKhoan (maTaiKhoan, tenDangNhap, matKhau, vaiTro, maNhanVien, trangThai) VALUES (?, ?, ?, ?, ?, ?)";
+                        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+                            pst.setString(1, nextAccountId(conn));
+                            pst.setString(2, username);
+                            pst.setString(3, DangNhapFrame.toMD5(new String(password)));
+                            pst.setString(4, role);
+                            pst.setString(5, emp.id);
+                            pst.setString(6, status);
+                            pst.executeUpdate();
+                        }
+                        ghiNhatKy(actorUsername, "TẠO", "Tạo tài khoản " + username + " cho nhân viên " + emp.id);
+                    } else {
+                        String sql = "UPDATE TaiKhoan SET tenDangNhap = ?, vaiTro = ?, trangThai = ?, ngayCapNhat = GETDATE() WHERE maTaiKhoan = ?";
+                        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+                            pst.setString(1, username);
+                            pst.setString(2, role);
+                            pst.setString(3, status);
+                            pst.setString(4, data.id);
+                            pst.executeUpdate();
+                        }
+                        ghiNhatKy(actorUsername, "CẬP NHẬT", "Cập nhật tài khoản " + data.id);
+                    }
+
+                    saved = true;
+                    dispose();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                            "Không thể lưu tài khoản:\n" + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+
             } finally {
                 java.util.Arrays.fill(password, '\0');
+            }
+        }
+
+        private void ghiNhatKy(String actor, String action, String detail) {
+            try {
+                NhatKyHeThong_DAO.ghiTheoTenDangNhap(actor, action, "Tài khoản", detail);
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                        "Đã lưu thành công nhưng không ghi được Log:\n" + e.getMessage(),
+                        "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }
         }
 
@@ -459,7 +468,7 @@ public class TaiKhoanPanel extends JFrame {
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(maTaiKhoan, 3, 18))), 0) + 1 "
                             + "FROM TaiKhoan WHERE maTaiKhoan LIKE 'TK[0-9]%'");
-                 ResultSet resultSet = statement.executeQuery()) {
+                    ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return String.format("TK%03d", resultSet.getInt(1));
                 }
@@ -486,10 +495,11 @@ public class TaiKhoanPanel extends JFrame {
     private static class RoleRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
-                                                        boolean focus, int row, int column) {
+                boolean focus, int row, int column) {
             super.getTableCellRendererComponent(table, value, selected, focus, row, column);
             setForeground("Quản lý".equals(value)
-                    ? BRAND_RED : new Color(30, 100, 190));
+                    ? BRAND_RED
+                    : new Color(30, 100, 190));
             return this;
         }
     }
@@ -497,7 +507,7 @@ public class TaiKhoanPanel extends JFrame {
     private static class StatusRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
-                                                        boolean focus, int row, int column) {
+                boolean focus, int row, int column) {
             super.getTableCellRendererComponent(table, value, selected, focus, row, column);
             setHorizontalAlignment(SwingConstants.CENTER);
             setForeground("Hoạt động".equals(value) ? new Color(35, 130, 55) : BRAND_RED);
@@ -513,7 +523,7 @@ public class TaiKhoanPanel extends JFrame {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
-                                                        boolean focus, int row, int column) {
+                boolean focus, int row, int column) {
             removeAll();
             setBackground(selected ? table.getSelectionBackground() : Color.WHITE);
             add(actionButton("✎", new Color(30, 125, 210)));
