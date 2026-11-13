@@ -96,7 +96,7 @@ public class NhatKyHeThongPanel extends javax.swing.JFrame {
                 }
             }
         } catch (SQLException exception) {
-            javax.swing.JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+            javax.swing.JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                     "Không thể tải Audit Trail:\n" + exception.getMessage(), "Lỗi",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }

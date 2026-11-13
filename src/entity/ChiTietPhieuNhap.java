@@ -7,7 +7,6 @@ public class ChiTietPhieuNhap {
     private SanPham sanPham;
     private int soLuongNhap;
     private double donGiaNhap;
-    private double thanhTien;
     private Date ngaySanXuat;
     private Date hanSuDung;
     private String ghiChu;
@@ -16,12 +15,11 @@ public class ChiTietPhieuNhap {
     }
 
     public ChiTietPhieuNhap(PhieuNhapKho phieuNhapKho, SanPham sanPham, int soLuongNhap, double donGiaNhap,
-                            double thanhTien, Date ngaySanXuat, Date hanSuDung, String ghiChu) {
+                            Date ngaySanXuat, Date hanSuDung, String ghiChu) {
         this.phieuNhapKho = phieuNhapKho;
         this.sanPham = sanPham;
         this.soLuongNhap = soLuongNhap;
         this.donGiaNhap = donGiaNhap;
-        this.thanhTien = thanhTien;
         this.ngaySanXuat = ngaySanXuat;
         this.hanSuDung = hanSuDung;
         this.ghiChu = ghiChu;
@@ -39,8 +37,7 @@ public class ChiTietPhieuNhap {
     public double getDonGiaNhap() { return donGiaNhap; }
     public void setDonGiaNhap(double donGiaNhap) { this.donGiaNhap = donGiaNhap; }
 
-    public double getThanhTien() { return thanhTien; }
-    public void setThanhTien(double thanhTien) { this.thanhTien = thanhTien; }
+    public double getThanhTien() { return soLuongNhap * donGiaNhap; }
 
     public Date getNgaySanXuat() { return ngaySanXuat; }
     public void setNgaySanXuat(Date ngaySanXuat) { this.ngaySanXuat = ngaySanXuat; }

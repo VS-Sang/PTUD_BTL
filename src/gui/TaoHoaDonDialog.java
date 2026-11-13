@@ -967,7 +967,7 @@ public class TaoHoaDonDialog extends JFrame {
         List<ChiTietDonHang> chiTiet = new ArrayList<>();
         for (Map.Entry<String, Integer> mon : gioHang.entrySet()) {
             SanPham sp = sanPhamTheoMa.get(mon.getKey());
-            chiTiet.add(new ChiTietDonHang(null, sp, mon.getValue(), sp.getGiaBan(), 0, 0, null));
+            chiTiet.add(new ChiTietDonHang(null, sp, mon.getValue(), sp.getGiaBan(), 0, null));
         }
         return chiTiet;
     }
@@ -1141,6 +1141,6 @@ public class TaoHoaDonDialog extends JFrame {
 
     private Component getDialogOwnerWindow() {
         Window cuaSo = SwingUtilities.getWindowAncestor(getContentPane());
-        return UiDialogOwner.resolve(cuaSo == null ? this : cuaSo);
+        return ChuSoHuuHopThoai.resolve(cuaSo == null ? this : cuaSo);
     }
 }

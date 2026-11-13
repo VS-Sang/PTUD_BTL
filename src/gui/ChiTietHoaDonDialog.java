@@ -1,8 +1,10 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -10,7 +12,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,16 +20,17 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import entity.ChiTietDonHang;
+import entity.ChiTietHoaDon;
 import entity.HoaDon;
 
 final class ChiTietHoaDonDialog extends JDialog {
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,##0.##");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-    ChiTietHoaDonDialog(JFrame owner, HoaDon hoaDon, String maKhuyenMai,
-                         List<? extends ChiTietDonHang> chiTiet) {
-        super(owner, "Chi tiết hóa đơn " + hoaDon.getMaHoaDon(), true);
+    ChiTietHoaDonDialog(Window owner, HoaDon hoaDon, String maKhuyenMai,
+                         List<ChiTietHoaDon> chiTiet) {
+        super(owner, "Chi tiết hóa đơn " + hoaDon.getMaHoaDon(),
+                Dialog.ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(820, 600);
         setLocationRelativeTo(owner);
@@ -63,6 +65,11 @@ final class ChiTietHoaDonDialog extends JDialog {
         JTable table = new JTable(model);
         table.setRowHeight(28);
         table.setFillsViewportHeight(true);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        int[] columnWidths = {75, 235, 135, 80, 135, 145};
+        for (int column = 0; column < columnWidths.length; column++) {
+            table.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
+        }
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(JTable source, Object value,
@@ -70,12 +77,13 @@ final class ChiTietHoaDonDialog extends JDialog {
                 JLabel label = (JLabel) super.getTableCellRendererComponent(
                         source, value, selected, focus, row, column);
                 if (column >= 2) {
+                    // căn value bên phải
                     label.setHorizontalAlignment(SwingConstants.RIGHT);
                 }
                 return label;
             }
         });
-        for (ChiTietDonHang item : chiTiet) {
+        for (ChiTietHoaDon item : chiTiet) {
             model.addRow(new Object[]{
                     item.getSanPham().getMaSanPham(),
                     item.getSanPham().getTenSanPham(),
@@ -85,7 +93,8 @@ final class ChiTietHoaDonDialog extends JDialog {
                     tien(item.getThanhTien())
             });
         }
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        add(tableScrollPane, BorderLayout.CENTER);
 
         JPanel totals = new JPanel(new GridLayout(0, 2, 8, 4));
         totals.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));

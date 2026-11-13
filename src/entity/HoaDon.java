@@ -12,9 +12,7 @@ public class HoaDon {
     private double tienGiamGia;
     private double tienDiem;
     private double thueVAT;
-    private double tongThanhToan;
     private double tienKhachDua;
-    private double tienTraLai;
     private String phuongThucThanhToan;
     private String soTaiKhoanNH;
     private String tenNganHang;
@@ -34,7 +32,7 @@ public class HoaDon {
 
     public HoaDon(String maHoaDon, DonHang donHang, KhachHang khachHang, NhanVien nhanVien,
                   Date ngayLapHoaDon, double tongTienHang, double tienGiamGia, double tienDiem,
-                  double thueVAT, double tongThanhToan, double tienKhachDua, double tienTraLai,
+                  double thueVAT, double tienKhachDua,
                   String phuongThucThanhToan, String soTaiKhoanNH, String tenNganHang,
                   String maGiaoDich, int diemCongThem, String trangThai, String ghiChu,
                   Date ngayTao, Date ngayCapNhat) {
@@ -47,9 +45,7 @@ public class HoaDon {
         this.tienGiamGia = tienGiamGia;
         this.tienDiem = tienDiem;
         this.thueVAT = thueVAT;
-        this.tongThanhToan = tongThanhToan;
         this.tienKhachDua = tienKhachDua;
-        this.tienTraLai = tienTraLai;
         this.phuongThucThanhToan = phuongThucThanhToan;
         this.soTaiKhoanNH = soTaiKhoanNH;
         this.tenNganHang = tenNganHang;
@@ -88,14 +84,16 @@ public class HoaDon {
     public double getThueVAT() { return thueVAT; }
     public void setThueVAT(double thueVAT) { this.thueVAT = thueVAT; }
 
-    public double getTongThanhToan() { return tongThanhToan; }
-    public void setTongThanhToan(double tongThanhToan) { this.tongThanhToan = tongThanhToan; }
+    public double getTongThanhToan() {
+        return tongTienHang - tienGiamGia - tienDiem + thueVAT;
+    }
 
     public double getTienKhachDua() { return tienKhachDua; }
     public void setTienKhachDua(double tienKhachDua) { this.tienKhachDua = tienKhachDua; }
 
-    public double getTienTraLai() { return tienTraLai; }
-    public void setTienTraLai(double tienTraLai) { this.tienTraLai = tienTraLai; }
+    public double getTienTraLai() {
+        return Math.max(0, tienKhachDua - getTongThanhToan());
+    }
 
     public String getPhuongThucThanhToan() { return phuongThucThanhToan; }
     public void setPhuongThucThanhToan(String phuongThucThanhToan) { this.phuongThucThanhToan = phuongThucThanhToan; }

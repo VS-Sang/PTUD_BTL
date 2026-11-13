@@ -187,7 +187,7 @@ public class KhachHangPanel extends JFrame implements ActionListener {
             file = new java.io.File(file.getParentFile(), file.getName() + ".csv");
         }
         if (file.exists()) {
-            int overwrite = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
+            int overwrite = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(this),
                     "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                     "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (overwrite != JOptionPane.YES_OPTION) {
@@ -195,6 +195,7 @@ public class KhachHangPanel extends JFrame implements ActionListener {
             }
         }
 
+        // ghi dữ liệu
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
             writer.write('\uFEFF');
             for (int column = 0; column < model.getColumnCount(); column++) {
@@ -215,19 +216,21 @@ public class KhachHangPanel extends JFrame implements ActionListener {
                 }
                 writer.newLine();
             }
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xuất " + model.getRowCount()
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Đã xuất " + model.getRowCount()
                     + " khách hàng ra tệp:\n" + file.getAbsolutePath(),
                     "Xuất Excel", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xuất danh sách khách hàng:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể xuất danh sách khách hàng:\n"
                     + exception.getMessage(), "Lỗi xuất Excel", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private String csv(String value) {
+        //chôg lổi csv
         if (!value.isEmpty() && " =+-@\t\r".indexOf(value.charAt(0)) >= 0) {
             value = "'" + value;
         }
+        //xứ lý định dạng
         return "\"" + value.replace("\"", "\"\"") + "\"";
     }
 
@@ -320,7 +323,7 @@ public class KhachHangPanel extends JFrame implements ActionListener {
         try {
             capNhatMaKhachHangTrenForm();
         } catch (java.sql.SQLException ex) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tạo mã khách hàng: " + ex.getMessage(),
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể tạo mã khách hàng: " + ex.getMessage(),
                     "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -409,23 +412,23 @@ public class KhachHangPanel extends JFrame implements ActionListener {
         khachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
         try {
             if (kh_dao.themKhachHang(khachHang)) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                         "Đã thêm khách hàng " + khachHang.getMaKhachHang() + " thành công.");
                 txtSearch.setText("");
                 docDuLieuDatabaseVaoTable();
                 contentLayout.show(contentCards, "list");
             } else {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể thêm khách hàng vào cơ sở dữ liệu.",
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể thêm khách hàng vào cơ sở dữ liệu.",
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (java.sql.SQLException ex) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể thêm khách hàng: " + ex.getMessage(),
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể thêm khách hàng: " + ex.getMessage(),
                     "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void hienThiLoiNhapLieu(String thongBao) {
-        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), thongBao, "Thông tin chưa hợp lệ",
+        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), thongBao, "Thông tin chưa hợp lệ",
                 JOptionPane.WARNING_MESSAGE);
     }
 

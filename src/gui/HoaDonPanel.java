@@ -2,8 +2,10 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -142,7 +144,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             table.getColumnModel().getColumn(3).setCellEditor(
                     new ThuNganCellEditor(thuNganOptions));
         } else {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                     "Không tìm thấy nhân viên đang làm việc để chọn làm thu ngân.",
                     "Không thể đổi thu ngân", JOptionPane.WARNING_MESSAGE);
         }
@@ -229,7 +231,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
     private String layMaHoaDonDangChon() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn hóa đơn.",
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Vui lòng chọn hóa đơn.",
                     "Chưa chọn hóa đơn", JOptionPane.INFORMATION_MESSAGE);
             return null;
         }
@@ -244,10 +246,11 @@ public class HoaDonPanel extends JFrame implements ActionListener {
 
         try {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
-            new ChiTietHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
+            Window ownerWindow = resolveDialogOwner();
+            new ChiTietHoaDonDialog(ownerWindow, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải chi tiết hóa đơn:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể tải chi tiết hóa đơn:\n"
                     + exception.getMessage(), "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -261,7 +264,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
             BoInHoaDon.print(this, hoaDon, hd_dao.getChiTietHoaDon(maHoaDon));
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải hóa đơn để in:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể tải hóa đơn để in:\n"
                     + exception.getMessage(), "Lỗi in hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -273,12 +276,19 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         }
         try {
             HoaDon hoaDon = hd_dao.getHoaDonByMa(maHoaDon);
-            new SuaHoaDonDialog(this, hoaDon, hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
+            new SuaHoaDonDialog(this, resolveDialogOwner(), hoaDon,
+                    hd_dao.getMaKhuyenMaiHoaDon(maHoaDon),
                     hd_dao.getChiTietHoaDon(maHoaDon)).setVisible(true);
         } catch (SQLException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải hóa đơn để sửa:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể tải hóa đơn để sửa:\n"
                     + exception.getMessage(), "Lỗi tải hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private Window resolveDialogOwner() {
+        Component owner = ChuSoHuuHopThoai.resolve(this);
+        return owner instanceof Window
+                ? (Window) owner : SwingUtilities.getWindowAncestor(owner);
     }
 
     private ArrayList<ThuNganOption> loadThuNganOptions() {
@@ -294,13 +304,13 @@ public class HoaDonPanel extends JFrame implements ActionListener {
     private void xoaHoaDonDangChon() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn hóa đơn cần xóa.",
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Vui lòng chọn hóa đơn cần xóa.",
                     "Chưa chọn hóa đơn", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         String maHoaDon = String.valueOf(model.getValueAt(selectedRow, 0));
-        int confirmation = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
+        int confirmation = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(this),
                 "Bạn có chắc muốn xóa hẳn hóa đơn " + maHoaDon
                         + " và đơn hàng liên kết không?\nTồn kho và số liệu khách hàng sẽ được cập nhật lại.",
                 "Xác nhận xóa hóa đơn", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -311,10 +321,10 @@ public class HoaDonPanel extends JFrame implements ActionListener {
         try {
             hd_dao.xoaHoaDon(maHoaDon);
             docDuLieuDatabaseVaoTable();
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã xóa hóa đơn " + maHoaDon + ".",
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Đã xóa hóa đơn " + maHoaDon + ".",
                     "Xóa hóa đơn", JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException | IllegalArgumentException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể xóa hóa đơn:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể xóa hóa đơn:\n"
                     + exception.getMessage(), "Lỗi xóa hóa đơn", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -331,6 +341,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
             this.comboBox = comboBox;
         }
 
+//        chạy khi chọn xong thu ngân.
         @Override
         public boolean stopCellEditing() {
             int row = table.getEditingRow();
@@ -350,7 +361,7 @@ public class HoaDonPanel extends JFrame implements ActionListener {
                 hd_dao.capNhatThuNganHoaDon(maHoaDon, selectedOption.maNhanVien);
                 return super.stopCellEditing();
             } catch (SQLException | IllegalArgumentException exception) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(HoaDonPanel.this),
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(HoaDonPanel.this),
                         "Không thể cập nhật thu ngân:\n" + exception.getMessage(),
                         "Lỗi cập nhật hóa đơn", JOptionPane.ERROR_MESSAGE);
                 return false;

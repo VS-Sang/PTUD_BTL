@@ -54,7 +54,6 @@ public class PhieuNhapKho_DAO {
                     || ct.getSanPham().getMaSanPham().trim().isEmpty()
                     || ct.getSoLuongNhap() <= 0
                     || ct.getDonGiaNhap() < 0
-                    || ct.getThanhTien() < 0
                     || !maSanPhamDaThem.add(ct.getSanPham().getMaSanPham())) {
                 throw new IllegalArgumentException(
                         "Chi tiết phiếu nhập phải có sản phẩm hợp lệ và không trùng sản phẩm.");

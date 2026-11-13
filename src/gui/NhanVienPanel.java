@@ -297,7 +297,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
 
     private void moCuaSoQuanLyDanhMuc(boolean laPhongBan) {
         String tenLoai = laPhongBan ? "phòng ban" : "chức vụ";
-        Component owner = UiDialogOwner.resolve(this);
+        Component owner = ChuSoHuuHopThoai.resolve(this);
         Window win = owner instanceof Window ? (Window) owner : SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(win, "Quản lý " + tenLoai, JDialog.ModalityType.APPLICATION_MODAL);
         dialog.setSize(480, 360);
@@ -427,7 +427,7 @@ public class NhanVienPanel extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (dangNapComboBox) return;
         Object o = e.getSource();
-        Component owner = UiDialogOwner.resolve(this);
+        Component owner = ChuSoHuuHopThoai.resolve(this);
 
         if (o.equals(btnLamMoi)) {
             xoaRong();

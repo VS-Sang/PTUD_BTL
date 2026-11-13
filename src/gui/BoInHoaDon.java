@@ -27,7 +27,7 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 
-import entity.ChiTietDonHang;
+import entity.ChiTietHoaDon;
 import entity.HoaDon;
 
 final class BoInHoaDon {
@@ -50,7 +50,7 @@ final class BoInHoaDon {
     private BoInHoaDon() {
     }
 
-    static void print(Component parent, HoaDon hoaDon, List<? extends ChiTietDonHang> chiTiet) {
+    static void print(Component parent, HoaDon hoaDon, List<ChiTietHoaDon> chiTiet) {
         BufferedImage qr;
         try {
             qr = loadQrIfNeeded(hoaDon);
@@ -72,7 +72,7 @@ final class BoInHoaDon {
         }
     }
 
-    static void writePdf(File file, HoaDon hoaDon, List<? extends ChiTietDonHang> chiTiet)
+    static void writePdf(File file, HoaDon hoaDon, List<ChiTietHoaDon> chiTiet)
             throws IOException {
         BufferedImage qr = loadQrIfNeeded(hoaDon);
         PageFormat pageFormat = a5PageFormat();
@@ -114,7 +114,7 @@ final class BoInHoaDon {
     }
 
     private static void showError(Component parent, String message) {
-        JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), message,
+        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(parent), message,
                 "Lỗi hóa đơn", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -141,10 +141,10 @@ final class BoInHoaDon {
 
     private static final class InvoicePrintable implements Printable {
         private final HoaDon hoaDon;
-        private final List<? extends ChiTietDonHang> chiTiet;
+        private final List<ChiTietHoaDon> chiTiet;
         private final BufferedImage qr;
 
-        InvoicePrintable(HoaDon hoaDon, List<? extends ChiTietDonHang> chiTiet, BufferedImage qr) {
+        InvoicePrintable(HoaDon hoaDon, List<ChiTietHoaDon> chiTiet, BufferedImage qr) {
             this.hoaDon = hoaDon;
             this.chiTiet = chiTiet == null ? new ArrayList<>() : chiTiet;
             this.qr = qr;
@@ -247,7 +247,7 @@ final class BoInHoaDon {
 
             double totalBeforePage = 0;
             double totalMerchandise = 0;
-            for (ChiTietDonHang item : chiTiet) {
+            for (ChiTietHoaDon item : chiTiet) {
                 totalMerchandise += item.getDonGia() * item.getSoLuong();
             }
             for (int i = 0; i < slice.from; i++) {
@@ -256,7 +256,7 @@ final class BoInHoaDon {
             double discountBeforePage = totalMerchandise <= 0 ? 0
                     : Math.round(hoaDon.getTienGiamGia() * totalBeforePage / totalMerchandise * 100) / 100.0;
             for (int i = slice.from; i < slice.to; i++) {
-                ChiTietDonHang item = chiTiet.get(i);
+                ChiTietHoaDon item = chiTiet.get(i);
                 double discount;
                 if (i == chiTiet.size() - 1) {
                     discount = hoaDon.getTienGiamGia() - discountBeforePage;
@@ -320,7 +320,7 @@ final class BoInHoaDon {
         }
 
         private int drawItemRow(Graphics2D g, double[] edges, int y, int index,
-                                ChiTietDonHang item, double discount) {
+                                ChiTietHoaDon item, double discount) {
             int baseline = y + 10;
             setFont(g, Font.PLAIN, 7);
             String code = item.getSanPham() == null ? "" : safe(item.getSanPham().getMaSanPham());
@@ -403,7 +403,7 @@ final class BoInHoaDon {
             return edges;
         }
 
-        private double lineGross(ChiTietDonHang item) {
+        private double lineGross(ChiTietHoaDon item) {
             return item.getDonGia() * item.getSoLuong();
         }
 

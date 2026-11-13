@@ -486,13 +486,13 @@ public class TraHangPanel extends JFrame implements ActionListener {
     }
 
     private void hienThiThongBao(Object message, String title, int messageType) {
-        JOptionPane.showMessageDialog(UiDialogOwner.resolve(boMeThongBao()), message, title, messageType);
+        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(boMeThongBao()), message, title, messageType);
         capNhatBoCucSauThongBao();
     }
 
     private int hienThiXacNhan(Object message, String title, int optionType, int messageType) {
         int result = JOptionPane.showConfirmDialog(
-                UiDialogOwner.resolve(boMeThongBao()), message, title, optionType, messageType);
+                ChuSoHuuHopThoai.resolve(boMeThongBao()), message, title, optionType, messageType);
         capNhatBoCucSauThongBao();
         return result;
     }

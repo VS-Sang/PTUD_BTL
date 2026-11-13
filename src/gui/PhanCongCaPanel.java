@@ -339,7 +339,7 @@ public class PhanCongCaPanel extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
-        Component owner = UiDialogOwner.resolve(this);
+        Component owner = ChuSoHuuHopThoai.resolve(this);
 
         if (o.equals(btnLamMoi)) {
             xoaRong();
