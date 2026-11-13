@@ -386,11 +386,14 @@ public class TaiKhoanPanel extends JFrame {
         private void saveAccount() {
             String username = usernameField.getText().trim();
             char[] password = passwordField.getPassword();
-            if (data == null && (employeeBox.getSelectedItem() == null
-                    || !username.matches("[A-Za-z0-9._-]{3,50}") || password.length < 6)) {
+            boolean isCreate = data == null;
+            boolean validUsername = username.matches("[A-Za-z0-9._-]{3,50}");
+            boolean validPassword = !isCreate || password.length >= 6;
+            boolean validEmployee = !isCreate || employeeBox.getSelectedItem() != null;
+            if (!validUsername || !validPassword || !validEmployee) {
                 JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
-                        "Chọn nhân viên, tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -) "
-                                + "và mật khẩu ít nhất 6 ký tự.",
+                        "Vui lòng kiểm tra lại: chọn nhân viên, tên đăng nhập phải có 3-50 ký tự "
+                                + "(chữ, số, ., _, -), mật khẩu ít nhất 6 ký tự khi tạo mới.",
                         "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                 java.util.Arrays.fill(password, '\0');
                 return;
@@ -409,22 +412,9 @@ public class TaiKhoanPanel extends JFrame {
                         statement.setString(6, (String) statusBox.getSelectedItem());
                         statement.executeUpdate();
                     }
-                    try {
-                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "TẠO", "Tài khoản",
-                                "Tạo tài khoản " + username + " cho nhân viên " + employee.id);
-                    } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
-                                "Tài khoản đã được tạo nhưng không ghi được Audit Trail:\n"
-                                        + auditException.getMessage(), "Cảnh báo",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
+                    ghiNhatKy(actorUsername, "TẠO", "Tạo tài khoản " + username
+                            + " cho nhân viên " + employee.id);
                 } else {
-                    if (!username.matches("[A-Za-z0-9._-]{3,50}")) {
-                        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
-                                "Tên đăng nhập phải có 3-50 ký tự (chữ, số, ., _, -).",
-                                "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                        return;
-                    }
                     String sql = "UPDATE TaiKhoan SET tenDangNhap = ?, vaiTro = ?, trangThai = ?, "
                             + "ngayCapNhat = GETDATE() "
                             + "WHERE maTaiKhoan = ?";
@@ -435,15 +425,8 @@ public class TaiKhoanPanel extends JFrame {
                         statement.setString(4, data.id);
                         statement.executeUpdate();
                     }
-                    try {
-                        NhatKyHeThong_DAO.ghiTheoTenDangNhap(actorUsername, "CẬP NHẬT", "Tài khoản",
-                                "Cập nhật vai trò/trạng thái tài khoản " + data.id);
-                    } catch (SQLException auditException) {
-                        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
-                                "Tài khoản đã được cập nhật nhưng không ghi được Audit Trail:\n"
-                                        + auditException.getMessage(), "Cảnh báo",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
+                    ghiNhatKy(actorUsername, "CẬP NHẬT",
+                            "Cập nhật vai trò/trạng thái tài khoản " + data.id);
                 }
                 saved = true;
                 dispose();
@@ -452,6 +435,17 @@ public class TaiKhoanPanel extends JFrame {
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             } finally {
                 java.util.Arrays.fill(password, '\0');
+            }
+        }
+
+        private void ghiNhatKy(String actor, String action, String detail) {
+            try {
+                NhatKyHeThong_DAO.ghiTheoTenDangNhap(actor, action, "Tài khoản", detail);
+            } catch (SQLException exception) {
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
+                        "Tài khoản đã được lưu nhưng không ghi được Audit Trail:\n"
+                                + exception.getMessage(),
+                        "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }
         }
 
