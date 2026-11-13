@@ -1,8 +1,10 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,6 +32,7 @@ import DAO.HoaDon_DAO;
 import DAO.KhachHang_DAO;
 import DAO.SanPham_DAO;
 import entity.ChiTietDonHang;
+import entity.ChiTietHoaDon;
 import entity.HoaDon;
 import entity.KhachHang;
 import entity.SanPham;
@@ -59,21 +62,22 @@ final class SuaHoaDonDialog extends JDialog {
         }
     };
     private final JTable table = new JTable(model);
-    private final Map<String, ChiTietDonHang> chiTietTheoMa = new LinkedHashMap<>();
+    private final Map<String, ChiTietHoaDon> chiTietTheoMa = new LinkedHashMap<>();
 
-    SuaHoaDonDialog(HoaDonPanel owner, HoaDon hoaDon, String maKhuyenMai,
-                      List<? extends ChiTietDonHang> chiTiet) {
-        super(owner, "Sửa hóa đơn " + hoaDon.getMaHoaDon(), true);
+    SuaHoaDonDialog(HoaDonPanel owner, Window dialogOwner, HoaDon hoaDon, String maKhuyenMai,
+                      List<ChiTietHoaDon> chiTiet) {
+        super(dialogOwner, "Sửa hóa đơn " + hoaDon.getMaHoaDon(),
+                Dialog.ModalityType.APPLICATION_MODAL);
         this.owner = owner;
         this.hoaDon = hoaDon;
         this.maKhuyenMai = maKhuyenMai;
-        for (ChiTietDonHang item : chiTiet) {
+        for (ChiTietHoaDon item : chiTiet) {
             chiTietTheoMa.put(item.getSanPham().getMaSanPham(), item);
         }
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(900, 650);
-        setLocationRelativeTo(owner);
+        setLocationRelativeTo(dialogOwner);
         setLayout(new BorderLayout(8, 8));
         ButtonTooltips.ganTooltip(this);
         add(createInvoiceFields(), BorderLayout.NORTH);
@@ -155,6 +159,11 @@ final class SuaHoaDonDialog extends JDialog {
 
         table.setRowHeight(28);
         table.setFillsViewportHeight(true);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        int[] columnWidths = {85, 280, 150, 100, 170};
+        for (int column = 0; column < columnWidths.length; column++) {
+            table.getColumnModel().getColumn(column).setPreferredWidth(columnWidths[column]);
+        }
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(JTable source, Object value,
@@ -221,7 +230,7 @@ final class SuaHoaDonDialog extends JDialog {
 
     private void capNhatSoLuongChon() {
         SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
-        ChiTietDonHang item = sanPham == null
+        ChiTietHoaDon item = sanPham == null
                 ? null : chiTietTheoMa.get(sanPham.getMaSanPham());
         spnSoLuong.setValue(item == null ? 1 : item.getSoLuong());
     }
@@ -229,30 +238,30 @@ final class SuaHoaDonDialog extends JDialog {
     private void themSanPham() {
         SanPham sanPham = (SanPham) cboSanPham.getSelectedItem();
         if (sanPham == null) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm.");
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Vui lòng chọn sản phẩm.");
             return;
         }
         String maSanPham = sanPham.getMaSanPham();
-        ChiTietDonHang item = chiTietTheoMa.get(maSanPham);
+        ChiTietHoaDon item = chiTietTheoMa.get(maSanPham);
         int soLuongCu = item == null ? 0 : item.getSoLuong();
         int soLuongMoi = ((Number) spnSoLuong.getValue()).intValue();
         if (soLuongMoi > (long) sanPham.getSoLuongTon() + soLuongCu) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                     "Số lượng vượt quá tồn kho hiện có.", "Không đủ tồn kho",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
         double donGia = item == null ? sanPham.getGiaBan() : item.getDonGia();
-        chiTietTheoMa.put(maSanPham, new ChiTietDonHang(
-                item == null ? null : item.getDonHang(), sanPham, soLuongMoi,
-                donGia, 0, donGia * soLuongMoi, null));
+        chiTietTheoMa.put(maSanPham, new ChiTietHoaDon(
+                hoaDon.getMaHoaDon(), item == null ? null : item.getDonHang(),
+                sanPham, soLuongMoi, donGia, 0, null));
         capNhatBang();
     }
 
     private void xoaSanPhamChon() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Vui lòng chọn sản phẩm cần xóa.");
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Vui lòng chọn sản phẩm cần xóa.");
             return;
         }
         chiTietTheoMa.remove(String.valueOf(model.getValueAt(row, 0)));
@@ -262,8 +271,8 @@ final class SuaHoaDonDialog extends JDialog {
     private void capNhatBang() {
         model.setRowCount(0);
         double tongTienHang = 0;
-        for (ChiTietDonHang item : chiTietTheoMa.values()) {
-            double thanhTien = item.getDonGia() * item.getSoLuong();
+        for (ChiTietHoaDon item : chiTietTheoMa.values()) {
+            double thanhTien = item.getThanhTien();
             tongTienHang += thanhTien;
             model.addRow(new Object[]{
                     item.getSanPham().getMaSanPham(),
@@ -278,7 +287,7 @@ final class SuaHoaDonDialog extends JDialog {
 
     private void luuThayDoi() {
         if (chiTietTheoMa.isEmpty()) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Hóa đơn phải có ít nhất một sản phẩm.");
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Hóa đơn phải có ít nhất một sản phẩm.");
             return;
         }
         double tienKhachDua;
@@ -286,23 +295,27 @@ final class SuaHoaDonDialog extends JDialog {
             tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().trim()
                     .replace(",", "").replace(" ", ""));
         } catch (NumberFormatException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Tiền khách đưa không hợp lệ.");
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Tiền khách đưa không hợp lệ.");
             txtTienKhachDua.requestFocusInWindow();
             return;
         }
         KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
-        List<ChiTietDonHang> chiTiet = new ArrayList<>(chiTietTheoMa.values());
+        List<ChiTietDonHang> chiTiet = new ArrayList<>();
+        for (ChiTietHoaDon item : chiTietTheoMa.values()) {
+            chiTiet.add(new ChiTietDonHang(item.getDonHang(), item.getSanPham(),
+                    item.getSoLuong(), item.getDonGia(), item.getGiamGia(), item.getGhiChu()));
+        }
         try {
             hoaDonDao.capNhatNoiDungHoaDon(hoaDon.getMaHoaDon(),
                     khachHang == null ? null : khachHang.getMaKhachHang(),
                     chiTiet, (String) cboPhuongThuc.getSelectedItem(),
                     tienKhachDua, txtGhiChu.getText().trim());
             owner.docDuLieuDatabaseVaoTable();
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Đã cập nhật hóa đơn "
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Đã cập nhật hóa đơn "
                     + hoaDon.getMaHoaDon() + ".");
             dispose();
         } catch (java.sql.SQLException | IllegalArgumentException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể cập nhật hóa đơn:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể cập nhật hóa đơn:\n"
                     + exception.getMessage(), "Lỗi cập nhật", JOptionPane.ERROR_MESSAGE);
         }
     }

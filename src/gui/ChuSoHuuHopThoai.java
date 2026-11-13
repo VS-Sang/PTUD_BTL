@@ -7,8 +7,8 @@ import java.awt.Window;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-public final class UiDialogOwner {
-    private UiDialogOwner() {}
+public final class ChuSoHuuHopThoai {
+    private ChuSoHuuHopThoai() {}
 
     public static Component resolve(Component parent) {
         if (parent == null) {

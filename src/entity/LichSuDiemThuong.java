@@ -10,7 +10,6 @@ public class LichSuDiemThuong {
     private String loaiGiaoDich;
     private int soDiem;
     private int diemTruocGD;
-    private int diemSauGD;
     private String moTa;
     private Date ngayGiaoDich;
 
@@ -22,7 +21,7 @@ public class LichSuDiemThuong {
     }
 
     public LichSuDiemThuong(String maLichSu, KhachHang khachHang, DonHang donHang, HoaDon hoaDon,
-                            String loaiGiaoDich, int soDiem, int diemTruocGD, int diemSauGD,
+                            String loaiGiaoDich, int soDiem, int diemTruocGD,
                             String moTa, Date ngayGiaoDich) {
         this.maLichSu = maLichSu;
         this.khachHang = khachHang;
@@ -31,7 +30,6 @@ public class LichSuDiemThuong {
         this.loaiGiaoDich = loaiGiaoDich;
         this.soDiem = soDiem;
         this.diemTruocGD = diemTruocGD;
-        this.diemSauGD = diemSauGD;
         this.moTa = moTa;
         this.ngayGiaoDich = ngayGiaoDich;
     }
@@ -57,8 +55,7 @@ public class LichSuDiemThuong {
     public int getDiemTruocGD() { return diemTruocGD; }
     public void setDiemTruocGD(int diemTruocGD) { this.diemTruocGD = diemTruocGD; }
 
-    public int getDiemSauGD() { return diemSauGD; }
-    public void setDiemSauGD(int diemSauGD) { this.diemSauGD = diemSauGD; }
+    public int getDiemSauGD() { return diemTruocGD + soDiem; }
 
     public String getMoTa() { return moTa; }
     public void setMoTa(String moTa) { this.moTa = moTa; }

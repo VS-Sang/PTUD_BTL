@@ -16,7 +16,6 @@ public class DonHang {
     private double tienDiem;
     private double phiVanChuyen;
     private double thueVAT;
-    private double tongThanhToan;
     private String trangThai;
     private String ghiChu;
     private Date ngayTao;
@@ -32,7 +31,7 @@ public class DonHang {
     public DonHang(String maDonHang, KhachHang khachHang, NhanVien nhanVien, Date ngayDatHang,
                    Date ngayGiaoHang, String diaChiGiaoHang, double tongTienHang,
                    double tienGiamGia, KhuyenMai khuyenMai, int diemSuDung, double tienDiem,
-                   double phiVanChuyen, double thueVAT, double tongThanhToan, String trangThai,
+                   double phiVanChuyen, double thueVAT, String trangThai,
                    String ghiChu, Date ngayTao, Date ngayCapNhat) {
         this.maDonHang = maDonHang;
         this.khachHang = khachHang;
@@ -47,7 +46,6 @@ public class DonHang {
         this.tienDiem = tienDiem;
         this.phiVanChuyen = phiVanChuyen;
         this.thueVAT = thueVAT;
-        this.tongThanhToan = tongThanhToan;
         this.trangThai = trangThai;
         this.ghiChu = ghiChu;
         this.ngayTao = ngayTao;
@@ -93,8 +91,9 @@ public class DonHang {
     public double getThueVAT() { return thueVAT; }
     public void setThueVAT(double thueVAT) { this.thueVAT = thueVAT; }
 
-    public double getTongThanhToan() { return tongThanhToan; }
-    public void setTongThanhToan(double tongThanhToan) { this.tongThanhToan = tongThanhToan; }
+    public double getTongThanhToan() {
+        return tongTienHang - tienGiamGia - tienDiem + phiVanChuyen + thueVAT;
+    }
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }

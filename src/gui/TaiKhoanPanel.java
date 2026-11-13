@@ -226,7 +226,7 @@ public class TaiKhoanPanel extends JFrame {
 
     private void toggleStatus(String accountId, String currentStatus) {
         String nextStatus = "Hoạt động".equals(currentStatus) ? "Bị khóa" : "Hoạt động";
-        int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this),
+        int answer = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(this),
                 ("Hoạt động".equals(nextStatus) ? "Mở khóa" : "Khóa") + " tài khoản này?",
                 "Xác nhận thao tác", JOptionPane.YES_NO_OPTION);
         if (answer != JOptionPane.YES_OPTION)
@@ -239,7 +239,7 @@ public class TaiKhoanPanel extends JFrame {
             showError("Không thể xóa tài khoản có vai trò Quản lý.");
             return;
         }
-        int answer = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(this), "Xóa tài khoản " + username + "?",
+        int answer = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(this), "Xóa tài khoản " + username + "?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (answer != JOptionPane.YES_OPTION)
             return;
@@ -281,7 +281,7 @@ public class TaiKhoanPanel extends JFrame {
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), message, "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
     private static class AccountData {
@@ -372,7 +372,7 @@ public class TaiKhoanPanel extends JFrame {
                     selectEmployeeForAccount(data.id, connection);
                 }
             } catch (SQLException exception) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this), "Không thể tải danh sách nhân viên.",
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this), "Không thể tải danh sách nhân viên.",
                         "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -407,7 +407,7 @@ public class TaiKhoanPanel extends JFrame {
                 boolean validEmployee = (!isCreate || employeeBox.getSelectedItem() != null);
 
                 if (!validUsername || !validPassword || !validEmployee) {
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                    JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                             "Vui lòng kiểm tra lại: Chọn nhân viên, Tên đăng nhập (3-50 ký tự), Mật khẩu (ít nhất 6 ký tự).",
                             "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                     return;
@@ -445,7 +445,7 @@ public class TaiKhoanPanel extends JFrame {
                     saved = true;
                     dispose();
                 } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                    JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                             "Không thể lưu tài khoản:\n" + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
 
@@ -458,7 +458,7 @@ public class TaiKhoanPanel extends JFrame {
             try {
                 NhatKyHeThong_DAO.ghiTheoTenDangNhap(actor, action, "Tài khoản", detail);
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(UiDialogOwner.resolve(this),
+                JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(this),
                         "Đã lưu thành công nhưng không ghi được Log:\n" + e.getMessage(),
                         "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }

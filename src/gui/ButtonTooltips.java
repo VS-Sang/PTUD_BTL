@@ -18,10 +18,12 @@ final class ButtonTooltips {
     }
 
     static void ganTooltip(Container root) {
+        // kt pt truyền vào có phải button ko
         if (root instanceof AbstractButton) {
             ganTooltipNut((AbstractButton) root);
         }
 
+        //kt dk chx
         synchronized (INSTALLED_CONTAINERS) {
             if (INSTALLED_CONTAINERS.put(root, Boolean.TRUE) != null) {
                 return;
@@ -30,8 +32,10 @@ final class ButtonTooltips {
 
         for (Component child : root.getComponents()) {
             if (child instanceof Container) {
+                // nếu là container thì chui vào bên trong để dk
                 ganTooltip((Container) child);
             } else if (child instanceof AbstractButton) {
+                // nếu là button thì dk luoon
                 ganTooltipNut((AbstractButton) child);
             }
         }
@@ -71,7 +75,9 @@ final class ButtonTooltips {
         }
 
         String text = label.trim();
+        //Xóa ký tự đặc biệt
         String actionLabel = text.replaceFirst("^[^\\p{L}\\p{N}]+", "").trim();
+        // giữ nguyên icon
         String normalized = text.toLowerCase(Locale.forLanguageTag("vi-VN"));
         if (normalized.contains("🔒")) {
             return "Khóa/mở tài khoản";

@@ -45,6 +45,7 @@ final class TienIchXuatBaoCao {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(title);
         chooser.setFileFilter(new FileNameExtensionFilter("Excel/CSV (*.csv)", "csv"));
+        // điền săn tên file
         chooser.setSelectedFile(new File(defaultFileName));
         if (chooser.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -55,7 +56,7 @@ final class TienIchXuatBaoCao {
             file = new File(file.getParentFile(), file.getName() + ".csv");
         }
         if (file.exists()) {
-            int overwrite = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(parent),
+            int overwrite = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(parent),
                     "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                     "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (overwrite != JOptionPane.YES_OPTION) {
@@ -84,11 +85,11 @@ final class TienIchXuatBaoCao {
                 writer.newLine();
             }
 
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Đã xuất " + table.getRowCount()
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(parent), "Đã xuất " + table.getRowCount()
                     + " dòng ra tệp:\n" + file.getAbsolutePath(),
                     "Xuất Excel", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Không thể xuất báo cáo:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(parent), "Không thể xuất báo cáo:\n"
                     + exception.getMessage(), "Lỗi xuất Excel", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -113,7 +114,7 @@ final class TienIchXuatBaoCao {
             file = new File(file.getParentFile(), file.getName() + ".pdf");
         }
         if (file.exists()) {
-            int overwrite = JOptionPane.showConfirmDialog(UiDialogOwner.resolve(parent),
+            int overwrite = JOptionPane.showConfirmDialog(ChuSoHuuHopThoai.resolve(parent),
                     "Tệp đã tồn tại. Bạn có muốn ghi đè không?",
                     "Xác nhận ghi đè", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (overwrite != JOptionPane.YES_OPTION) {
@@ -123,10 +124,10 @@ final class TienIchXuatBaoCao {
 
         try {
             writeTablePdf(table, title, file, summary, chart, detailTitle, detailTable);
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Đã lưu báo cáo PDF tại:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(parent), "Đã lưu báo cáo PDF tại:\n"
                     + file.getAbsolutePath(), "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException | DocumentException exception) {
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(parent), "Không thể lưu báo cáo PDF:\n"
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(parent), "Không thể lưu báo cáo PDF:\n"
                     + exception.getMessage(), "Lỗi xuất PDF", JOptionPane.ERROR_MESSAGE);
         }
     }

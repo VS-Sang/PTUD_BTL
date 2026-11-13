@@ -704,13 +704,11 @@ public class NhapHangPanel extends JFrame implements ActionListener {
             int sl = (int) tableModel.getValueAt(i, 3);
             String giaStr = tableModel.getValueAt(i, 2).toString().replace(".", "").replace(",", "").replace("đ", "").trim();
             double gia = Double.parseDouble(giaStr);
-            double thanhTien = sl * gia;
-
             tongSoLuong += sl;
-            tongTienNhap += thanhTien;
 
             SanPham sp = new SanPham(maSP);
-            ChiTietPhieuNhap ct = new ChiTietPhieuNhap(pnk, sp, sl, gia, thanhTien, null, null, null);
+            ChiTietPhieuNhap ct = new ChiTietPhieuNhap(pnk, sp, sl, gia, null, null, null);
+            tongTienNhap += ct.getThanhTien();
             chiTietList.add(ct);
         }
 
@@ -833,7 +831,7 @@ public class NhapHangPanel extends JFrame implements ActionListener {
     }
 
     private Component getDialogOwnerWindow() {
-        return UiDialogOwner.resolve(this);
+        return ChuSoHuuHopThoai.resolve(this);
     }
 
     @Override

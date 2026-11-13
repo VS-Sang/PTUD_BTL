@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
 
-import gui.UiDialogOwner;
+import gui.ChuSoHuuHopThoai;
 
 public final class ConnectDB {
     private static final String URL =
@@ -38,7 +38,7 @@ public final class ConnectDB {
     private static void baoLoi(String thongBao) {
         if (!daBaoLoi) {
             daBaoLoi = true;
-            JOptionPane.showMessageDialog(UiDialogOwner.resolve(null), thongBao,
+            JOptionPane.showMessageDialog(ChuSoHuuHopThoai.resolve(null), thongBao,
                     "Lỗi kết nối CSDL", JOptionPane.ERROR_MESSAGE);
         }
     }

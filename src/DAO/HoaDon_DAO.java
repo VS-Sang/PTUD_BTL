@@ -54,9 +54,7 @@ public class HoaDon_DAO {
                 rs.getDouble("tienGiamGia"),
                 rs.getDouble("tienDiem"),
                 rs.getDouble("thueVAT"),
-                rs.getDouble("tongThanhToan"),
                 rs.getDouble("tienKhachDua"),
-                rs.getDouble("tienTraLai"),
                 rs.getString("phuongThucThanhToan"),
                 rs.getString("soTaiKhoanNH"),
                 rs.getString("tenNganHang"),
@@ -110,7 +108,7 @@ public class HoaDon_DAO {
         ArrayList<ChiTietHoaDon> chiTiet = new ArrayList<>();
         String sql = "SELECT ct.maHoaDon, ct.maDonHang, ct.maSanPham, sp.tenSanPham, "
                 + "ct.soLuong, CASE WHEN ct.donGia = 0 THEN dhct.donGia ELSE ct.donGia END AS donGia, "
-                + "ct.giamGia, ct.thanhTien, ct.ghiChu "
+                + "ct.giamGia, ct.ghiChu "
                 + "FROM ChiTietHoaDon ct JOIN SanPham sp ON sp.maSanPham = ct.maSanPham "
                 + "LEFT JOIN ChiTietDonHang dhct ON dhct.maDonHang = ct.maDonHang "
                 + "AND dhct.maSanPham = ct.maSanPham "
@@ -126,7 +124,7 @@ public class HoaDon_DAO {
                     chiTiet.add(new ChiTietHoaDon(rs.getString("maHoaDon"),
                             new DonHang(rs.getString("maDonHang")),
                             sanPham, rs.getInt("soLuong"), rs.getDouble("donGia"),
-                            rs.getDouble("giamGia"), rs.getDouble("thanhTien"),
+                            rs.getDouble("giamGia"),
                             rs.getString("ghiChu")));
                 }
             }
@@ -312,7 +310,7 @@ public class HoaDon_DAO {
                             SanPham sanPham = new SanPham(rs.getString("maSanPham"));
                             chiTietCu.put(sanPham.getMaSanPham(), new ChiTietDonHang(
                                     new DonHang(maDonHang), sanPham, rs.getInt("soLuong"),
-                                    rs.getDouble("donGia"), 0, 0, null));
+                                    rs.getDouble("donGia"), 0, null));
                         }
                     }
                 }
@@ -380,9 +378,10 @@ public class HoaDon_DAO {
                     }
                     if (soLuong != null) {
                         SanPham sanPham = cu == null ? new SanPham(maSanPham) : cu.getSanPham();
-                        chiTietDaXacNhan.add(new ChiTietDonHang(new DonHang(maDonHang), sanPham,
-                                soLuong, donGia, 0, donGia * soLuong, null));
-                        tongTienHangMoi += donGia * soLuong;
+                        ChiTietDonHang chiTietMoi = new ChiTietDonHang(
+                                new DonHang(maDonHang), sanPham, soLuong, donGia, 0, null);
+                        chiTietDaXacNhan.add(chiTietMoi);
+                        tongTienHangMoi += chiTietMoi.getThanhTien();
                     }
                 }
 
@@ -762,11 +761,11 @@ public class HoaDon_DAO {
                                 + " đã thay đổi. Vui lòng tạo lại hóa đơn.");
                     }
 
-                    double thanhTien = donGia * item.getSoLuong();
-                    tongTienHang += thanhTien;
-                    chiTietDaXacNhan.add(new ChiTietDonHang(
+                    ChiTietDonHang chiTietMoi = new ChiTietDonHang(
                             new DonHang(maDonHang), item.getSanPham(), item.getSoLuong(),
-                            donGia, 0, thanhTien, null));
+                            donGia, 0, null);
+                    tongTienHang += chiTietMoi.getThanhTien();
+                    chiTietDaXacNhan.add(chiTietMoi);
 
                     String sqlCapNhatKho = "UPDATE SanPham SET soLuongTon = soLuongTon - ?, "
                             + "trangThai = CASE WHEN soLuongTon - ? = 0 "

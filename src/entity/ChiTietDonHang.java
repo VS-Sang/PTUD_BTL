@@ -6,20 +6,18 @@ public class ChiTietDonHang {
     private int soLuong;
     private double donGia;
     private double giamGia;
-    private double thanhTien;
     private String ghiChu;
 
     public ChiTietDonHang() {
     }
 
     public ChiTietDonHang(DonHang donHang, SanPham sanPham, int soLuong, double donGia,
-                          double giamGia, double thanhTien, String ghiChu) {
+                          double giamGia, String ghiChu) {
         this.donHang = donHang;
         this.sanPham = sanPham;
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.giamGia = giamGia;
-        this.thanhTien = thanhTien;
         this.ghiChu = ghiChu;
     }
 
@@ -38,8 +36,7 @@ public class ChiTietDonHang {
     public double getGiamGia() { return giamGia; }
     public void setGiamGia(double giamGia) { this.giamGia = giamGia; }
 
-    public double getThanhTien() { return thanhTien; }
-    public void setThanhTien(double thanhTien) { this.thanhTien = thanhTien; }
+    public double getThanhTien() { return soLuong * donGia - giamGia; }
 
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
