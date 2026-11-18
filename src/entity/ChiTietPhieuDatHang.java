@@ -1,6 +1,6 @@
 package entity;
 
-public class ChiTietDonHang {
+public class ChiTietPhieuDatHang {
     private DonHang donHang;
     private SanPham sanPham;
     private int soLuong;
@@ -8,11 +8,11 @@ public class ChiTietDonHang {
     private double giamGia;
     private String ghiChu;
 
-    public ChiTietDonHang() {
+    public ChiTietPhieuDatHang() {
     }
 
-    public ChiTietDonHang(DonHang donHang, SanPham sanPham, int soLuong, double donGia,
-                          double giamGia, String ghiChu) {
+    public ChiTietPhieuDatHang(DonHang donHang, SanPham sanPham, int soLuong, double donGia,
+                              double giamGia, String ghiChu) {
         this.donHang = donHang;
         this.sanPham = sanPham;
         this.soLuong = soLuong;

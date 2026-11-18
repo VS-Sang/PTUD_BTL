@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 import connectDB.ConnectDB;
-import entity.ChiTietDonHang;
 import entity.ChiTietHoaDon;
+import entity.ChiTietPhieuDatHang;
 import entity.DonHang;
 import entity.HoaDon;
 import entity.KhachHang;
@@ -121,8 +121,9 @@ public class HoaDon_DAO {
                     SanPham sanPham = new SanPham(rs.getString("maSanPham"));
                     sanPham.setTenSanPham(rs.getString("tenSanPham"));
                     sanPham.setGiaBan(rs.getDouble("donGia"));
-                    chiTiet.add(new ChiTietHoaDon(rs.getString("maHoaDon"),
-                            new DonHang(rs.getString("maDonHang")),
+                    HoaDon hoaDon = new HoaDon(rs.getString("maHoaDon"));
+                    hoaDon.setDonHang(new DonHang(rs.getString("maDonHang")));
+                    chiTiet.add(new ChiTietHoaDon(hoaDon,
                             sanPham, rs.getInt("soLuong"), rs.getDouble("donGia"),
                             rs.getDouble("giamGia"),
                             rs.getString("ghiChu")));
@@ -148,14 +149,14 @@ public class HoaDon_DAO {
     }
 
     public String taoHoaDon(String maNhanVien, String maKhachHang,
-                            List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                            List<ChiTietPhieuDatHang> chiTiet, String phuongThucThanhToan,
                             double tienKhachDua) throws SQLException {
         return taoHoaDon(maNhanVien, maKhachHang, chiTiet, phuongThucThanhToan,
                 tienKhachDua, 0, 0, null);
     }
 
     public String taoHoaDon(String maNhanVien, String maKhachHang,
-                            List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                            List<ChiTietPhieuDatHang> chiTiet, String phuongThucThanhToan,
                             double tienKhachDua, double phanTramGiamGia,
                             double thueVAT, String ghiChu) throws SQLException {
         return taoHoaDon(maNhanVien, maKhachHang, chiTiet, phuongThucThanhToan,
@@ -163,7 +164,7 @@ public class HoaDon_DAO {
     }
 
     public String taoHoaDon(String maNhanVien, String maKhachHang,
-                            List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                            List<ChiTietPhieuDatHang> chiTiet, String phuongThucThanhToan,
                             double tienKhachDua, String maKhuyenMai, double tienGiamGiaTrucTiep,
                             double thueVAT, String ghiChu) throws SQLException {
         return taoHoaDon(maNhanVien, maKhachHang, chiTiet, phuongThucThanhToan,
@@ -219,7 +220,7 @@ public class HoaDon_DAO {
     }
 
     public void capNhatNoiDungHoaDon(String maHoaDon, String maKhachHang,
-                                    List<ChiTietDonHang> chiTiet,
+                                    List<ChiTietPhieuDatHang> chiTiet,
                                     String phuongThucThanhToan, double tienKhachDua,
                                     String ghiChu) throws SQLException {
         if (maHoaDon == null || maHoaDon.trim().isEmpty()
@@ -239,7 +240,7 @@ public class HoaDon_DAO {
         }
 
         Map<String, Integer> soLuongMoi = new LinkedHashMap<>();
-        for (ChiTietDonHang item : chiTiet) {
+        for (ChiTietPhieuDatHang item : chiTiet) {
             if (item == null || item.getSanPham() == null
                     || item.getSanPham().getMaSanPham() == null
                     || item.getSoLuong() <= 0
@@ -300,7 +301,7 @@ public class HoaDon_DAO {
                     throw new SQLException("Không tìm thấy khách hàng được chọn.");
                 }
 
-                Map<String, ChiTietDonHang> chiTietCu = new LinkedHashMap<>();
+                Map<String, ChiTietPhieuDatHang> chiTietCu = new LinkedHashMap<>();
                 String sqlChiTietCu = "SELECT maSanPham, soLuong, donGia FROM ChiTietDonHang "
                         + "WITH (UPDLOCK, HOLDLOCK) WHERE maDonHang = ?";
                 try (PreparedStatement stmt = con.prepareStatement(sqlChiTietCu)) {
@@ -308,7 +309,7 @@ public class HoaDon_DAO {
                     try (ResultSet rs = stmt.executeQuery()) {
                         while (rs.next()) {
                             SanPham sanPham = new SanPham(rs.getString("maSanPham"));
-                            chiTietCu.put(sanPham.getMaSanPham(), new ChiTietDonHang(
+                            chiTietCu.put(sanPham.getMaSanPham(), new ChiTietPhieuDatHang(
                                     new DonHang(maDonHang), sanPham, rs.getInt("soLuong"),
                                     rs.getDouble("donGia"), 0, null));
                         }
@@ -319,15 +320,15 @@ public class HoaDon_DAO {
                 }
 
                 double tongTienHangMoi = 0;
-                List<ChiTietDonHang> chiTietDaXacNhan = new ArrayList<>();
+                List<ChiTietPhieuDatHang> chiTietDaXacNhan = new ArrayList<>();
                 Set<String> maSanPhamCanXuLy = new HashSet<>(chiTietCu.keySet());
                 maSanPhamCanXuLy.addAll(soLuongMoi.keySet());
-                Map<String, ChiTietDonHang> chiTietYeuCau = new LinkedHashMap<>();
-                for (ChiTietDonHang item : chiTiet) {
+                Map<String, ChiTietPhieuDatHang> chiTietYeuCau = new LinkedHashMap<>();
+                for (ChiTietPhieuDatHang item : chiTiet) {
                     chiTietYeuCau.put(item.getSanPham().getMaSanPham(), item);
                 }
                 for (String maSanPham : maSanPhamCanXuLy) {
-                    ChiTietDonHang cu = chiTietCu.get(maSanPham);
+                    ChiTietPhieuDatHang cu = chiTietCu.get(maSanPham);
                     Integer soLuong = soLuongMoi.get(maSanPham);
                     int soLuongCu = cu == null ? 0 : cu.getSoLuong();
                     int soLuongMoiCuaSP = soLuong == null ? 0 : soLuong;
@@ -378,7 +379,7 @@ public class HoaDon_DAO {
                     }
                     if (soLuong != null) {
                         SanPham sanPham = cu == null ? new SanPham(maSanPham) : cu.getSanPham();
-                        ChiTietDonHang chiTietMoi = new ChiTietDonHang(
+                        ChiTietPhieuDatHang chiTietMoi = new ChiTietPhieuDatHang(
                                 new DonHang(maDonHang), sanPham, soLuong, donGia, 0, null);
                         chiTietDaXacNhan.add(chiTietMoi);
                         tongTienHangMoi += chiTietMoi.getThanhTien();
@@ -408,7 +409,7 @@ public class HoaDon_DAO {
                         + "(maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
                         + "VALUES (?, ?, ?, ?, 0, ?, NULL)";
                 try (PreparedStatement stmt = con.prepareStatement(sqlThemChiTiet)) {
-                    for (ChiTietDonHang item : chiTietDaXacNhan) {
+                    for (ChiTietPhieuDatHang item : chiTietDaXacNhan) {
                         stmt.setString(1, maDonHang);
                         stmt.setString(2, item.getSanPham().getMaSanPham());
                         stmt.setInt(3, item.getSoLuong());
@@ -684,7 +685,7 @@ public class HoaDon_DAO {
     }
 
     private String taoHoaDon(String maNhanVien, String maKhachHang,
-                             List<ChiTietDonHang> chiTiet, String phuongThucThanhToan,
+                             List<ChiTietPhieuDatHang> chiTiet, String phuongThucThanhToan,
                              double tienKhachDua, String maKhuyenMai, double tienGiamGiaTrucTiep,
                              double phanTramGiamGia, double thueVAT, String ghiChu) throws SQLException {
         if (chiTiet == null || chiTiet.isEmpty()) {
@@ -720,10 +721,10 @@ public class HoaDon_DAO {
                 String maDonHang = phatSinhMa(con, "DonHang", "maDonHang", "DH");
                 String maHoaDon = phatSinhMa(con, "HoaDon", "maHoaDon", "HD");
                 Set<String> maSanPhamDaThem = new HashSet<>();
-                List<ChiTietDonHang> chiTietDaXacNhan = new ArrayList<>();
+                List<ChiTietPhieuDatHang> chiTietDaXacNhan = new ArrayList<>();
                 double tongTienHang = 0;
 
-                for (ChiTietDonHang item : chiTiet) {
+                for (ChiTietPhieuDatHang item : chiTiet) {
                     if (item == null || item.getSanPham() == null
                             || item.getSanPham().getMaSanPham() == null
                             || item.getSoLuong() <= 0
@@ -761,7 +762,7 @@ public class HoaDon_DAO {
                                 + " đã thay đổi. Vui lòng tạo lại hóa đơn.");
                     }
 
-                    ChiTietDonHang chiTietMoi = new ChiTietDonHang(
+                    ChiTietPhieuDatHang chiTietMoi = new ChiTietPhieuDatHang(
                             new DonHang(maDonHang), item.getSanPham(), item.getSoLuong(),
                             donGia, 0, null);
                     tongTienHang += chiTietMoi.getThanhTien();
@@ -824,7 +825,7 @@ public class HoaDon_DAO {
                         + "(maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
                         + "VALUES (?, ?, ?, ?, 0, ?, NULL)";
                 try (PreparedStatement stmt = con.prepareStatement(sqlChiTiet)) {
-                    for (ChiTietDonHang item : chiTietDaXacNhan) {
+                    for (ChiTietPhieuDatHang item : chiTietDaXacNhan) {
                         stmt.setString(1, maDonHang);
                         stmt.setString(2, item.getSanPham().getMaSanPham());
                         stmt.setInt(3, item.getSoLuong());
@@ -861,7 +862,7 @@ public class HoaDon_DAO {
                         + "(maHoaDon, maDonHang, maSanPham, soLuong, donGia, giamGia, thanhTien, ghiChu) "
                         + "VALUES (?, ?, ?, ?, ?, 0, ?, NULL)";
                 try (PreparedStatement stmt = con.prepareStatement(sqlChiTietHoaDon)) {
-                    for (ChiTietDonHang item : chiTietDaXacNhan) {
+                    for (ChiTietPhieuDatHang item : chiTietDaXacNhan) {
                         stmt.setString(1, maHoaDon);
                         stmt.setString(2, maDonHang);
                         stmt.setString(3, item.getSanPham().getMaSanPham());

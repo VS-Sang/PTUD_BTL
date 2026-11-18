@@ -1,9 +1,7 @@
 package entity;
 
 public class ChiTietHoaDon {
-    private String maHoaDon;
     private HoaDon hoaDon;
-    private DonHang donHang;
     private SanPham sanPham;
     private int soLuong;
     private double donGia;
@@ -13,20 +11,15 @@ public class ChiTietHoaDon {
     public ChiTietHoaDon() {
     }
 
-    public ChiTietHoaDon(String maHoaDon, DonHang donHang, SanPham sanPham,
+    public ChiTietHoaDon(HoaDon hoaDon, SanPham sanPham,
                          int soLuong, double donGia, double giamGia, String ghiChu) {
-        this.maHoaDon = maHoaDon;
-        this.hoaDon = maHoaDon == null ? null : new HoaDon(maHoaDon);
-        this.donHang = donHang;
+        this.hoaDon = hoaDon;
         this.sanPham = sanPham;
         this.soLuong = soLuong;
         this.donGia = donGia;
         this.giamGia = giamGia;
         this.ghiChu = ghiChu;
     }
-
-    public DonHang getDonHang() { return donHang; }
-    public void setDonHang(DonHang donHang) { this.donHang = donHang; }
 
     public SanPham getSanPham() { return sanPham; }
     public void setSanPham(SanPham sanPham) { this.sanPham = sanPham; }
@@ -46,21 +39,11 @@ public class ChiTietHoaDon {
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
 
-    public String getMaHoaDon() {
-        return maHoaDon;
-    }
-
-    public void setMaHoaDon(String maHoaDon) {
-        this.maHoaDon = maHoaDon;
-        this.hoaDon = maHoaDon == null ? null : new HoaDon(maHoaDon);
-    }
-
     public HoaDon getHoaDon() {
         return hoaDon;
     }
 
     public void setHoaDon(HoaDon hoaDon) {
         this.hoaDon = hoaDon;
-        this.maHoaDon = hoaDon == null ? null : hoaDon.getMaHoaDon();
     }
 }

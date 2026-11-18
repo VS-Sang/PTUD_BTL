@@ -76,10 +76,8 @@ final class ChiTietHoaDonDialog extends JDialog {
                     boolean selected, boolean focus, int row, int column) {
                 JLabel label = (JLabel) super.getTableCellRendererComponent(
                         source, value, selected, focus, row, column);
-                if (column >= 2) {
-                    // căn value bên phải
-                    label.setHorizontalAlignment(SwingConstants.RIGHT);
-                }
+                label.setHorizontalAlignment(
+                        column >= 2 ? SwingConstants.RIGHT : SwingConstants.LEFT);
                 return label;
             }
         });
