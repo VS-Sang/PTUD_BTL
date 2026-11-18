@@ -47,7 +47,8 @@ final class TienIchXuatBaoCao {
         chooser.setFileFilter(new FileNameExtensionFilter("Excel/CSV (*.csv)", "csv"));
         // điền săn tên file
         chooser.setSelectedFile(new File(defaultFileName));
-        if (chooser.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION) {
+        if (chooser.showSaveDialog(ChuSoHuuHopThoai.resolve(parent))
+                != JFileChooser.APPROVE_OPTION) {
             return;
         }
 

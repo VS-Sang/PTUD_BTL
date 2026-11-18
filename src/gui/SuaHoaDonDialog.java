@@ -31,8 +31,9 @@ import javax.swing.table.DefaultTableModel;
 import DAO.HoaDon_DAO;
 import DAO.KhachHang_DAO;
 import DAO.SanPham_DAO;
-import entity.ChiTietDonHang;
 import entity.ChiTietHoaDon;
+import entity.ChiTietPhieuDatHang;
+import entity.DonHang;
 import entity.HoaDon;
 import entity.KhachHang;
 import entity.SanPham;
@@ -253,8 +254,7 @@ final class SuaHoaDonDialog extends JDialog {
         }
         double donGia = item == null ? sanPham.getGiaBan() : item.getDonGia();
         chiTietTheoMa.put(maSanPham, new ChiTietHoaDon(
-                hoaDon.getMaHoaDon(), item == null ? null : item.getDonHang(),
-                sanPham, soLuongMoi, donGia, 0, null));
+                hoaDon, sanPham, soLuongMoi, donGia, 0, null));
         capNhatBang();
     }
 
@@ -300,9 +300,10 @@ final class SuaHoaDonDialog extends JDialog {
             return;
         }
         KhachHang khachHang = (KhachHang) cboKhachHang.getSelectedItem();
-        List<ChiTietDonHang> chiTiet = new ArrayList<>();
+        List<ChiTietPhieuDatHang> chiTiet = new ArrayList<>();
         for (ChiTietHoaDon item : chiTietTheoMa.values()) {
-            chiTiet.add(new ChiTietDonHang(item.getDonHang(), item.getSanPham(),
+            DonHang donHang = item.getHoaDon() == null ? null : item.getHoaDon().getDonHang();
+            chiTiet.add(new ChiTietPhieuDatHang(donHang, item.getSanPham(),
                     item.getSoLuong(), item.getDonGia(), item.getGiamGia(), item.getGhiChu()));
         }
         try {

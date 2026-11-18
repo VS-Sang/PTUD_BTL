@@ -66,7 +66,7 @@ import DAO.KhachHang_DAO;
 import DAO.KhuyenMai_DAO;
 import DAO.NhanVien_DAO;
 import DAO.SanPham_DAO;
-import entity.ChiTietDonHang;
+import entity.ChiTietPhieuDatHang;
 import entity.HoaDon;
 import entity.KhachHang;
 import entity.KhuyenMai;
@@ -963,11 +963,11 @@ public class TaoHoaDonDialog extends JFrame {
         }
     }
 
-    private List<ChiTietDonHang> createOrderDetailList() {
-        List<ChiTietDonHang> chiTiet = new ArrayList<>();
+    private List<ChiTietPhieuDatHang> createOrderDetailList() {
+        List<ChiTietPhieuDatHang> chiTiet = new ArrayList<>();
         for (Map.Entry<String, Integer> mon : gioHang.entrySet()) {
             SanPham sp = sanPhamTheoMa.get(mon.getKey());
-            chiTiet.add(new ChiTietDonHang(null, sp, mon.getValue(), sp.getGiaBan(), 0, null));
+            chiTiet.add(new ChiTietPhieuDatHang(null, sp, mon.getValue(), sp.getGiaBan(), 0, null));
         }
         return chiTiet;
     }
